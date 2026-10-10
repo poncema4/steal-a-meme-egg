@@ -240,8 +240,8 @@ local NumberSequence = {
 	end,
 }
 local ColorSequence = {
-	new = function(a)
-		return { a }
+	new = function(a, b)
+		return { a, b or a }
 	end,
 }
 

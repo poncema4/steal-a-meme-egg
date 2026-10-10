@@ -57,7 +57,7 @@ function Hud.start(player: Player, actions: Actions?)
 
 	-- left column: Shop, Index, Slow Mode
 	local tapHeight = Ui.tap(gui, 52)
-	local left = box(gui, "Left", UDim2.fromOffset(170, 220), UDim2.fromOffset(14, 70), Vector2.new(0, 0))
+	local left = box(gui, "Left", UDim2.fromOffset(170, 190), UDim2.new(0, 14, 0.34, 0), Vector2.new(0, 0))
 	local list = Instance.new("UIListLayout")
 	list.Padding = UDim.new(0, 10)
 	list.SortOrder = Enum.SortOrder.LayoutOrder
@@ -82,9 +82,47 @@ function Hud.start(player: Player, actions: Actions?)
 	if act.index then
 		leftButton("IndexButton", "Index", "book", Ui.Palettes.Blue, 2, act.index)
 	end
-	local slow = Ui.button(left, "SlowToggle", "Slow Mode", Ui.Palettes.Grey, UDim2.fromOffset(150, Ui.tap(gui, 44)))
+	-- Slow Mode is a small switch with a label, like the reference: a dark track, a green knob when it is on
+	local slow = Instance.new("TextButton")
+	slow.Name = "SlowToggle"
 	slow.LayoutOrder = 3
-	slow.TextSize = 20
+	slow.Size = UDim2.fromOffset(150, Ui.tap(gui, 40))
+	slow.BackgroundTransparency = 1
+	slow.AutoButtonColor = false
+	slow.Selectable = true
+	slow.Font = Ui.FONT
+	slow.TextSize = 17
+	slow.TextColor3 = Color3.new(1, 1, 1)
+	slow.TextXAlignment = Enum.TextXAlignment.Left
+	slow.Text = "Slow Mode"
+	slow.Parent = left
+	local slowPad = Instance.new("UIPadding")
+	slowPad.PaddingLeft = UDim.new(0, 62)
+	slowPad.Parent = slow
+	local slowTrack = Instance.new("Frame")
+	slowTrack.Name = "Track"
+	slowTrack.Size = UDim2.fromOffset(52, 28)
+	slowTrack.Position = UDim2.fromOffset(0, 6)
+	slowTrack.BackgroundColor3 = Color3.fromRGB(70, 60, 58)
+	slowTrack.BorderSizePixel = 0
+	slowTrack.Parent = slow
+	local slowTrackCorner = Instance.new("UICorner")
+	slowTrackCorner.CornerRadius = UDim.new(0, 8)
+	slowTrackCorner.Parent = slowTrack
+	local slowTrackStroke = Instance.new("UIStroke")
+	slowTrackStroke.Thickness = 3
+	slowTrackStroke.Color = Color3.new(0, 0, 0)
+	slowTrackStroke.Parent = slowTrack
+	local slowKnob = Instance.new("Frame")
+	slowKnob.Name = "Knob"
+	slowKnob.Size = UDim2.fromOffset(24, 22)
+	slowKnob.Position = UDim2.fromOffset(3, 3)
+	slowKnob.BackgroundColor3 = Color3.fromRGB(60, 235, 60)
+	slowKnob.BorderSizePixel = 0
+	slowKnob.Parent = slowTrack
+	local slowKnobCorner = Instance.new("UICorner")
+	slowKnobCorner.CornerRadius = UDim.new(0, 6)
+	slowKnobCorner.Parent = slowKnob
 	local slowRemote = remotes:WaitForChild("SlowMode") :: RemoteEvent
 	slow.Activated:Connect(function()
 		slowRemote:FireServer(player:GetAttribute("SlowMode") ~= true)
@@ -136,34 +174,31 @@ function Hud.start(player: Player, actions: Actions?)
 	local zone = Instance.new("Frame")
 	zone.Name = "ZoneBanner"
 	zone.AnchorPoint = Vector2.new(0.5, 0)
-	zone.Position = UDim2.new(0.5, 0, 0, 10)
-	zone.Size = UDim2.fromOffset(360, 48)
-	zone.BackgroundColor3 = Color3.new(0, 0, 0)
-	zone.BackgroundTransparency = 0.45
+	zone.Position = UDim2.new(0.5, 0, 0, 50)
+	zone.Size = UDim2.fromOffset(520, 56)
+	zone.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
+	zone.BackgroundTransparency = 0.6
 	zone.BorderSizePixel = 0
 	zone.Parent = gui
-	local zoneCorner = Instance.new("UICorner")
-	zoneCorner.CornerRadius = UDim.new(0, 12)
-	zoneCorner.Parent = zone
-	local zoneName = Ui.label(zone, "Name", 34)
+	local zoneName = Ui.label(zone, "Name", 46, Color3.fromRGB(235, 235, 235))
 	zoneName.Size = UDim2.fromScale(1, 1)
 	local objective = Ui.label(gui, "Objective", 20, Color3.fromRGB(255, 240, 150))
 	objective.AnchorPoint = Vector2.new(0.5, 0)
-	objective.Position = UDim2.new(0.5, 0, 0, 64)
+	objective.Position = UDim2.new(0.5, 0, 0, 112)
 	-- the middle third only, so a long hint wraps instead of running under the buttons and the People list
 	objective.Size = UDim2.new(0.34, 0, 0, 44)
 	objective.TextWrapped = true
 	objective.TextYAlignment = Enum.TextYAlignment.Top
 	local banner = Ui.label(gui, "Banner", 24, GREEN_TEXT)
 	banner.AnchorPoint = Vector2.new(0.5, 0)
-	banner.Position = UDim2.new(0.5, 0, 0, 112)
+	banner.Position = UDim2.new(0.5, 0, 0, 160)
 	banner.Size = UDim2.new(0.34, 0, 0, 30)
 
 	-- carrying an egg: the big RUN banner and a Drop button
 	local run = Instance.new("Frame")
 	run.Name = "RunBanner"
 	run.AnchorPoint = Vector2.new(0.5, 0)
-	run.Position = UDim2.new(0.5, 0, 0, 150)
+	run.Position = UDim2.new(0.5, 0, 0, 190)
 	run.Size = UDim2.fromOffset(280, 76)
 	run.BackgroundColor3 = Color3.new(1, 1, 1)
 	run.BorderSizePixel = 0
@@ -194,7 +229,7 @@ function Hud.start(player: Player, actions: Actions?)
 
 	-- the hotbar: three trap slots (keys 1-3, or tap). At most 3 traps are out at once, so a slot lights up for each one left.
 	local trapRemote = remotes:WaitForChild("PlaceTrap") :: RemoteEvent
-	local slotSide = Ui.tap(gui, 64)
+	local slotSide = Ui.tap(gui, 56)
 	local hotbar = box(
 		gui,
 		"Hotbar",
@@ -209,7 +244,7 @@ function Hud.start(player: Player, actions: Actions?)
 	hotbarList.Parent = hotbar
 	local trapSlots: { TextButton } = {}
 	for i = 1, 3 do
-		local slot = Ui.button(hotbar, `TrapSlot_{i}`, "", Ui.Palettes.Orange, UDim2.fromOffset(slotSide, slotSide))
+		local slot = Ui.button(hotbar, `TrapSlot_{i}`, "", Ui.Palettes.Slot, UDim2.fromOffset(slotSide, slotSide))
 		slot.LayoutOrder = i
 		Ui.addIcon(slot, "trap", "center", "TRAP")
 		slot.TextSize = 16
@@ -234,7 +269,7 @@ function Hud.start(player: Player, actions: Actions?)
 	board.Name = "Leaderboard"
 	board.AnchorPoint = Vector2.new(1, 0)
 	board.Position = UDim2.new(1, -12, 0, 12)
-	board.Size = UDim2.fromOffset(300, 30)
+	board.Size = UDim2.fromOffset(270, 24)
 	board.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
 	board.BackgroundTransparency = 0.25
 	board.BorderSizePixel = 0
@@ -250,7 +285,7 @@ function Hud.start(player: Player, actions: Actions?)
 		local r = Instance.new("Frame")
 		r.Name = name
 		r.LayoutOrder = order
-		r.Size = UDim2.new(1, 0, 0, 24)
+		r.Size = UDim2.new(1, 0, 0, 20)
 		r.BackgroundTransparency = 1
 		r.Parent = board
 		for i, text in { a, b, c } do
@@ -258,7 +293,7 @@ function Hud.start(player: Player, actions: Actions?)
 			l.Name = `C{i}`
 			l.BackgroundTransparency = 1
 			l.Font = Ui.FONT
-			l.TextSize = if order == 0 then 14 else 17
+			l.TextSize = if order == 0 then 12 else 14
 			l.TextColor3 = color
 			l.Text = text
 			l.TextXAlignment = if i == 1 then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
@@ -325,7 +360,9 @@ function Hud.start(player: Player, actions: Actions?)
 			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")
 		local isSlow = player:GetAttribute("SlowMode") == true
 		slow.Text = if isSlow then "Slow Mode: ON" else "Slow Mode"
-		Ui.setPalette(slow, if isSlow then Ui.Palettes.Green else Ui.Palettes.Grey)
+		slowKnob.Position = if isSlow then UDim2.fromOffset(25, 3) else UDim2.fromOffset(3, 3)
+		slowKnob.BackgroundColor3 = if isSlow then Color3.fromRGB(60, 235, 60) else Color3.fromRGB(150, 140, 135)
+		slowTrack.BackgroundColor3 = if isSlow then Color3.fromRGB(35, 110, 45) else Color3.fromRGB(70, 60, 58)
 		zoneName.Text = tostring(player:GetAttribute("Zone") or "Safe Zone")
 		local mp = number(player, "MemePoints", 0)
 		local level = number(player, "SpeedLevel", 0)
@@ -350,7 +387,7 @@ function Hud.start(player: Player, actions: Actions?)
 		local cooling = number(player, "TrapReadyAt", 0) > workspace:GetServerTimeNow()
 		for i, slot in trapSlots do
 			local ready = i <= 3 - placed and not cooling
-			Ui.setPalette(slot, if ready then Ui.Palettes.Orange else Ui.Palettes.Grey)
+			Ui.setPalette(slot, if ready then Ui.Palettes.Slot else Ui.Palettes.SlotUsed)
 		end
 		local eggBadge = badges.EggsButton
 		if eggBadge then

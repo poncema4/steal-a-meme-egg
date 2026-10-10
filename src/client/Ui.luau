@@ -22,6 +22,8 @@ Ui.Palettes = {
 	Orange = { top = Color3.fromRGB(255, 196, 70), bottom = Color3.fromRGB(240, 112, 20) },
 	Gold = { top = Color3.fromRGB(255, 230, 90), bottom = Color3.fromRGB(232, 158, 12) },
 	Purple = { top = Color3.fromRGB(196, 130, 255), bottom = Color3.fromRGB(116, 50, 210) },
+	Slot = { top = Color3.fromRGB(96, 80, 74), bottom = Color3.fromRGB(58, 46, 44) },
+	SlotUsed = { top = Color3.fromRGB(46, 42, 44), bottom = Color3.fromRGB(28, 26, 30) },
 	Grey = { top = Color3.fromRGB(120, 120, 134), bottom = Color3.fromRGB(70, 70, 84) },
 } :: { [string]: Palette }
 
