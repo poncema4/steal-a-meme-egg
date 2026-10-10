@@ -518,6 +518,13 @@ function Wilds.start()
 			local caught = Guardian.step(g, dt, target, Config.Wilds.CatchRadius, Config.Wilds.Leash)
 			if caught and nearest then
 				recover(nearest, `{boss.name} caught you! The egg went back.`)
+				-- another thief of this terrain is still running: the boss goes after them next
+				for _, other in entries do
+					if other.boss == boss and other.thief then
+						Guardian.alert(g, Config.Wilds.ChaseSeconds)
+						break
+					end
+				end
 			elseif before == "Chase" and g.state == "Return" then
 				for _, entry in entries do
 					if entry.boss == boss and entry.thief then

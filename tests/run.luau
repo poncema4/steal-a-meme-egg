@@ -40,6 +40,7 @@ local specs = {
 	require("./specs/TreadmillLock"),
 	require("./specs/PetDisplay"),
 	require("./specs/ModelsWorld"),
+	require("./specs/BossChase"),
 	require("./specs/Models"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
