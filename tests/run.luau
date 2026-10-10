@@ -27,11 +27,13 @@ local specs = {
 	require("./specs/Economy"),
 	require("./specs/Events"),
 	require("./specs/Admin"),
+	require("./specs/Limited"),
 	require("./specs/Zones"),
 	require("./specs/Progression"),
 	require("./specs/Guardian"),
 	require("./specs/Game"),
 	require("./specs/Wilds"),
+	require("./specs/Shop"),
 }
 
 for _, spec in specs do

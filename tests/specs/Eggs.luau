@@ -4,7 +4,14 @@ local Eggs = require("../../src/shared/Game/Eggs")
 return function(t)
 	-- every pool entry is a real character, and every character belongs to exactly one egg
 	local seen: { [string]: number } = {}
+	local allTiers: { Eggs.Tier } = {}
 	for _, tier in Eggs.Tiers do
+		table.insert(allTiers, tier)
+	end
+	for _, tier in Eggs.LimitedTiers do
+		table.insert(allTiers, tier)
+	end
+	for _, tier in allTiers do
 		for _, entry in tier.pool do
 			t.check(`{entry.id} exists`, Eggs.character(entry.id) ~= nil)
 			seen[entry.id] = (seen[entry.id] or 0) + 1

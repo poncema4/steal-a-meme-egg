@@ -26,7 +26,12 @@ Meme Points per delivered egg: Soggy 1, Disco 5, Spicy 25, Golden 150, Cosmic 1,
 
 The conveyor and raiding other players' bases stay: the belt is the safe, expensive way to get eggs; the Wilds are the risky, rewarding way.
 
-Next in this area: instant-hatch and skip purchases, limited-stock eggs, then game passes and Robux products.
+## Hatching and limited eggs (built)
+Eggs take real time to hatch (8 s up to 5 minutes by tier). Hold E on a hatching egg in your base to skip the wait for coins: 60% of the egg's price, scaled by how much time is left (`Economy.skipCost`).
+
+Limited eggs: every 30 minutes one of three exclusive eggs (Golden Goose, Cosmic Cat, Meme Lord) goes on sale for 1,000,000,000 coins with a stock of 100 shared by every server (one MemoryStore counter per rotation; each server falls back to its own count if MemoryStore is unavailable). Limited characters earn 15M to 80M per second, more than anything in the Wilds, and pay their egg back in 20 to 120 seconds (tested). Robux purchase of the same eggs and Robux instant-hatch come with the monetization PR.
+
+Next: game passes and Robux products, then the shop screen.
 
 ## Live ops (the reason people join)
 - Schedule every half hour on every server: Lucky Hour (:00), Egg Rain (:10), Coin Rain (:20).

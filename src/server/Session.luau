@@ -139,6 +139,56 @@ function Session.buySpeed(player: Player): (boolean, string)
 	return true, `Speed level {level + 1}!`
 end
 
+-- Puts a bought egg straight into the base (limited eggs, rewards). Returns false if there is no room.
+function Session.grantEgg(player: Player, tier: string): boolean
+	local state = states[player]
+	if not state or Base.placeEgg(state.base, tier) == nil then
+		return false
+	end
+	Session.changed(player)
+	return true
+end
+
+-- Finishes a hatch right now for coins. Returns (ok, message).
+function Session.skipHatch(player: Player, slot: number): (boolean, string)
+	local state = states[player]
+	local item = state and state.base.slots[slot]
+	if not state or not item or item.kind ~= "egg" or not item.tier then
+		return false, "nothing to hatch"
+	end
+	local tier = Eggs.tier(item.tier)
+	if not tier then
+		return false, "unknown egg"
+	end
+	local cost = Economy.skipCost(tier.price, item.hatchLeft or 0, tier.hatchSeconds)
+	if not Session.spend(player, cost) then
+		return false, `skipping costs {Economy.format(cost)}`
+	end
+	item.hatchLeft = 0
+	Session.hatchNow(player)
+	return true, "hatched!"
+end
+
+-- Hatches every egg whose timer has reached zero (used right after a skip).
+function Session.hatchNow(player: Player)
+	local state = states[player]
+	if not state then
+		return
+	end
+	local luck = select(1, multipliers())
+	local hatched = Base.tick(state.base, 0, function(tier)
+		return Eggs.roll(tier, luck, math.random)
+	end, function()
+		return Eggs.mutation(luck, math.random)
+	end)
+	if #hatched > 0 then
+		for _, fn in hatchListeners do
+			fn(player, hatched)
+		end
+		Session.changed(player)
+	end
+end
+
 function Session.carrying(player: Player): (string?, string?)
 	local state = states[player]
 	if not state then
