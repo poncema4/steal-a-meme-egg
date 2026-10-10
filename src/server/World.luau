@@ -45,6 +45,15 @@ local PLOT_COLORS = {
 	Color3.fromRGB(255, 159, 64),
 }
 
+-- A sphere (or, with a taller part, an egg) that renders reliably at any size: a block wearing a sphere mesh. A Ball-shaped
+-- part is only dependable when its three sizes match.
+function World.roundify(p: Part)
+	p.Shape = Enum.PartType.Block
+	local mesh = Instance.new("SpecialMesh")
+	mesh.MeshType = Enum.MeshType.Sphere
+	mesh.Parent = p
+end
+
 -- Where plot i sits: two rows of six, facing the belt.
 function World.plotCenter(i: number): Vector3
 	local column = (i - 1) % 6
