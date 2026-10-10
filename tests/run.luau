@@ -41,6 +41,7 @@ local specs = {
 	require("./specs/PetDisplay"),
 	require("./specs/ModelsWorld"),
 	require("./specs/BossChase"),
+	require("./specs/ModelViews"),
 	require("./specs/Models"),
 	require("./specs/Base"),
 	require("./specs/Economy"),

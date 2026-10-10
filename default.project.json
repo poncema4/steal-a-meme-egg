@@ -1,39 +1,48 @@
 {
-	"name": "StealAMemeEgg",
-	"tree": {
-		"$className": "DataModel",
-		"ReplicatedStorage": {
-			"$className": "ReplicatedStorage",
-			"Shared": {
-				"$path": "src/shared"
-			}
-		},
-		"ServerScriptService": {
-			"$className": "ServerScriptService",
-			"Server": {
-				"$path": "src/server"
-			}
-		},
-		"StarterPlayer": {
-			"$className": "StarterPlayer",
-			"StarterPlayerScripts": {
-				"$className": "StarterPlayerScripts",
-				"Client": {
-					"$path": "src/client"
-				}
-			}
-		},
-		"Players": {
-			"$className": "Players",
-			"$properties": {
-				"MaxPlayers": 8
-			}
-		},
-		"ServerStorage": {
-			"$className": "ServerStorage",
-			"Models": {
-				"$path": "src/models"
-			}
-		}
-	}
+  "name": "StealAMemeEgg",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "Models": {
+        "$className": "Folder",
+        "Pets": {
+          "$path": "src/models/Pets"
+        },
+        "Eggs": {
+          "$path": "src/models/Eggs"
+        }
+      }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "Players": {
+      "$className": "Players",
+      "$properties": {
+        "MaxPlayers": 8
+      }
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "Models": {
+        "$path": "src/models"
+      }
+    }
+  }
 }
