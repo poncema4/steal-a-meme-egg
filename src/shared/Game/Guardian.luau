@@ -12,10 +12,11 @@ export type Guardian = {
 	speed: number,
 	state: State,
 	chaseLeft: number,
+	stun: number, -- seconds left held by a trap (it cannot move or catch anyone)
 }
 
 function Guardian.new(homeX: number, homeZ: number, speed: number): Guardian
-	return { x = homeX, z = homeZ, homeX = homeX, homeZ = homeZ, speed = speed, state = "Idle", chaseLeft = 0 }
+	return { x = homeX, z = homeZ, homeX = homeX, homeZ = homeZ, speed = speed, state = "Idle", chaseLeft = 0, stun = 0 }
 end
 
 -- The egg was stolen: start chasing for `seconds`.
@@ -36,6 +37,11 @@ local function moveToward(g: Guardian, tx: number, tz: number, dt: number): numb
 	return dist - step
 end
 
+-- A trap sprang on this guardian: it stands still for `seconds` (a longer stun is not shortened).
+function Guardian.stunned(g: Guardian, seconds: number)
+	g.stun = math.max(g.stun, seconds)
+end
+
 -- Advances one tick. `target` is the thief's position (nil if they are gone or no longer carrying the egg). Returns true on
 -- the tick the guardian catches them.
 function Guardian.step(
@@ -45,6 +51,17 @@ function Guardian.step(
 	catchRadius: number,
 	leash: number
 ): boolean
+	if g.stun > 0 then
+		-- held by a trap: the chase clock keeps running, so the thief gets away, but nothing moves
+		g.stun = math.max(0, g.stun - dt)
+		if g.state == "Chase" then
+			g.chaseLeft -= dt
+			if g.chaseLeft <= 0 then
+				g.state = "Return" -- it gives up while held, and walks home once it is free
+			end
+		end
+		return false
+	end
 	if g.state == "Chase" then
 		g.chaseLeft -= dt
 		local fromHome = math.sqrt((g.x - g.homeX) ^ 2 + (g.z - g.homeZ) ^ 2)

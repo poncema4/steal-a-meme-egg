@@ -49,3 +49,6 @@ Next: game passes and Robux products, then the shop screen.
 
 ## Next
 The Wilds (above), game passes (2x coins, 2x luck, extra slot), Robux luck boosts, aura face-offs, rebirth, daily reward, invite prompt, thumbnails and TikTok plan (docs/GROWTH.md).
+
+## Traps
+Press 1, 2 or 3 (gamepad X, tap a hotbar slot) out in a terrain to put a trap down where you stand. At most 3 per player at once, 2 s between placements, they rot after 90 s. A guardian that is chasing (or heading home) and runs within 5 studs of a trap is held for 3.5 s; the trap is used up. Sleeping guardians do not spring them. Not in the Safe Zone. Rules: `Shared/Game/Trap`, `Guardian.stunned`; server: `src/server/Traps.luau`.

@@ -163,6 +163,28 @@ def potion():
     save("potion")
 
 
-for fn in (egg, paw, trophy, shoe, cash, cart, book, potion):
+def trap():
+    scene()
+    cam = bpy.context.scene.camera
+    cam.location = (0, -7.5, 6.2)
+    cam.rotation_euler = (math.radians(50), 0, 0)
+    cam.data.ortho_scale = 6.2
+    steel = gloss("steel", (0.66, 0.7, 0.8), 0.22)
+    dark = gloss("plate", (0.2, 0.22, 0.28), 0.35)
+    red = gloss("pad", (0.95, 0.12, 0.12), 0.2)
+    box("plate", (3.9, 2.9, 0.35), (0, 0, 0.2), dark, 0.12)
+    # two open jaws: a flat steel ring each, ringed with teeth that point up
+    for s_ in (-1, 1):
+        bpy.ops.mesh.primitive_torus_add(major_radius=1.0, minor_radius=0.16, location=(s_ * 1.0, 0, 0.55))
+        ring = bpy.context.object; ring.data.materials.append(steel); bpy.ops.object.shade_smooth()
+        for k in range(9):
+            a = math.pi * (k + 0.5) / 9 + (math.pi / 2 if s_ > 0 else -math.pi / 2) - math.pi / 2
+            bpy.ops.mesh.primitive_cone_add(vertices=12, radius1=0.17, depth=0.6, location=(s_ * 1.0 + math.cos(a) * -s_ * 1.0 * -1, math.sin(a) * 1.0, 0.95))
+            bpy.context.object.data.materials.append(steel)
+    box("pad", (0.8, 0.8, 0.14), (0, 0, 0.42), red, 0.05)
+    save("trap")
+
+
+for fn in (egg, paw, trophy, shoe, cash, cart, book, potion, trap):
     fn()
 print("icons done")

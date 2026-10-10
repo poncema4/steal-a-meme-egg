@@ -32,6 +32,8 @@ local specs = {
 	require("./specs/HudUi"),
 	require("./specs/BaseView"),
 	require("./specs/PanelsUi"),
+	require("./specs/Trap"),
+	require("./specs/TrapsWorld"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),

@@ -25,7 +25,7 @@ return function(t)
 
 	-- every HUD icon is a real asset id, and no icon reuses a sound's id or another icon's
 	local icons = Config.Icons :: { [string]: string }
-	local iconKeys = { "egg", "paw", "trophy", "shoe", "cash", "cart", "book", "potion" }
+	local iconKeys = { "egg", "paw", "trophy", "shoe", "cash", "cart", "book", "potion", "trap" }
 	local used: { [string]: string } = {}
 	for _, id in sounds do
 		used[id] = "a sound"
