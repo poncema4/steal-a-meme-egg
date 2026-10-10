@@ -110,7 +110,7 @@ return function(t)
 		math.abs(pos.X - entry.guardian.homeX) < 0.1 and math.abs(pos.Z - entry.guardian.homeZ) < 0.1,
 		tostring(pos)
 	)
-	t.check("the thief was sent home", math.abs(root.Position.X - plot.spawn.Position.X) < 30)
+	t.check("the thief was flung back toward the Safe Zone", root.AssemblyLinearVelocity.X < 0)
 	t.equal("speed is normal again", world.humanoid(ana).WalkSpeed, Progression.BASE_SPEED)
 	t.equal("the guardian walks home", entry.guardian.state == "Return" or entry.guardian.state == "Idle", true)
 

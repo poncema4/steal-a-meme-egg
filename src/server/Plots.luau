@@ -6,19 +6,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
+local Look = require(script.Parent.Look)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
 
 local Plots = {}
 
-local TIER_COLORS: { [string]: Color3 } = {
-	Soggy = Color3.fromRGB(235, 225, 190),
-	Disco = Color3.fromRGB(255, 120, 220),
-	Spicy = Color3.fromRGB(255, 90, 40),
-	Golden = Color3.fromRGB(255, 205, 40),
-	Cosmic = Color3.fromRGB(110, 90, 255),
-	Divine = Color3.fromRGB(255, 255, 255),
-}
 local RARITY_COLORS: { [string]: Color3 } = {
 	Common = Color3.fromRGB(200, 200, 200),
 	Rare = Color3.fromRGB(80, 160, 255),
@@ -100,11 +93,8 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 	if item.kind == "egg" and item.tier then
 		World.roundify(body)
 		body.Size = Vector3.new(4, 5, 4)
-		local mutated = item.eggMutation ~= nil and item.eggMutation ~= "Normal"
-		body.Color = if item.eggMutation == "Gold"
-			then Color3.fromRGB(255, 205, 40)
-			elseif item.eggMutation == "Rainbow" then Color3.fromRGB(255, 120, 200)
-			else TIER_COLORS[item.tier] or Color3.new(1, 1, 1)
+		local mutated = Look.isMutated(item.eggMutation)
+		body.Color = Look.eggColor(item.tier, item.eggMutation)
 		body.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
 		body.CFrame = pedestal.CFrame + Vector3.new(0, 3.2, 0)
 		body.Parent = model

@@ -11,7 +11,7 @@ local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Guardian = require(ReplicatedStorage.Shared.Game.Guardian)
 local Layout = require(ReplicatedStorage.Shared.Game.Layout)
 local Nest = require(ReplicatedStorage.Shared.Game.Nest)
-local Plots = require(script.Parent.Plots)
+local Look = require(script.Parent.Look)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
@@ -28,15 +28,6 @@ export type Entry = {
 	prompt: ProximityPrompt,
 	character: string, -- the meme character this guardian looks like
 	thief: Player?,
-}
-
-local TIER_COLORS: { [string]: Color3 } = {
-	Soggy = Color3.fromRGB(235, 225, 190),
-	Disco = Color3.fromRGB(255, 120, 220),
-	Spicy = Color3.fromRGB(255, 90, 40),
-	Golden = Color3.fromRGB(255, 205, 40),
-	Cosmic = Color3.fromRGB(110, 90, 255),
-	Divine = Color3.fromRGB(255, 255, 255),
 }
 
 -- the guardian model's pivot is its body centre (7 studs tall), so its feet touch the ground when the pivot is this high
@@ -205,17 +196,11 @@ local function buildGuardian(entry: Entry, parent: Instance, c: Eggs.Character)
 	entry.model = model
 end
 
--- How a mutated egg looks: Gold glows gold, Rainbow cycles through every colour (see the heartbeat).
-local MUTATION_COLORS: { [string]: Color3 } = {
-	Gold = Color3.fromRGB(255, 205, 40),
-	Rainbow = Color3.fromRGB(255, 120, 200),
-}
-
 local function setEgg(entry: Entry, tier: string?, mutation: string?)
 	entry.egg.Transparency = if tier then 0 else 1
 	entry.prompt.Enabled = tier ~= nil
-	local tint: Color3? = if mutation then MUTATION_COLORS[mutation] else nil
-	local mutated = tier ~= nil and tint ~= nil
+	local mutated = tier ~= nil and Look.isMutated(mutation)
+	local tint = if mutation then Look.MutationColors[mutation] else nil
 	entry.egg:SetAttribute("Mutation", if mutated and mutation then mutation else "Normal")
 	local tag = entry.egg:FindFirstChild("MutationTag")
 	if tag and tag:IsA("BillboardGui") then
@@ -227,7 +212,7 @@ local function setEgg(entry: Entry, tier: string?, mutation: string?)
 		end
 	end
 	if tier then
-		entry.egg.Color = tint or TIER_COLORS[tier] or Color3.new(1, 1, 1)
+		entry.egg.Color = Look.eggColor(tier, mutation)
 		entry.egg.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
 		local def = Eggs.tier(tier)
 		entry.prompt.ObjectText = (if mutated then `{mutation} ` else "") .. (if def then def.name else "Egg")
@@ -314,11 +299,6 @@ function Wilds.build(): Folder
 	return folder
 end
 
-local function homePosition(player: Player): CFrame
-	local plot = Plots.of(player)
-	return if plot then plot.spawn.CFrame + Vector3.new(0, 5, 0) else CFrame.new(0, 10, 0)
-end
-
 local function rootOf(player: Player): BasePart?
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -326,6 +306,26 @@ local function rootOf(player: Player): BasePart?
 		return nil
 	end
 	return character:FindFirstChild("HumanoidRootPart") :: BasePart?
+end
+
+-- A catch flings you back toward the Safe Zone like a rag doll: you tumble for a moment, then have to walk the rest of the way.
+local FLING = Vector3.new(-120, 90, 0)
+local TUMBLE_SECONDS = 1.4
+
+local function fling(player: Player)
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local root = rootOf(player)
+	if not humanoid or not root then
+		return
+	end
+	humanoid.PlatformStand = true
+	root.AssemblyLinearVelocity = FLING
+	task.delay(TUMBLE_SECONDS, function()
+		if humanoid.Parent then
+			humanoid.PlatformStand = false
+		end
+	end)
 end
 
 -- A player holds E on a nest's egg.
@@ -367,9 +367,8 @@ local function recover(entry: Entry, message: string?, sendHome: boolean?)
 	end
 	if thief and carried then
 		Session.setCarry(thief, nil)
-		local root = rootOf(thief)
-		if root and message and sendHome ~= false then
-			root.CFrame = homePosition(thief)
+		if message and sendHome ~= false then
+			fling(thief)
 		end
 		if message then
 			notify(thief, message)
