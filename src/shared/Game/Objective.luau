@@ -37,9 +37,6 @@ function Objective.hint(f: Facts): string
 		return "You can REBIRTH! Hold E on the purple pad at the left of your base for a permanent coin boost."
 	end
 	if f.eggs == 0 and f.characters == 0 then
-		if f.coins >= 100 then
-			return "Buy an egg off the belt (E), or walk east and steal one from a guardian!"
-		end
 		return "Walk east to the Meadow and hold E on a guardian's egg to steal it!"
 	end
 	if f.freeSlots == 0 then

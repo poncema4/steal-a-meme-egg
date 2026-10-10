@@ -17,8 +17,8 @@ return function(t)
 		string.find(Objective.hint(facts({})), "steal", 1, true) ~= nil
 	)
 	t.check(
-		"with 100 coins they are also told about the belt",
-		string.find(Objective.hint(facts({ coins = 150 })), "belt", 1, true) ~= nil
+		"having coins does not change that: eggs come from guardians",
+		string.find(Objective.hint(facts({ coins = 150 })), "steal", 1, true) ~= nil
 	)
 	t.check(
 		"carrying an egg always means RUN HOME",

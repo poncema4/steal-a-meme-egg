@@ -26,7 +26,6 @@ return function(t)
 	t.check("you can steal from other people", Prompts.visible("Steal", 6, 5))
 	t.check("but not from yourself", not Prompts.visible("Steal", 5, 5))
 	t.check("and not from a base nobody owns", not Prompts.visible("Steal", 0, 5))
-	t.check("buying an egg off the belt is for everyone", Prompts.visible("Buy", 0, 5))
 
 	-- on the real world
 	local world = Fake.world()
@@ -55,7 +54,6 @@ return function(t)
 	t.check("Ana sees her own rebirth pad", world.prompts(anaPlot, "Rebirth")[1].Enabled)
 	t.check("Ana does not see Ben's rebirth pad", not world.prompts(benPlot, "Rebirth")[1].Enabled)
 	t.check("Ana does not see Ben's lock pad", not world.prompts(benPlot, "Lock base")[1].Enabled)
-	t.check("the belt eggs and nests are untouched", true)
 
 	-- a new character appearing later is filtered too
 	session.get(ana).base.slots[2] = { kind = "char", id = "SleepySock", mutation = "Normal" }

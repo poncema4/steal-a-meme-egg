@@ -2,6 +2,7 @@
 local Economy = require("../../src/shared/Game/Economy")
 local Eggs = require("../../src/shared/Game/Eggs")
 local Limited = require("../../src/shared/Game/Limited")
+local Zones = require("../../src/shared/Game/Zones")
 
 return function(t)
 	-- the rotation
@@ -68,7 +69,13 @@ return function(t)
 			payback >= 20 and payback <= 120,
 			tostring(payback)
 		)
-		t.check(`{tier.name} is not a belt or Wilds egg`, Eggs.ConveyorWeights[tier.id] == nil)
+		local inWilds = false
+		for _, zone in Zones.List do
+			if table.find(zone.eggs, tier.id) then
+				inWilds = true
+			end
+		end
+		t.check(`{tier.name} is not a Wilds egg`, not inWilds)
 	end
 
 	-- skipping a hatch

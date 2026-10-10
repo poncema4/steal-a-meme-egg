@@ -134,31 +134,4 @@ return function(t)
 		Eggs.aura("BonkBean", "Gold") > Eggs.aura("BonkBean", "Normal")
 	)
 	t.equal("an unknown character has no aura", Eggs.aura("Nope"), 0)
-
-	-- the conveyor
-	local function belt(luck: number, r: number): string
-		return Eggs.conveyorTier(luck, function()
-			return r
-		end)
-	end
-	t.equal("a low roll puts the cheapest egg on the belt", belt(1, 0), "Soggy")
-	t.equal("a roll near 1 puts the priciest on the belt", belt(1, 0.99999), "Divine")
-	local function divineShare(luck: number): number
-		local n, hits = 20000, 0
-		for i = 1, n do
-			if belt(luck, (i - 0.5) / n) == "Divine" then
-				hits += 1
-			end
-		end
-		return hits / n
-	end
-	t.check("Divine eggs are rare on a normal belt", divineShare(1) < 0.002, tostring(divineShare(1)))
-	t.check("luck makes the belt much richer", divineShare(3) > divineShare(1) * 20)
-	local every = true
-	for _, tier in Eggs.Tiers do
-		if (Eggs.ConveyorWeights[tier.id] or 0) <= 0 then
-			every = false
-		end
-	end
-	t.check("every egg can appear on the belt", every)
 end

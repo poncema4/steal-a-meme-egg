@@ -79,7 +79,7 @@ Eggs.Tiers = {
 	},
 } :: { Tier }
 
--- Limited eggs: not on the belt and not in the Wilds. One rotates in every half hour with a shared stock (Shared/Game/Limited).
+-- Limited eggs: not in the Wilds. One rotates in every half hour with a shared stock (Shared/Game/Limited).
 Eggs.LimitedTiers = {
 	{
 		id = "GooseGold",
@@ -188,28 +188,6 @@ function Eggs.roll(tierId: string, luck: number, rng: () -> number): string
 		end
 	end
 	return tier.pool[#tier.pool].id
-end
-
--- How often each egg shows up on the conveyor. Cheap eggs are common; luck pushes rarer eggs up the same way it does
--- inside an egg (luck^index), so Lucky Hour fills the belt with better eggs.
-Eggs.ConveyorWeights =
-	{ Soggy = 50, Disco = 30, Spicy = 14, Golden = 5, Cosmic = 1, Divine = 0.1 } :: { [string]: number }
-
-function Eggs.conveyorTier(luck: number, rng: () -> number): string
-	local weights, total = {}, 0
-	for i, tier in Eggs.Tiers do
-		local w = (Eggs.ConveyorWeights[tier.id] or 0) * math.max(luck, 1) ^ (i - 1)
-		weights[i] = w
-		total += w
-	end
-	local pick = rng() * total
-	for i, tier in Eggs.Tiers do
-		pick -= weights[i]
-		if pick < 0 then
-			return tier.id
-		end
-	end
-	return Eggs.Tiers[1].id
 end
 
 -- 1 in 20 is Gold (x2), 1 in 100 is Rainbow (x5); luck helps a little.

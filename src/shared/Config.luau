@@ -11,11 +11,6 @@ return table.freeze({
 		SlotCostBase = 1000, -- the next slot costs SlotCostBase * 4^(slots - StartSlots)
 		OfflineCapSeconds = 2 * 60 * 60, -- coming back after a long time pays at most this many seconds of income
 	}),
-	Conveyor = table.freeze({
-		SpawnSeconds = 2.5, -- a new egg rides the belt this often
-		TravelSeconds = 18, -- how long an egg takes to cross the belt
-		MaxEggs = 14,
-	}),
 	Steal = table.freeze({
 		HoldSeconds = 1.5, -- hold E on a character in someone's base to take it
 		LockSeconds = 45, -- a base lock lasts this long...

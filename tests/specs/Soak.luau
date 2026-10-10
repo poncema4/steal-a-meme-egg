@@ -94,15 +94,6 @@ return function(t)
 				fail(`step {step}: guardian {entry.id} has a bad position`)
 			end
 		end
-		local belt = 0
-		for _, child in world.workspace:GetChildren() do
-			if child.Name == "BeltEgg" then
-				belt += 1
-			end
-		end
-		if belt > 14 then
-			fail(`step {step}: {belt} eggs on the belt`)
-		end
 	end
 
 	local stuck: { [any]: number } = {}
@@ -131,10 +122,7 @@ return function(t)
 							entry.prompt.Triggered:Fire(p)
 						end
 					elseif roll < 0.2 then
-						local buys = world.prompts(world.workspace, "Buy")
-						if #buys > 0 then
-							buys[math.random(1, #buys)].Triggered:Fire(p)
-						end
+						session.grantEgg(p, "Soggy") -- eggs also arrive from the daily reward and the shop
 					elseif roll < 0.26 and home then
 						local other = players[math.random(1, #players)]
 						local otherPlot = plots.of(other)
