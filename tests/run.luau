@@ -21,7 +21,13 @@ function t.equal(name: string, actual: any, expected: any)
 	t.check(name, actual == expected, `got {actual}, expected {expected}`)
 end
 
-local specs: { (any) -> () } = {}
+local specs = {
+	require("./specs/Eggs"),
+	require("./specs/Base"),
+	require("./specs/Economy"),
+	require("./specs/Events"),
+	require("./specs/Admin"),
+}
 
 for _, spec in specs do
 	spec(t)
