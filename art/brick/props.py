@@ -108,7 +108,28 @@ def nest(g):
     return 1.5
 
 
-RECIPES = {"Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest}
+def treadmill_topper(g):
+    """Sits on the treadmill's console bar (8 wide), facing the runner: a speedometer dial between two flag posts."""
+    steel, dark = rgb("9aa2b8"), rgb("2a2c36")
+    g.box((0, 0.3, 0), (8.0, 0.6, 1.0), steel)
+    for x in (-3.6, 3.6):  # posts with flags
+        g.box((x, 2.0, 0), (0.5, 3.4, 0.5), steel)
+        g.box((x + (0.9 if x < 0 else -0.9), 3.3, 0), (1.4, 0.9, 0.3), rgb("e8262a") if x < 0 else rgb("2f8cff"))
+        g.ellipsoid((x, 3.9, 0), (0.45, 0.45, 0.45), rgb("ffc21a"))
+    g.cylinder((0, 2.4, 0.05), 2.2, 1.0, dark, axis="z")  # dial housing
+    g.cylinder((0, 2.4, -0.45), 1.9, 0.3, rgb("f6f6fb"), axis="z")  # dial face (toward -Z, the runner)
+    for k in range(9):  # ticks from green (slow) to red (fast)
+        a = math.radians(210 - k * 30)
+        col = rgb("3ddc5a") if k < 3 else (rgb("ffd23a") if k < 6 else rgb("e8262a"))
+        g.box((math.cos(a) * 1.55, 2.4 + math.sin(a) * 1.55, -0.7), (0.35, 0.35, 0.3), col)
+    a = math.radians(70)
+    for r in (0.4, 0.8, 1.2):  # the needle
+        g.box((math.cos(a) * r, 2.4 + math.sin(a) * r, -0.7), (0.3, 0.3, 0.3), rgb("16161c"))
+    g.ellipsoid((0, 2.4, -0.75), (0.35, 0.35, 0.25), rgb("e8262a"))
+    return 4.6
+
+
+RECIPES = {"Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
 
 
 def build(name):

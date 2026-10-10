@@ -76,7 +76,9 @@ return function(t)
 	for _, zone in Zones.List do
 		check(t, "Bosses", `Boss{zone.id}`, 9, 18)
 	end
-	for name, tall in { Tree = 10.3, Cactus = 8.6, LavaRock = 6.4, IcePine = 11, Crystal = 8, Nest = 1.5 } do
+	for name, tall in
+		{ Tree = 10.3, Cactus = 8.6, LavaRock = 6.4, IcePine = 11, Crystal = 8, Nest = 1.5, TreadmillTopper = 4.6 }
+	do
 		check(t, "Props", name, tall - 1.5, tall + 1.5)
 	end
 	-- nothing is left over from a character or tier that no longer exists
