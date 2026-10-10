@@ -24,7 +24,8 @@ export type State = {
 	base: Base.Base,
 	loaded: boolean,
 	mp: number, -- Meme Points: decide how far into the Wilds you may go
-	speedXp: number, -- total treadmill/bought speed XP
+	speedXp: number, -- total speed XP earned by running
+	treadmill: number, -- treadmill upgrade level
 	carry: string?, -- the egg tier being carried back from the Wilds
 	carryFrom: string?, -- which nest it came from (so a catch can put it back)
 	purchases: Store.Purchases, -- passes owned, receipts seen, hatch tokens, paid limited eggs waiting for room
@@ -112,6 +113,11 @@ local function publish(state: State)
 	local level, left = Progression.levelFor(state.speedXp)
 	state.player:SetAttribute("MemePoints", state.mp)
 	state.player:SetAttribute("SpeedLevel", level)
+	state.player:SetAttribute("TreadmillLevel", state.treadmill)
+	state.player:SetAttribute(
+		"TreadmillCost",
+		if state.treadmill >= Progression.MAX_TREADMILL then 0 else Progression.treadmillCost(state.treadmill)
+	)
 	state.player:SetAttribute("SpeedStat", Progression.speedStat(level))
 	state.player:SetAttribute("SlowMode", state.slow)
 	state.player:SetAttribute(
@@ -199,28 +205,27 @@ function Session.addSpeedXp(player: Player, xp: number): number
 	return after
 end
 
--- Buys the next speed level with coins: jumps the XP to the start of that level. Returns (ok, message).
-function Session.buySpeed(player: Player): (boolean, string)
+function Session.treadmillLevel(player: Player): number
+	local state = states[player]
+	return if state then state.treadmill else 0
+end
+
+-- Pays for the next treadmill level. Returns (ok, message).
+function Session.upgradeTreadmill(player: Player): (boolean, string)
 	local state = states[player]
 	if not state then
 		return false, "not ready"
 	end
-	local level = Progression.levelFor(state.speedXp)
-	if level >= Progression.MAX_LEVEL then
-		return false, "max speed!"
+	if state.treadmill >= Progression.MAX_TREADMILL then
+		return false, "your treadmill is fully upgraded!"
 	end
-	local cost = Progression.speedCost(level)
+	local cost = Progression.treadmillCost(state.treadmill)
 	if not Session.spend(player, cost) then
-		return false, `speed {level + 1} costs {Economy.format(cost)}`
+		return false, `the next treadmill level costs {Economy.format(cost)}`
 	end
-	local total = 0
-	for n = 0, level do
-		total += Progression.xpForNext(n)
-	end
-	state.speedXp = total
+	state.treadmill += 1
 	publish(state)
-	Session.applySpeed(player)
-	return true, `Speed level {level + 1}!`
+	return true, `Treadmill level {state.treadmill}!`
 end
 
 -- Puts a bought egg straight into the base (limited eggs, rewards). Returns false if there is no room.
@@ -491,6 +496,7 @@ local function serialise(state: State): { [string]: any }
 		savedAt = clock(),
 		mp = state.mp,
 		speedXp = state.speedXp,
+		treadmill = state.treadmill,
 		passes = state.purchases.passes,
 		receipts = state.purchases.receiptOrder,
 		hatchTokens = state.purchases.hatchTokens,
@@ -515,6 +521,7 @@ local function restore(state: State, saved: { [string]: any })
 	state.coins = sane(saved.coins, Config.Economy.StartCoins, 0, 1e18)
 	state.mp = sane(saved.mp, 0, 0, 1e15)
 	state.speedXp = sane(saved.speedXp, 0, 0, 1e12)
+	state.treadmill = math.floor(sane(saved.treadmill, 0, 0, Progression.MAX_TREADMILL))
 	state.rebirths = math.floor(sane(saved.rebirths, 0, 0, Rebirth.MAX))
 	local last = tonumber(saved.dailyLast)
 	state.dailyLast = if last ~= nil and last == last and last ~= math.huge and last ~= -math.huge then last else nil
@@ -609,6 +616,7 @@ local function add(player: Player, onJoin: (Player) -> ())
 		loaded = false,
 		mp = 0,
 		speedXp = 0,
+		treadmill = 0,
 		purchases = Store.new(),
 		rebirths = 0,
 		dailyStreak = 0,

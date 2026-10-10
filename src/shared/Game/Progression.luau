@@ -1,5 +1,5 @@
 --!strict
--- Speed and Meme Points. Speed is trained on the treadmill (free, slow) or bought with coins (fast) and sets WalkSpeed, so
+-- Speed and Meme Points. Speed is trained by running on your treadmill (upgrade it with coins to train faster) and sets WalkSpeed, so
 -- a faster player can outrun deeper guardians. Meme Points come from bringing eggs home and decide how far out you may go.
 local Progression = {}
 
@@ -51,14 +51,18 @@ function Progression.carrySpeed(speed: number, carrying: boolean): number
 	return if carrying then speed * Progression.CARRY_FACTOR else speed
 end
 
--- Coins to buy the next speed level outright.
-function Progression.speedCost(level: number): number
-	return math.floor(250 * 1.55 ^ level)
+-- The treadmill is upgraded with coins; each level multiplies the speed XP it gives per second. Speed itself cannot be bought:
+-- you earn it by running.
+Progression.MAX_TREADMILL = 12
+Progression.TREADMILL_GROWTH = 1.6
+
+function Progression.treadmillCost(level: number): number
+	return math.floor(100 * 3.2 ^ math.clamp(level, 0, Progression.MAX_TREADMILL))
 end
 
--- Training XP earned per second on the treadmill (a multiplier comes from passes).
-function Progression.trainRate(multiplier: number): number
-	return 2 * multiplier
+-- Training XP earned per second of running on a treadmill of this level (a multiplier comes from passes).
+function Progression.trainRate(treadmillLevel: number, multiplier: number): number
+	return 2 * Progression.TREADMILL_GROWTH ^ math.clamp(treadmillLevel, 0, Progression.MAX_TREADMILL) * multiplier
 end
 
 -- Meme Points for bringing home one egg of this tier. Rarer eggs are worth far more.

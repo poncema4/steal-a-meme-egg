@@ -1,5 +1,5 @@
 --!strict
--- What happens on your own base: the treadmill (train speed by standing on it), the buy-speed and buy-slot pads, and
+-- What happens on your own base: the treadmill (train speed by running on it; its prompt upgrades it), the buy-slot and rebirth pads, and
 -- delivering a stolen egg when you run home with it. The rules (costs, XP) are in Shared/Game/Progression and Economy.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -66,10 +66,18 @@ local function refreshLabels(player: Player)
 	end
 	local speed = plot.treadmill:FindFirstChildOfClass("ProximityPrompt")
 	if speed then
-		local level = Progression.levelFor(state.speedXp)
-		speed.ObjectText = if level >= Progression.MAX_LEVEL
-			then "max speed"
-			else `speed {level + 1}: {Economy.format(Progression.speedCost(level))}`
+		speed.ObjectText = if state.treadmill >= Progression.MAX_TREADMILL
+			then "fully upgraded"
+			else `level {state.treadmill + 1}: {Economy.format(Progression.treadmillCost(state.treadmill))} coins`
+	end
+	local tag = plot.treadmill:FindFirstChild("Tag")
+	local label = tag and tag:FindFirstChild("L1")
+	if label and label:IsA("TextLabel") then
+		label.Text = `Treadmill level {state.treadmill}`
+	end
+	local rate = tag and tag:FindFirstChild("L2")
+	if rate and rate:IsA("TextLabel") then
+		rate.Text = `+{Economy.format(Progression.trainRate(state.treadmill, 1))} speed XP per second`
 	end
 	local reborn = plot.rebirthPad:FindFirstChildOfClass("ProximityPrompt")
 	if reborn then
@@ -89,14 +97,38 @@ end
 
 function Home.start(plots: { World.Plot })
 	for _, plot in plots do
-		local speed = addPrompt(plot.treadmill, "Buy speed", "", 0.3)
+		local speed = addPrompt(plot.treadmill, "Upgrade treadmill", "", 0.4)
 		speed.Triggered:Connect(function(who)
 			if Plots.of(who) ~= plot then
 				return
 			end
-			local _, message = Session.buySpeed(who)
+			local ok, message = Session.upgradeTreadmill(who)
 			notify(who, message)
+			if ok then
+				sfx(who, "coin")
+			end
 		end)
+		-- what this treadmill is and what it gives, floating above it
+		local gui = Instance.new("BillboardGui")
+		gui.Name = "Tag"
+		gui.Size = UDim2.fromOffset(240, 50)
+		gui.StudsOffset = Vector3.new(0, 5, 0)
+		gui.AlwaysOnTop = true
+		gui.MaxDistance = 80
+		gui.Parent = plot.treadmill
+		for i, text in { "Treadmill", "run on it to train speed" } do
+			local l = Instance.new("TextLabel")
+			l.Name = `L{i}`
+			l.Size = UDim2.new(1, 0, 0, 24)
+			l.Position = UDim2.fromOffset(0, (i - 1) * 24)
+			l.BackgroundTransparency = 1
+			l.Font = Enum.Font.FredokaOne
+			l.TextScaled = true
+			l.TextColor3 = if i == 1 then Color3.fromRGB(255, 230, 90) else Color3.new(1, 1, 1)
+			l.TextStrokeTransparency = 0.2
+			l.Text = text
+			l.Parent = gui
+		end
 		local reborn = addPrompt(plot.rebirthPad, "Rebirth", "", 1.2)
 		reborn.Triggered:Connect(function(who)
 			if Plots.of(who) ~= plot then
@@ -132,8 +164,20 @@ function Home.start(plots: { World.Plot })
 			local character = player.Character
 			local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 			if plot and root then
+				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+				local running = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.1
 				if onTreadmill(root, plot) then
-					Session.addSpeedXp(player, Progression.trainRate(trainMultiplier(player)) * step)
+					-- the belt carries you backward at about your own walking pace, so you have to keep running to stay on it
+					local pace = if humanoid then humanoid.WalkSpeed * 0.9 else 0
+					plot.treadmill.AssemblyLinearVelocity = Vector3.new(-plot.front.X * pace, 0, -plot.front.Z * pace)
+					if running then
+						Session.addSpeedXp(
+							player,
+							Progression.trainRate(Session.treadmillLevel(player), trainMultiplier(player)) * step
+						)
+					end
+				else
+					plot.treadmill.AssemblyLinearVelocity = Vector3.zero
 				end
 				if Session.carrying(player) and insidePlot(root, plot) then
 					local ok, message = Session.deliver(player)

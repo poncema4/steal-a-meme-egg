@@ -211,19 +211,55 @@ return function(t)
 	t.equal("a player who has not unlocked the terrain cannot steal there", lowbie:GetAttribute("Carrying"), "")
 	t.check("and the egg is still there", dune.prompt.Enabled)
 
-	-- 7) the treadmill trains speed
+	-- 7) the treadmill: you have to RUN on it, and upgrading it trains you faster
 	local anaRoot = world.root(ana)
 	anaRoot.Position = V3.new(plot.treadmill.Position.X, 3, plot.treadmill.Position.Z)
 	world.advance(30)
-	t.check("standing on the treadmill trains speed", (ana:GetAttribute("SpeedLevel") :: number) >= 1)
+	t.equal("standing still on the treadmill trains nothing", ana:GetAttribute("SpeedLevel"), 0)
+	world.humanoid(ana).MoveDirection = V3.new(1, 0, 0)
+	world.advance(30)
+	t.check("running on the treadmill trains speed", (ana:GetAttribute("SpeedLevel") :: number) >= 1)
 	t.check("which makes you walk faster", world.humanoid(ana).WalkSpeed > Progression.BASE_SPEED)
-
-	-- 8) buying speed and slots
+	local belt = plot.treadmill.AssemblyLinearVelocity
+	t.check("the belt carries you backward, away from the plaza", belt.X * plot.front.X + belt.Z * plot.front.Z < -1)
 	anaRoot.Position = V3.new(plot.center.X, 3, plot.center.Z)
-	local level = ana:GetAttribute("SpeedLevel") :: number
+	world.advance(0.6)
+	local still = plot.treadmill.AssemblyLinearVelocity
+	t.equal("and stops when you step off", still.Magnitude, 0)
+	t.equal("a new player starts on treadmill level 0", ana:GetAttribute("TreadmillLevel"), 0)
+	t.equal("and there is no Buy speed prompt any more", #world.prompts(plot.model, "Buy speed"), 0)
+	local upgrade = world.prompts(plot.model, "Upgrade treadmill")[1]
+	t.check(
+		"the treadmill shows its next price",
+		string.find(upgrade.ObjectText, "100", 1, true) ~= nil,
+		upgrade.ObjectText
+	)
+	session.get(ana).coins = 50
+	upgrade.Triggered:Fire(ana)
+	t.equal("too poor to upgrade", ana:GetAttribute("TreadmillLevel"), 0)
 	session.add(ana, 100000)
-	world.prompts(plot.model, "Buy speed")[1].Triggered:Fire(ana)
-	t.equal("buying speed raises the level", ana:GetAttribute("SpeedLevel"), level + 1)
+	local before = ana:GetAttribute("Coins") :: number
+	upgrade.Triggered:Fire(ana)
+	t.equal("upgrading raises the treadmill level", ana:GetAttribute("TreadmillLevel"), 1)
+	t.equal(
+		"and takes the price",
+		math.floor(before - (ana:GetAttribute("Coins") :: number)),
+		Progression.treadmillCost(0)
+	)
+	local other = world.addPlayer("Dee", 24)
+	world.advance(0.6)
+	upgrade.Triggered:Fire(other)
+	t.equal("nobody else can upgrade your treadmill", ana:GetAttribute("TreadmillLevel"), 1)
+	-- the same minute of running gives more speed XP on the upgraded treadmill
+	session.get(ana).speedXp = 0
+	anaRoot.Position = V3.new(plot.treadmill.Position.X, 3, plot.treadmill.Position.Z)
+	world.advance(10)
+	local xpAfter = session.get(ana).speedXp
+	t.check("level 1 trains faster than level 0", xpAfter > 10 * Progression.trainRate(0, 1) * 1.3, tostring(xpAfter))
+	world.humanoid(ana).MoveDirection = V3.new(0, 0, 0)
+
+	-- 8) slots
+	anaRoot.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	local slots = ana:GetAttribute("Slots") :: number
 	world.prompts(plot.model, "Buy slot")[1].Triggered:Fire(ana)
 	t.equal("buying a slot adds one", ana:GetAttribute("Slots"), slots + 1)
