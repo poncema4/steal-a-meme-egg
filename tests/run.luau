@@ -45,6 +45,7 @@ local specs = {
 	require("./specs/Perf"),
 	require("./specs/PlotsOnDemand"),
 	require("./specs/SpeedMatches"),
+	require("./specs/TreadmillTier"),
 	require("./specs/Models"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
