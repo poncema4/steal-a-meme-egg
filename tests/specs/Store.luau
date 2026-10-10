@@ -26,15 +26,31 @@ return function(t)
 		end
 	end
 	t.check("every limited product sells a real limited egg", real)
-	local ids = true
+	-- every item is created in Creator Hub (a real id) and no two share one
+	local seen: { [number]: boolean } = {}
+	local ids, unique = true, true
 	for _, group in { (Config.Monetization :: any).Passes, (Config.Monetization :: any).Products } do
 		for _, item in group do
-			if item.id ~= 0 then
+			if type(item.id) ~= "number" or item.id <= 0 or item.id ~= math.floor(item.id) then
 				ids = false
 			end
+			if seen[item.id] then
+				unique = false
+			end
+			seen[item.id] = true
 		end
 	end
-	t.check("nothing is for sale until its Creator Hub id is set", ids)
+	t.check("every pass and product has its Creator Hub id", ids)
+	t.check("and no two share an id", unique)
+	-- the prices set in Creator Hub (create.roblox.com, monetization) are the ones the shop shows
+	local prices = { coins2x = 399, luck2x = 299, train2x = 199 }
+	local matches = true
+	for key, price in prices do
+		if (Config.Monetization :: any).Passes[key].robux ~= price then
+			matches = false
+		end
+	end
+	t.check("the pass prices match the ones set in Creator Hub", matches)
 	t.equal("a typo in a pass effect is caught", #Store.invalid({
 		Passes = { x = { id = 1, name = "", blurb = "", robux = 1, effect = "luk", factor = 2 } },
 		Products = {},

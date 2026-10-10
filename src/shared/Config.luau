@@ -28,11 +28,12 @@ return table.freeze({
 		PeriodSeconds = 30 * 60, -- the schedule repeats every half hour
 		ClaimSeconds = 5 * 60, -- ...and each scheduled event runs this long
 	}),
-	-- Robux items. Every id is 0 until the item is created in Creator Hub; nothing with id 0 is ever offered or prompted.
+	-- Robux items (created in Creator Hub for experience 10770101743; prices are set there and match `robux`). An id of 0 means the
+	-- item does not exist yet, and nothing with id 0 is ever offered or prompted.
 	Monetization = table.freeze({
 		Passes = table.freeze({
 			coins2x = table.freeze({
-				id = 0,
+				id = 2026694498,
 				name = "2x Coins",
 				blurb = "Your meme characters earn double, forever.",
 				robux = 399,
@@ -40,7 +41,7 @@ return table.freeze({
 				factor = 2,
 			}),
 			luck2x = table.freeze({
-				id = 0,
+				id = 2026622537,
 				name = "2x Luck",
 				blurb = "Better odds on every hatch, forever.",
 				robux = 299,
@@ -48,7 +49,7 @@ return table.freeze({
 				factor = 2,
 			}),
 			train2x = table.freeze({
-				id = 0,
+				id = 2025116507,
 				name = "2x Training",
 				blurb = "The treadmill trains you twice as fast.",
 				robux = 199,
@@ -57,10 +58,16 @@ return table.freeze({
 			}),
 		}),
 		Products = table.freeze({
-			hatch1 = table.freeze({ id = 0, name = "Instant Hatch", robux = 25, kind = "hatch", amount = 1 }),
-			hatch5 = table.freeze({ id = 0, name = "5 Instant Hatches", robux = 99, kind = "hatch", amount = 5 }),
+			hatch1 = table.freeze({ id = 3717784767, name = "Instant Hatch", robux = 25, kind = "hatch", amount = 1 }),
+			hatch5 = table.freeze({
+				id = 3717784806,
+				name = "5 Instant Hatches",
+				robux = 99,
+				kind = "hatch",
+				amount = 5,
+			}),
 			limitedGoose = table.freeze({
-				id = 0,
+				id = 3717784827,
 				name = "Golden Goose Egg",
 				robux = 199,
 				kind = "limited",
@@ -68,7 +75,7 @@ return table.freeze({
 				tier = "GooseGold",
 			}),
 			limitedCat = table.freeze({
-				id = 0,
+				id = 3717784864,
 				name = "Cosmic Cat Egg",
 				robux = 199,
 				kind = "limited",
@@ -76,7 +83,7 @@ return table.freeze({
 				tier = "CatCosmic",
 			}),
 			limitedLord = table.freeze({
-				id = 0,
+				id = 3717784893,
 				name = "Meme Lord Egg",
 				robux = 199,
 				kind = "limited",

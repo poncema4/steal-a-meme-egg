@@ -59,18 +59,18 @@ return function(t)
 		string.find((find(gui, "LimitedCoins") :: TextButton).Text, "1B", 1, true) ~= nil
 	)
 	t.check(
-		"the Robux button is hidden while that item has no Creator Hub id",
-		not (find(gui, "LimitedRobux") :: TextButton).Visible
+		"the Robux button shows now that the item exists in Creator Hub",
+		(find(gui, "LimitedRobux") :: TextButton).Visible
 	)
 
-	-- nothing with id 0 is listed
+	-- every pass and Robux hatch pack is listed
 	local rows = 0
 	for _, d in gui:GetDescendants() do
 		if string.match(d.Name, "^Row_") then
 			rows += 1
 		end
 	end
-	t.equal("items that are not for sale yet are not listed", rows, 0)
+	t.equal("the three passes and two hatch packs are listed", rows, 5)
 
 	-- buying with coins from the screen
 	local coinsButton = find(gui, "LimitedCoins") :: TextButton
