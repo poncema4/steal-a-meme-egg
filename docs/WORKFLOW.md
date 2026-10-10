@@ -11,3 +11,6 @@ Rojo does NOT carry meshes: export from Blender into `assets/`, then Studio > As
 
 ## 3D map view (the closest thing to Studio on Linux)
 After `lune run scripts/preview/dump /tmp/map.json`: `~/tools/blender-4.5.14-linux-x64/blender -b -P scripts/preview/blender_view.py -- /tmp/map.json out.png camX camY camZ targetX targetY targetZ [lens] [x0 x1]` renders every part as a coloured box in Blender from any camera (Roblox coordinates). E.g. the plaza from the red line: `-10 22 0 -150 3 0 24`. Text, meshes and textures are not drawn.
+
+## UI preview that looks like the game
+`lune run scripts/preview/dump_ui /tmp/ui.json 1280 720 desktop none` then `python3 scripts/preview/render_ui.py /tmp/ui.json out.png [background.png]` draws the real HUD (rounded corners, gradients, outlines, heavy text, the real icon art). Pass a reference screenshot as the background to compare placement with the game we are copying; the reference's own HUD shows through, so judge position and style, not overlaps. Last argument of dump_ui is a panel to open: `index`, `eggs`, `pets` or `shop`.

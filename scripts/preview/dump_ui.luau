@@ -71,7 +71,7 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 	local cursor = 0
 	local used = 0
 	for _, c in children do
-		if (c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("ScrollingFrame")) and c.Visible ~= false then
+		if (c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("ScrollingFrame") or c:IsA("ImageLabel")) and c.Visible ~= false then
 			local cw, ch = sizeOf(c, w, h)
 			if grid then
 				cw, ch = (grid :: any).CellSize.X.Offset, (grid :: any).CellSize.Y.Offset
@@ -104,21 +104,48 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 					end
 				end
 			end
+			local radius, stroke, strokeColor, textStroke, g1, g2 = 0, 0, { 0, 0, 0 }, 0, nil, nil
+			for _, deco in c:GetChildren() do
+				if deco:IsA("UICorner") then
+					radius = deco.CornerRadius.Offset
+				elseif deco:IsA("UIStroke") then
+					local col = deco.Color or { R = 0, G = 0, B = 0 }
+					if deco.ApplyStrokeMode == world.enum.ApplyStrokeMode.Contextual then
+						textStroke = deco.Thickness
+					else
+						stroke = deco.Thickness
+						strokeColor = { math.floor(col.R * 255), math.floor(col.G * 255), math.floor(col.B * 255) }
+					end
+				elseif deco:IsA("UIGradient") and deco.Color then
+					g1, g2 = deco.Color[1], deco.Color[2]
+				end
+			end
 			local bg = c.BackgroundColor3 or { R = 1, G = 1, B = 1 }
+			local tc = (c :: any).TextColor3 or { R = 1, G = 1, B = 1 }
 			table.insert(rects, {
 				name = c.Name,
 				x = cx * scale,
 				y = cy * scale,
 				w = cw * scale,
 				h = ch * scale,
-				text = if c:IsA("Frame") then "" else c.Text,
-				kind = if c:IsA("TextLabel") then "TextLabel" elseif c:IsA("TextButton") then "TextButton" else "Frame",
+				text = if c:IsA("Frame") or c:IsA("ImageLabel") or c:IsA("ScrollingFrame") then "" else c.Text,
+				kind = if c:IsA("TextLabel") then "TextLabel" elseif c:IsA("TextButton") then "TextButton" elseif c:IsA("ImageLabel") then "Image" else "Frame",
 				transparent = c.BackgroundTransparency or 0,
 				r = math.floor(bg.R * 255),
 				g = math.floor(bg.G * 255),
 				b = math.floor(bg.B * 255),
 				depth = depth,
-				gradient = c:FindFirstChildOfClass("UIGradient") ~= nil,
+				gradient = g1 ~= nil,
+				g1 = if g1 then { math.floor(g1.R * 255), math.floor(g1.G * 255), math.floor(g1.B * 255) } else nil,
+				g2 = if g2 then { math.floor(g2.R * 255), math.floor(g2.G * 255), math.floor(g2.B * 255) } else nil,
+				radius = radius,
+				stroke = stroke,
+				strokeColor = strokeColor,
+				textStroke = textStroke,
+				textSize = (c :: any).TextSize or 18,
+				textColor = { math.floor(tc.R * 255), math.floor(tc.G * 255), math.floor(tc.B * 255) },
+				align = tostring((c :: any).TextXAlignment and (c :: any).TextXAlignment.Name or "Center"),
+				image = if c:IsA("ImageLabel") then c.Image else nil,
 			})
 			walk(c, cx, cy, cw, ch, scale, depth + 1)
 		end
