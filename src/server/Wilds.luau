@@ -388,10 +388,16 @@ function Wilds.start()
 			end
 			local g = entry.guardian
 			if g.state ~= "Idle" or before ~= "Idle" then
+				local here = Vector3.new(g.x, BODY_Y, g.z)
 				local look = if target
 					then Vector3.new(target.x, BODY_Y, target.z)
 					else Vector3.new(g.homeX, BODY_Y, g.homeZ)
-				entry.model:PivotTo(CFrame.lookAt(Vector3.new(g.x, BODY_Y, g.z), look))
+				if (look - here).Magnitude > 0.05 then
+					entry.model:PivotTo(CFrame.lookAt(here, look))
+				else
+					-- already there: looking at where you stand has no direction (an invalid rotation in Roblox), so keep facing
+					entry.model:PivotTo(CFrame.new(here) * entry.model:GetPivot().Rotation)
+				end
 			end
 			if Nest.tick(entry.nest, dt, function()
 				return Zones.eggFor(entry.zone, math.random)
