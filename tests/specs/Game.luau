@@ -152,4 +152,32 @@ return function(t)
 	world.advance(0.6)
 	t.check("a returning player keeps their coins", math.abs((ben2:GetAttribute("Coins") :: number) - saved) < 5)
 	t.check("every character id is real", Eggs.character("SoggyToast") ~= nil)
+
+	-- a full server: the 13th player gets no base and is sent away instead of standing around
+	for i = 1, 11 do
+		world.addPlayer(`Crowd{i}`, 200 + i)
+	end
+	world.advance(0.6)
+	local thirteenth = world.addPlayer("Overflow", 299)
+	world.advance(0.6)
+	local planted = 0
+	for _, child in (map :: Instance):GetChildren() do
+		if string.match(child.Name, "^Plot_") and child:GetAttribute("OwnerUserId") ~= 0 then
+			planted += 1
+		end
+	end
+	t.equal("twelve players fill the twelve bases", planted, 12)
+	local overflow = #world.players - 12
+	t.check("there are players past twelve", overflow >= 1)
+	t.equal("nobody is sent away at once", #world.kicked, 0)
+	world.advance(7)
+	t.equal("every player past twelve is sent away a few seconds later", #world.kicked, overflow)
+	local kickedOverflow = false
+	for _, k in world.kicked do
+		if k.player == thirteenth then
+			kickedOverflow = true
+		end
+		t.check("each is sent away with a message that says why", string.find(k.message, "full", 1, true) ~= nil)
+	end
+	t.check("including the last one to arrive", kickedOverflow)
 end

@@ -78,7 +78,14 @@ Plots.setInstant(PurchaseService.instantHatch, PurchaseService.instantAvailable)
 Session.start(function(player)
 	local plot = Plots.assign(player)
 	if not plot then
-		notify(player, "Server full: you have no base. Rejoin another server.")
+		-- every base is taken (the place is set to 12 players, but a stale setting could let more in): do not leave them
+		-- standing around with no base; say so, then send them to find another server
+		notify(player, "This server is full: no free base. Rejoin to get another server!")
+		task.delay(6, function()
+			if table.find(Players:GetPlayers(), player) and not Plots.of(player) then
+				player:Kick("This server is full (12 bases). Please rejoin to get another server.")
+			end
+		end)
 	else
 		-- the first character may already have spawned at someone else's plot while the save loaded: bring it home
 		local character = player.Character

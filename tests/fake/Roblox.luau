@@ -264,6 +264,7 @@ function Fake.world()
 		sleepers = {},
 		actions = {},
 		played = {},
+		kicked = {},
 		teleports = {},
 		studio = true,
 	}
@@ -490,6 +491,9 @@ function Fake.world()
 	end
 	function Methods.GetPivot(self)
 		return data[self].props.CFrame or CFrame.identity
+	end
+	function Methods.Kick(self, message)
+		table.insert(world.kicked, { player = self, message = message })
 	end
 	function Methods.PivotTo(self, target)
 		-- like Roblox: a model moves as one piece so its pivot (PrimaryPart, else the root part) lands on `target`
