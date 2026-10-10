@@ -2,7 +2,7 @@
 import math
 from kit import Grid, rgb, shade
 
-U = 0.3
+U = 0.45
 H, R = 5.4, 2.1  # an egg stands 5.4 studs tall, 4.2 wide
 
 

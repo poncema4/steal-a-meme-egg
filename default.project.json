@@ -43,6 +43,15 @@
       "Models": {
         "$path": "src/models"
       }
+    },
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "StreamingEnabled": true,
+        "StreamingMinRadius": 128,
+        "StreamingTargetRadius": 512,
+        "StreamingIntegrityMode": "MinimizeDisruption"
+      }
     }
   }
 }

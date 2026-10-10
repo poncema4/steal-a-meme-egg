@@ -18,7 +18,8 @@ BOSSES = {"Meadow": "SoggyToast", "Dune": "PharaohPancake", "Volcano": "VolcanoV
 
 
 def emit(folder, name, parts, report):
-    n = write_rbxmx(os.path.join(MODELS, folder, name + ".rbxmx"), name, parts)
+    # scenery and eggs cast no shadows (dozens on screen at once; shadows are what phones struggle with most)
+    n = write_rbxmx(os.path.join(MODELS, folder, name + ".rbxmx"), name, parts, shadows=folder not in ("Props", "Eggs"))
     preview_json(os.path.join(PREVIEW, name + ".json"), parts)
     report.append((folder, name, n))
 
