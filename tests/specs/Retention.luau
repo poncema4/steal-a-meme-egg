@@ -118,12 +118,20 @@ return function(t)
 	session.changed(late)
 	session.get(late).base.slots[2] = nil -- seen once, then gone: the Index must still remember it
 	session.changed(late)
+	session.get(late).base.slots[3] = { kind = "egg", tier = "Disco", hatchLeft = 100, eggMutation = "Gold" }
+	session.changed(late)
 	session.changed(late)
 	world.removePlayer(late)
 	local back = world.addPlayer("Ana", 81)
 	world.advance(0.6)
 	t.equal("rebirths are saved", back:GetAttribute("Rebirths"), 1)
 	t.equal("the treadmill upgrade is saved", back:GetAttribute("TreadmillLevel"), 3)
+	local items = tostring(back:GetAttribute("BaseItems"))
+	t.check(
+		"a Gold egg in the base is still Gold after rejoining",
+		string.find(items, "3,e,Disco,15,Gold", 1, true) ~= nil,
+		items
+	)
 	local savedIndex = tostring(back:GetAttribute("Index"))
 	t.check(
 		"the Index remembers a character that is gone from the base",

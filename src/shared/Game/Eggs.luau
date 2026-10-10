@@ -191,6 +191,21 @@ function Eggs.roll(tierId: string, luck: number, rng: () -> number): string
 end
 
 -- 1 in 20 is Gold (x2), 1 in 100 is Rainbow (x5); luck helps a little.
+-- A nest egg's mutation. `depth` is the terrain number (1 = Meadow): deeper terrains grow Gold and Rainbow eggs more often.
+-- The egg keeps it all the way home and its pet is born with it.
+function Eggs.nestMutation(depth: number, rng: () -> number): string
+	local d = math.max(depth, 1)
+	local rainbow = math.min(0.02 + 0.015 * (d - 1), 0.12)
+	local gold = math.min(0.08 + 0.04 * (d - 1), 0.4)
+	local r = rng()
+	if r < rainbow then
+		return "Rainbow"
+	elseif r < rainbow + gold then
+		return "Gold"
+	end
+	return "Normal"
+end
+
 function Eggs.mutation(luck: number, rng: () -> number): string
 	local r = rng() * math.max(luck, 1)
 	if r > 0.99 then

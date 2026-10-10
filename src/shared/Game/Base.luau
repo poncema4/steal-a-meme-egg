@@ -9,6 +9,7 @@ export type Item = {
 	kind: "egg" | "char",
 	tier: string?, -- egg: which tier
 	hatchLeft: number?, -- egg: seconds until it hatches
+	eggMutation: string?, -- egg: a Gold or Rainbow egg hatches into a pet with that mutation
 	id: string?, -- char: which character
 	mutation: string?, -- char: Normal / Gold / Rainbow
 }
@@ -41,13 +42,14 @@ function Base.count(base: Base): number
 end
 
 -- Puts a bought egg in the first free slot. Returns the slot, or nil if the base is full.
-function Base.placeEgg(base: Base, tierId: string): number?
+function Base.placeEgg(base: Base, tierId: string, mutation: string?): number?
 	local tier = Eggs.tier(tierId)
 	local slot = Base.firstFree(base)
 	if not tier or not slot then
 		return nil
 	end
-	base.slots[slot] = { kind = "egg", tier = tierId, hatchLeft = tier.hatchSeconds }
+	local eggMutation = if mutation and mutation ~= "Normal" and Eggs.Mutations[mutation] then mutation else nil
+	base.slots[slot] = { kind = "egg", tier = tierId, hatchLeft = tier.hatchSeconds, eggMutation = eggMutation }
 	return slot
 end
 
@@ -70,7 +72,8 @@ function Base.tick(base: Base, dt: number, roll: (string) -> string, mutate: () 
 		if item and item.kind == "egg" and item.tier then
 			local left = (item.hatchLeft or 0) - dt
 			if left <= 0 then
-				base.slots[i] = { kind = "char", id = roll(item.tier), mutation = mutate() }
+				-- a mutated egg hatches into a pet with that mutation; otherwise the usual roll decides
+				base.slots[i] = { kind = "char", id = roll(item.tier), mutation = item.eggMutation or mutate() }
 				table.insert(hatched, i)
 			else
 				item.hatchLeft = left
