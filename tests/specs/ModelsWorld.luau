@@ -36,6 +36,7 @@ return function(t)
 	template(world, "Eggs", "Soggy")
 	template(world, "Props", "Tree")
 	template(world, "Props", "Nest")
+	template(world, "Props", "TreadmillTopper")
 	template(world, "Bosses", "BossMeadow")
 	local ok, err = pcall(world.load, "src/server/main.server")
 	t.check("the server starts with models", ok, tostring(err))
@@ -94,4 +95,5 @@ return function(t)
 		"a terrain without a boss model keeps the plain look",
 		(wilds:FindFirstChild("Boss_Dune") :: Instance):FindFirstChild("Visual") == nil
 	)
+	t.check("every treadmill wears its topper", plot.model:FindFirstChild("TreadmillTopper") ~= nil)
 end

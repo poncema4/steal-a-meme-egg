@@ -10,6 +10,7 @@ local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
+local Models = require(script.Parent.Models)
 
 local World = {}
 
@@ -190,6 +191,9 @@ local function buildTreadmill(model: Model, f: Frame, accent: Color3): (Part, Tr
 		roller.Shape = Enum.PartType.Cylinder
 	end
 	part("ConsoleBar", Vector3.new(8.1, 0.5, 0.5), cf(f, 0, 5.7, ahead + length / 2 - 0.6), steel, model)
+	-- a brick speedometer topper on the bar, facing the runner
+	local topperAt = at(f, 0, 5.95, ahead + length / 2 - 0.6)
+	Models.place(model, "Props", "TreadmillTopper", CFrame.lookAt(topperAt, topperAt - f.front), 1)
 	-- the display faces the runner (back toward the pen): a part's Front face points along its LookVector
 	local screenAt = at(f, 0, 4.4, ahead + length / 2 - 0.2)
 	local screen = part("Console", Vector3.new(5.6, 2.4, 0.4), CFrame.lookAt(screenAt, screenAt - f.front), dark, model)
