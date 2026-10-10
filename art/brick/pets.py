@@ -166,7 +166,7 @@ def disco_pickle(g):
     g1, g2 = rgb("5cb83a"), rgb("3f8f28")
     g.cylinder((0, 2.1, 0), 1.05, 3.4, g1)
     g.ellipsoid((0, 3.8, 0), (1.05, 0.7, 1.05), g1)
-    g.ellipsoid((0, 0.4, 0), (1.05, 0.7, 1.05), g1)
+    g.ellipsoid((0, 0.7, 0), (1.05, 0.7, 1.05), g1)
     for k, (x, y) in enumerate(((-0.6, 1.3), (0.5, 2.6), (-0.4, 3.3), (0.7, 0.9))):
         g.ellipsoid((x, y, -0.98), (0.12, 0.12, 0.12), g2)
     eyes(g, 2.9, -1.0, 0.5, "shades", 0.42)
@@ -291,11 +291,11 @@ def cleo_croissant(g):
 
 def nebula_noodle(g):
     n1, n2 = rgb("b86cff"), rgb("ff8ad8")
-    g.torus((0, 2.2, 0), 1.8, 0.65, n1, axis="z")
-    g.torus((0, 2.2, -0.2), 1.8, 0.2, n2, axis="z")
-    eyes(g, 2.2, -0.75, 0.45, "star", 0.4)
-    stars_around(g, 2.2, 2.3, 7)
-    return 4.6
+    g.torus((0, 2.7, 0), 1.8, 0.65, n1, axis="z")
+    g.torus((0, 2.7, -0.2), 1.8, 0.2, n2, axis="z")
+    eyes(g, 2.7, -0.75, 0.45, "star", 0.4)
+    stars_around(g, 2.7, 2.3, 7)
+    return 5.1
 
 
 def quasar_quokka(g):
@@ -305,17 +305,17 @@ def quasar_quokka(g):
     eyes(g, 2.0, -1.55, 0.7, "happy", 0.4)
     g.ellipsoid((0, 1.5, -1.6), (0.4, 0.3, 0.3), BLACK)
     smile(g, 1.05, -1.55, 1.0)
-    g.torus((0, 1.8, 1.2), 2.5, 0.12, rgb("8fd4ff"), axis="z")
+    g.torus((0, 2.7, 1.2), 2.2, 0.12, rgb("8fd4ff"), axis="z")
     feet(g, 0.9, light, -0.5, 0.15)
     return 4.7
 
 
 def black_hole_bagel(g):
-    g.torus((0, 2.2, 0), 1.7, 0.8, rgb("17122b"), axis="z")
-    g.torus((0, 2.2, -0.3), 1.7, 0.24, rgb("8a4aff"), axis="z")
-    g.torus((0, 2.2, 0.2), 2.55, 0.12, rgb("ff6adf"), axis="z")
-    eyes(g, 2.2, -0.82, 0.5, "star", 0.4)
-    return 4.6
+    g.torus((0, 2.9, 0), 1.7, 0.8, rgb("17122b"), axis="z")
+    g.torus((0, 2.9, -0.3), 1.7, 0.24, rgb("8a4aff"), axis="z")
+    g.torus((0, 2.9, 0.2), 2.5, 0.12, rgb("ff6adf"), axis="z")
+    eyes(g, 2.9, -0.82, 0.5, "star", 0.4)
+    return 5.4
 
 
 def tax_angel(g):
@@ -349,7 +349,7 @@ def omega_meme(g):
     eyes(g, 2.7, -1.75, 0.7, "shades", 0.45)
     smile(g, 1.7, -1.75, 0.9, rgb("ffd84a"))
     crown(g, 4.0, GOLD)
-    g.torus((0, 2.2, 1.0), 2.8, 0.14, rgb("ff5ad8"), axis="z")
+    g.torus((0, 2.9, 1.0), 2.4, 0.14, rgb("ff5ad8"), axis="z")
     return 5.0
 
 
@@ -398,7 +398,7 @@ def cosmic_kitten(g):
 
 def nebula_cat(g):
     t = cat_base(g, rgb("b04ad8"), rgb("ffc0f0"), "shades")
-    g.torus((0, 1.8, 1.2), 2.5, 0.12, rgb("5fd8ff"), axis="z")
+    g.torus((0, 2.7, 1.2), 2.2, 0.12, rgb("5fd8ff"), axis="z")
     return t
 
 
@@ -425,7 +425,7 @@ def meme_lord(color, jewel, big):
             halo(g, 4.4)
         if big >= 2:
             flame(g, 4.9, 1.0)
-            g.torus((0, 2.2, 1.6), 2.9, 0.14, rgb("ffd84a"), axis="z")
+            g.torus((0, 2.9, 1.6), 2.3, 0.14, rgb("ffd84a"), axis="z")
         return 5.0
     return f
 
