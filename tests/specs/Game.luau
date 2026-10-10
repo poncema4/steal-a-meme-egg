@@ -22,6 +22,13 @@ return function(t)
 		end
 	end
 	t.equal("there are 12 base plots", plotCount, 12)
+	local walls = 0
+	for _, child in (map :: Instance):GetChildren() do
+		if string.match(child.Name, "^HomeWall") then
+			walls += 1
+		end
+	end
+	t.equal("the home lawn is walled on three sides", walls, 3)
 
 	local ana = world.addPlayer("Ana", 11)
 	local ben = world.addPlayer("Ben", 12)
@@ -40,6 +47,8 @@ return function(t)
 	t.equal("an egg on the belt can be bought", #buys, 1)
 	buys[1].Triggered:Fire(ana)
 	t.equal("buying takes the price", ana:GetAttribute("Coins"), 50)
+	t.equal("the new egg counts as hatching", ana:GetAttribute("EggsHatching"), 1)
+	t.equal("and there are no characters yet", ana:GetAttribute("Characters"), 0)
 	t.equal("and removes the egg from the belt", #world.prompts(world.workspace, "Buy"), 0)
 	t.check("the egg shows on the player's base", anaPlot.Slot_1:FindFirstChild("Item") ~= nil)
 
@@ -51,6 +60,8 @@ return function(t)
 
 	-- hatching and earning
 	world.advance(9)
+	t.equal("the hatched egg counts as a character", ana:GetAttribute("Characters"), 1)
+	t.equal("and is no longer hatching", ana:GetAttribute("EggsHatching"), 0)
 	t.check(
 		"the egg hatched into a character",
 		anaPlot.Slot_1.Item.Body:FindFirstChildOfClass("ProximityPrompt") ~= nil
