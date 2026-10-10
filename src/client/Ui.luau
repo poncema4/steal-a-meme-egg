@@ -151,6 +151,12 @@ function Ui.iconId(key: string): string?
 	return if id and id ~= "" then id else nil
 end
 
+-- The portrait of a character, or nil if it has none yet.
+function Ui.petIconId(characterId: string): string?
+	local id = (Config.PetIcons :: { [string]: string })[characterId]
+	return if id and id ~= "" then id else nil
+end
+
 -- Puts a picture on a button or label. `side` "center" fills the middle (icon-only buttons); "left" sits at the left edge and
 -- pads the text so it does not run under the picture. Returns false (and shows `glyph` as text instead) if there is no art.
 function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string, pad: number?): boolean

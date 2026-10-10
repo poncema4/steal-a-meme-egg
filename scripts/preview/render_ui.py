@@ -15,9 +15,10 @@ W, H = int(data["width"]), int(data["height"])
 # asset id -> icon file, from Config.Icons
 icons = {}
 for name, ident in re.findall(r'(\w+) = "rbxassetid://(\d+)"', (ROOT / "src/shared/Config.luau").read_text()):
-    f = ROOT / "art/renders/icons" / f"{name}.png"
-    if f.exists():
-        icons[ident] = f
+    for folder in ("icons", "pets"):
+        f = ROOT / "art/renders" / folder / f"{name}.png"
+        if f.exists():
+            icons[ident] = f
 
 if len(sys.argv) > 3:
     base = Image.open(sys.argv[3]).convert("RGB").resize((W * SS, H * SS))
@@ -59,6 +60,9 @@ for r in sorted(data["rects"], key=lambda q: q["depth"]):
             pic = Image.open(path).convert("RGBA")
             side = min(w, h)
             pic = pic.resize((side, side), Image.LANCZOS)
+            if r.get("imageColor") == [0, 0, 0]:
+                black = Image.new("RGBA", pic.size, (0, 0, 0, 255))
+                pic = Image.composite(black, Image.new("RGBA", pic.size, (0, 0, 0, 0)), pic.getchannel("A"))
             layer.alpha_composite(pic, (int(x0 + (w - side) / 2), int(y0 + (h - side) / 2)))
         img = Image.alpha_composite(img, layer)
         continue

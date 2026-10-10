@@ -146,6 +146,7 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 				textColor = { math.floor(tc.R * 255), math.floor(tc.G * 255), math.floor(tc.B * 255) },
 				align = tostring((c :: any).TextXAlignment and (c :: any).TextXAlignment.Name or "Center"),
 				image = if c:IsA("ImageLabel") then c.Image else nil,
+				imageColor = if c:IsA("ImageLabel") and (c :: any).ImageColor3 then { math.floor((c :: any).ImageColor3.R * 255), math.floor((c :: any).ImageColor3.G * 255), math.floor((c :: any).ImageColor3.B * 255) } else nil,
 			})
 			walk(c, cx, cy, cw, ch, scale, depth + 1)
 		end

@@ -96,10 +96,26 @@ return function(t)
 		string.find((find(find(index, "Card_BonkBean") :: Instance, "Chip_Rainbow") :: TextLabel).Text, "✓", 1, true)
 			== nil
 	)
+	local bonk = find(index, "Card_BonkBean") :: Instance
+	local silhouette = find(find(index, "Card_SleepySock") :: Instance, "Picture") :: ImageLabel
+	t.check(
+		"a discovered character shows its portrait in full colour",
+		(find(bonk, "Picture") :: ImageLabel).ImageColor3 == world.Color3.new(1, 1, 1)
+	)
+	t.check("an undiscovered one is a black silhouette", silhouette.ImageColor3 == world.Color3.new(0, 0, 0))
+	t.check(
+		"the portraits are real images",
+		string.find((find(bonk, "Picture") :: ImageLabel).Image, "rbxassetid://", 1, true) == 1
+	)
 	t.equal("others stay hidden", (find(find(index, "Card_SleepySock") :: Instance, "Name") :: TextLabel).Text, "???"); -- opening another panel closes the Index (one at a time)
 	(find(hudGui, "PetsButton") :: TextButton).Activated:Fire()
 	t.check("opening Pets closes the Index", pets.Visible and not index.Visible)
 	t.check("the Pets panel lists the character", find(pets, "PetRow_1") ~= nil)
+	t.check(
+		"with its portrait",
+		string.find((find(find(pets, "PetRow_1") :: Instance, "Picture") :: ImageLabel).Image, "rbxassetid://", 1, true)
+			== 1
+	)
 	t.check(
 		"with its mutation and income",
 		string.find((find(find(pets, "PetRow_1") :: Instance, "Title") :: TextLabel).Text, "Gold", 1, true) ~= nil
