@@ -3,6 +3,7 @@
 -- model of anchored parts with a root to pivot on, nothing is empty, flipped or absurdly big, and the part count stays small.
 local fs = require("@lune/fs")
 local Eggs = require("../../src/shared/Game/Eggs")
+local Zones = require("../../src/shared/Game/Zones")
 
 local MAX_PARTS = 450
 
@@ -71,6 +72,12 @@ return function(t)
 	end
 	for id in Eggs.Characters do
 		check(t, "Pets", id, 3.0, 8.0)
+	end
+	for _, zone in Zones.List do
+		check(t, "Bosses", `Boss{zone.id}`, 9, 18)
+	end
+	for name, tall in { Tree = 10.3, Cactus = 8.6, LavaRock = 6.4, IcePine = 11, Crystal = 8, Nest = 1.5 } do
+		check(t, "Props", name, tall - 1.5, tall + 1.5)
 	end
 	-- nothing is left over from a character or tier that no longer exists
 	for _, entry in fs.readDir("src/models/Pets") do
