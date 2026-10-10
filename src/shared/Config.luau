@@ -98,6 +98,17 @@ return table.freeze({
 		click = "rbxassetid://117766235870284",
 		music = "rbxassetid://77664441261326",
 	}),
+	-- HUD icons (art/blender/icons.py, uploaded as decals to the studio group). A missing icon falls back to an emoji.
+	Icons = table.freeze({
+		egg = "rbxassetid://104717160451898",
+		paw = "rbxassetid://93563946436036",
+		trophy = "rbxassetid://116011940435741",
+		shoe = "rbxassetid://95694304794409",
+		cash = "rbxassetid://112346576423757",
+		cart = "rbxassetid://89391297052756",
+		book = "rbxassetid://137262363418536",
+		potion = "rbxassetid://77914679765922",
+	}),
 	Save = table.freeze({
 		StoreName = "StealAMemeEgg_v1",
 		AutosaveSeconds = 60,

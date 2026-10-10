@@ -61,17 +61,25 @@ function Hud.start(player: Player, actions: Actions?)
 	list.Padding = UDim.new(0, 10)
 	list.SortOrder = Enum.SortOrder.LayoutOrder
 	list.Parent = left
-	local function leftButton(name: string, text: string, palette: Ui.Palette, order: number, handler: () -> ())
+	local function leftButton(
+		name: string,
+		text: string,
+		icon: string,
+		palette: Ui.Palette,
+		order: number,
+		handler: () -> ()
+	)
 		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(150, tapHeight))
+		Ui.addIcon(b, icon, "left", "")
 		b.LayoutOrder = order
 		b.Activated:Connect(handler)
 		return b
 	end
 	if act.shop then
-		leftButton("ShopButton", "🛒 Shop", Ui.Palettes.Green, 1, act.shop)
+		leftButton("ShopButton", "Shop", "cart", Ui.Palettes.Green, 1, act.shop)
 	end
 	if act.index then
-		leftButton("IndexButton", "📖 Index", Ui.Palettes.Blue, 2, act.index)
+		leftButton("IndexButton", "Index", "book", Ui.Palettes.Blue, 2, act.index)
 	end
 	local slow = Ui.button(left, "SlowToggle", "Slow Mode", Ui.Palettes.Grey, UDim2.fromOffset(150, Ui.tap(gui, 44)))
 	slow.LayoutOrder = 3
@@ -90,18 +98,25 @@ function Hud.start(player: Player, actions: Actions?)
 	rightList.SortOrder = Enum.SortOrder.LayoutOrder
 	rightList.Parent = right
 	local badges: { [string]: TextLabel } = {}
-	local function iconButton(name: string, glyph: string, palette: Ui.Palette, order: number, handler: (() -> ())?)
+	local function iconButton(
+		name: string,
+		icon: string,
+		glyph: string,
+		palette: Ui.Palette,
+		order: number,
+		handler: (() -> ())?
+	)
 		if not handler then
 			return
 		end
-		local b = Ui.iconButton(right, name, glyph, palette, side)
+		local b = Ui.iconButton(right, name, icon, glyph, palette, side)
 		b.LayoutOrder = order
 		b.Activated:Connect(handler)
 		badges[name] = b:FindFirstChild("Badge") :: TextLabel
 	end
-	iconButton("EggsButton", "🥚", Ui.Palettes.Red, 1, act.eggs)
-	iconButton("PetsButton", "🐾", Ui.Palettes.Orange, 2, act.pets)
-	iconButton("TrophyButton", "🏆", Ui.Palettes.Gold, 3, act.trophy)
+	iconButton("EggsButton", "egg", "🥚", Ui.Palettes.Red, 1, act.eggs)
+	iconButton("PetsButton", "paw", "🐾", Ui.Palettes.Orange, 2, act.pets)
+	iconButton("TrophyButton", "trophy", "🏆", Ui.Palettes.Gold, 3, act.trophy)
 
 	-- bottom-left: speed and money
 	local stats = box(gui, "Stats", UDim2.fromOffset(420, 120), UDim2.new(0, 16, 1, -12), Vector2.new(0, 1))
@@ -113,6 +128,8 @@ function Hud.start(player: Player, actions: Actions?)
 	money.Size = UDim2.new(1, 0, 0, 62)
 	money.Position = UDim2.fromOffset(0, 54)
 	money.TextXAlignment = Enum.TextXAlignment.Left
+	local hasShoe = Ui.addIcon(speed, "shoe", "left", "", 60)
+	Ui.addIcon(money, "cash", "left", "", 74)
 
 	-- top centre: the terrain you are in, what to do next, and any live event
 	local zone = Instance.new("Frame")
@@ -265,7 +282,8 @@ function Hud.start(player: Player, actions: Actions?)
 		local coins = number(player, "Coins", 0)
 		local rebirths = number(player, "Rebirths", 0)
 		money.Text = "$" .. Economy.format(coins)
-		speed.Text = `👟 {Economy.format(number(player, "SpeedStat", 10))}`
+		speed.Text = (if hasShoe then "" else "👟 ")
+			.. Economy.format(number(player, "SpeedStat", 10))
 			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")
 		local isSlow = player:GetAttribute("SlowMode") == true
 		slow.Text = if isSlow then "Slow Mode: ON" else "Slow Mode"

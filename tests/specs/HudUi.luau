@@ -65,6 +65,17 @@ return function(t)
 		string.find((find(gui, "Name") :: TextLabel).Text, "Safe", 1, true) ~= nil or true
 	)
 
+	-- real art, not emoji: the Shop button wears the cart, speed wears the shoe, money wears the cash
+	local Config = require("../../src/shared/Config")
+	local function iconOf(name: string): string?
+		local icon = find(find(gui, name) :: Instance, "Icon") :: ImageLabel?
+		return if icon then icon.Image else nil
+	end
+	t.equal("the Shop button shows the cart", iconOf("ShopButton"), Config.Icons.cart)
+	t.equal("speed shows the shoe", iconOf("Speed"), Config.Icons.shoe)
+	t.equal("money shows the cash", iconOf("Money"), Config.Icons.cash)
+	t.check("the Shop button text is plain (no emoji glyph)", (find(gui, "ShopButton") :: TextButton).Text == "Shop")
+
 	-- Shop button opens the shop; B on a gamepad closes it
 	local shopPanel = find(ana.PlayerGui:FindFirstChild("Shop") :: Instance, "Panel") :: Frame
 	t.check("the shop starts closed", not shopPanel.Visible);

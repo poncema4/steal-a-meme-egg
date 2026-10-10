@@ -8,6 +8,7 @@ local GuiService = game:GetService("GuiService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local UiScale = require(ReplicatedStorage.Shared.Game.UiScale)
 
 local Ui = {}
@@ -142,10 +143,59 @@ function Ui.setPalette(button: GuiObject, palette: Palette)
 	end
 end
 
+-- The asset id of a HUD icon, or nil if it is missing (the caller then falls back to a glyph).
+function Ui.iconId(key: string): string?
+	local id = (Config.Icons :: { [string]: string })[key]
+	return if id and id ~= "" then id else nil
+end
+
+-- Puts a picture on a button or label. `side` "center" fills the middle (icon-only buttons); "left" sits at the left edge and
+-- pads the text so it does not run under the picture. Returns false (and shows `glyph` as text instead) if there is no art.
+function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string, pad: number?): boolean
+	local id = Ui.iconId(key)
+	local text = target :: any
+	if not id then
+		if side == "center" then
+			text.Text = glyph
+		end
+		return false
+	end
+	local image = Instance.new("ImageLabel")
+	image.Name = "Icon"
+	image.BackgroundTransparency = 1
+	image.Image = id
+	image.ScaleType = Enum.ScaleType.Fit
+	image.AnchorPoint = Vector2.new(0.5, 0.5)
+	if side == "center" then
+		image.Position = UDim2.fromScale(0.5, 0.5)
+		image.Size = UDim2.fromScale(0.78, 0.78)
+		text.Text = ""
+	else
+		image.Position = UDim2.new(0, 6, 0.5, 0)
+		image.AnchorPoint = Vector2.new(0, 0.5)
+		image.Size = UDim2.fromScale(0.2, 1.1)
+		local ratio = Instance.new("UIAspectRatioConstraint")
+		ratio.Parent = image
+		local padding = Instance.new("UIPadding")
+		padding.PaddingLeft = UDim.new(0, pad or 40)
+		padding.Parent = target
+	end
+	image.Parent = target
+	return true
+end
+
 -- A square icon button (an emoji glyph for now) with an optional count badge in the corner.
-function Ui.iconButton(parent: Instance, name: string, glyph: string, palette: Palette, side: number): TextButton
+function Ui.iconButton(
+	parent: Instance,
+	name: string,
+	icon: string,
+	glyph: string,
+	palette: Palette,
+	side: number
+): TextButton
 	local b = Ui.button(parent, name, glyph, palette, UDim2.fromOffset(side, side))
 	b.TextSize = math.floor(side * 0.55)
+	Ui.addIcon(b, icon, "center", glyph)
 	local badge = Instance.new("TextLabel")
 	badge.Name = "Badge"
 	badge.Size = UDim2.fromOffset(26, 26)
