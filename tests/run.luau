@@ -26,6 +26,7 @@ local specs = {
 	require("./specs/Eggs"),
 	require("./specs/Properties"),
 	require("./specs/Layout"),
+	require("./specs/ZFight"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),

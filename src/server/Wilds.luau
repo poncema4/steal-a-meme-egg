@@ -111,6 +111,7 @@ end
 
 -- Scenery per terrain: simple parts only (no meshes), seeded so every server builds the same map.
 local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instance)
+	local lavaPools: { { x: number, z: number, r: number } } = {}
 	for _, prop in Layout.scenery(zone, nests) do
 		local x, z, s = prop.x, prop.z, prop.size
 		if zone.id == "Meadow" then
@@ -134,7 +135,15 @@ local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instan
 			box("CactusArm", Vector3.new(3.4, 1.4, 1.4), CFrame.new(x, s * 0.9, z), Color3.fromRGB(30, 150, 60), parent)
 		elseif zone.id == "Volcano" then
 			box("Rock", Vector3.new(s * 1.4, s, s * 1.2), CFrame.new(x, s * 0.5, z), Color3.fromRGB(50, 40, 45), parent)
-			if prop.extra < 0.35 then
+			-- two pools at the same height would flicker where they overlap, so a pool is skipped if it would touch another
+			local overlaps = false
+			for _, pool in lavaPools do
+				if math.sqrt((pool.x - (x + 6)) ^ 2 + (pool.z - z) ^ 2) < pool.r + s * 2 then
+					overlaps = true
+				end
+			end
+			if prop.extra < 0.35 and not overlaps then
+				table.insert(lavaPools, { x = x + 6, z = z, r = s * 2 })
 				box(
 					"Lava",
 					Vector3.new(s * 2, 0.2, s * 2),

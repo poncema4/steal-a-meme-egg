@@ -120,8 +120,8 @@ local function buildPlot(index: number, parent: Instance): Plot
 	for k = -3, 3 do
 		part(
 			"TreadStripe",
-			Vector3.new(4, 0.05, 1),
-			CFrame.new(center + Vector3.new(20, 0.52, k * 2.4)),
+			Vector3.new(4, 0.2, 1),
+			CFrame.new(center + Vector3.new(20, 0.6, k * 2.4)),
 			Color3.fromRGB(255, 220, 0),
 			model
 		)
@@ -186,7 +186,7 @@ function World.build(): { plots: { Plot }, belt: BasePart }
 	local map = Instance.new("Folder")
 	map.Name = "Map"
 	map.Parent = workspace
-	part("Lawn", Vector3.new(420, 2, 260), CFrame.new(0, -1, 0), Color3.fromRGB(86, 190, 90), map)
+	part("Lawn", Vector3.new(420, 2, 260), CFrame.new(0, -1.3, 0), Color3.fromRGB(86, 190, 90), map)
 	local belt = part(
 		"Belt",
 		Vector3.new(World.BELT_LENGTH, 0.6, World.BELT_WIDTH),
@@ -197,8 +197,8 @@ function World.build(): { plots: { Plot }, belt: BasePart }
 	for k = -7, 7 do -- stripes so the belt reads as moving
 		part(
 			"Stripe",
-			Vector3.new(2, 0.05, World.BELT_WIDTH),
-			CFrame.new(k * 20, 0.62, World.BELT_Z),
+			Vector3.new(2, 0.2, World.BELT_WIDTH),
+			CFrame.new(k * 20, 0.7, World.BELT_Z),
 			Color3.fromRGB(255, 220, 0),
 			map
 		)
