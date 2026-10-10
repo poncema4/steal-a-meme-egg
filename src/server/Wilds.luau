@@ -47,6 +47,12 @@ function Wilds.setNotify(fn: (Player, string) -> ())
 	notify = fn
 end
 
+local sfx: (Player, string) -> () = function(_player: Player, _name: string) end
+
+function Wilds.setSfx(fn: (Player, string) -> ())
+	sfx = fn
+end
+
 function Wilds.entries(): { Entry }
 	return entries
 end
@@ -323,6 +329,8 @@ function Wilds.steal(player: Player, entry: Entry)
 	Session.setCarry(player, tier, entry.id)
 	setEgg(entry, nil)
 	Guardian.alert(entry.guardian, Config.Wilds.ChaseSeconds)
+	sfx(player, "steal")
+	sfx(player, "roar")
 	local c = Eggs.character(entry.character)
 	notify(player, `You stole the egg! {if c then c.name else "The guardian"} is chasing you. RUN HOME!`)
 end
@@ -340,6 +348,7 @@ local function recover(entry: Entry, message: string?)
 		end
 		if message then
 			notify(thief, message)
+			sfx(thief, "caught")
 		end
 	end
 	if carried then

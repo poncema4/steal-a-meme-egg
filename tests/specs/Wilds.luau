@@ -40,6 +40,16 @@ return function(t)
 	end
 	t.check("every guardian stands on the ground", grounded)
 
+	-- the sound effects the server asks the client to play (by name, never by asset id)
+	local function heardNames(player: any): { string }
+		local names = {}
+		for _, entry in world.log do
+			if entry.remote == "Sfx" and entry.to == "client" and entry.args[1] == player then
+				table.insert(names, entry.args[2])
+			end
+		end
+		return names
+	end
 	local ana = world.addPlayer("Ana", 21)
 	world.spawnCharacter(ana)
 	world.advance(0.6)
@@ -59,6 +69,10 @@ return function(t)
 	t.equal("the guardian wakes up", entry.guardian.state, "Chase")
 	t.check("a carrier is slower than normal", world.humanoid(ana).WalkSpeed < Progression.BASE_SPEED)
 	local tierAtSteal = carried
+	t.check(
+		"stealing plays the steal blip and the guardian roar",
+		table.find(heardNames(ana), "steal") ~= nil and table.find(heardNames(ana), "roar") ~= nil
+	)
 
 	-- stealing twice is not allowed
 	local second = entries[2]
@@ -68,6 +82,7 @@ return function(t)
 	-- 2) standing still gets you caught: the egg goes back and you go home
 	world.advance(4)
 	t.equal("the guardian caught the thief", ana:GetAttribute("Carrying"), "")
+	t.check("being caught plays the sad sound", table.find(heardNames(ana), "caught") ~= nil)
 	t.check("the egg is back in the nest", entry.prompt.Enabled and entry.nest.tier == tierAtSteal)
 	t.check("a guardian is still on the ground after chasing", math.abs(feetY(entry)) < 0.01, tostring(feetY(entry)))
 	t.check("the thief was sent home", math.abs(root.Position.X - plot.spawn.Position.X) < 30)
@@ -89,6 +104,7 @@ return function(t)
 	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
 	t.equal("running home delivers the egg", ana:GetAttribute("Carrying"), "")
+	t.check("delivering plays the fanfare", table.find(heardNames(ana), "deliver") ~= nil)
 	t.check("it is hatching in the base", (session.get(ana).base.slots[1] or {}).kind == "egg")
 	t.check("delivering pays Meme Points", (ana:GetAttribute("MemePoints") :: number) >= 1)
 	local mp = ana:GetAttribute("MemePoints") :: number

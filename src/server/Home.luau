@@ -15,12 +15,14 @@ local World = require(script.Parent.World)
 local Home = {}
 
 local notify: (Player, string) -> () = function(_player: Player, _text: string) end
+local sfx: (Player, string) -> () = function(_player: Player, _name: string) end
 local trainMultiplier: (Player) -> number = function(_player: Player)
 	return 1
 end
 
-function Home.setHooks(notifyFn: (Player, string) -> (), train: (Player) -> number)
+function Home.setHooks(notifyFn: (Player, string) -> (), sfxFn: (Player, string) -> (), train: (Player) -> number)
 	notify = notifyFn
+	sfx = sfxFn
 	trainMultiplier = train
 end
 
@@ -114,6 +116,7 @@ function Home.start(plots: { World.Plot })
 					local ok, message = Session.deliver(player)
 					notify(player, message)
 					if ok then
+						sfx(player, "deliver")
 						Session.changed(player)
 					end
 				end

@@ -96,6 +96,19 @@ return table.freeze({
 			}),
 		}),
 	}),
+	-- Our own synthesised sounds (scripts/audio/make_game_sfx.py), uploaded to the Nexus Hollow Studios audio library.
+	Sounds = table.freeze({
+		hatch = "rbxassetid://79876660142856",
+		steal = "rbxassetid://102219946348103",
+		roar = "rbxassetid://124311047029123",
+		caught = "rbxassetid://115820906972723",
+		deliver = "rbxassetid://109009369699894",
+		coin = "rbxassetid://121693957394972",
+		horn = "rbxassetid://83883870627410",
+		limited = "rbxassetid://125238903514063",
+		click = "rbxassetid://117766235870284",
+		music = "rbxassetid://77664441261326",
+	}),
 	Save = table.freeze({
 		StoreName = "StealAMemeEgg_v1",
 		AutosaveSeconds = 60,

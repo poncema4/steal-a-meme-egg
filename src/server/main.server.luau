@@ -26,6 +26,19 @@ local announceRemote = Instance.new("RemoteEvent")
 announceRemote.Name = "Announce"
 announceRemote.Parent = remotes
 
+local sfxRemote = Instance.new("RemoteEvent")
+sfxRemote.Name = "Sfx"
+sfxRemote.Parent = remotes
+
+-- sounds are sent by NAME; the client looks the asset id up in Config.Sounds
+local function sfx(player: Player, name: string)
+	sfxRemote:FireClient(player, name)
+end
+
+local function sfxAll(name: string)
+	sfxRemote:FireAllClients(name)
+end
+
 local function notify(player: Player, text: string)
 	noticeRemote:FireClient(player, text)
 end
@@ -38,8 +51,9 @@ local world = World.build()
 Plots.start(world)
 Wilds.build()
 Wilds.setNotify(notify)
+Wilds.setSfx(sfx)
 Wilds.start()
-Home.setHooks(notify, function(player)
+Home.setHooks(notify, sfx, function(player)
 	local _, _, train = Session.passMultipliers(player)
 	return train
 end)
@@ -49,8 +63,11 @@ Plots.setNotify(notify)
 Raid.setNotify(notify)
 Conveyor.setHooks(notify, LiveOps.luck, LiveOps.beltRate)
 Conveyor.start()
-LiveOps.start(remotes, notify)
-LimitedService.start(remotes, notify)
+LiveOps.start(remotes, notify, sfxAll)
+LimitedService.start(remotes, notify, sfxAll)
+Session.onHatched(function(player)
+	sfx(player, "hatch")
+end)
 PurchaseService.start(remotes, notify)
 Plots.setInstant(PurchaseService.instantHatch, PurchaseService.instantAvailable)
 
