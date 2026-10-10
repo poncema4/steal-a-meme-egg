@@ -44,6 +44,7 @@ local specs = {
 	require("./specs/ModelViews"),
 	require("./specs/Perf"),
 	require("./specs/PlotsOnDemand"),
+	require("./specs/SpeedMatches"),
 	require("./specs/Models"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
