@@ -15,6 +15,9 @@ Grab eggs off a conveyor, hatch them into meme characters that earn coins, and r
 4. Hold E on a character in someone else's base to steal it. Lock your base (45 s, 90 s cooldown) to be safe.
 5. Coins buy better eggs and more slots (up to 12).
 
+## The Wilds (next build, from Marco 2026-10-10)
+Same idea as the top egg games: out past the bases are themed terrains (Meadow, Dune desert, Volcano, Cosmic...). Each is guarded by meme characters that sit on their eggs. You sneak up, hold E to steal the egg from the meme (it gets angry and chases you), and run it back to your base to hatch. Rarer terrains guard rarer eggs. The conveyor stays as the safe starter income; the Wilds are the risk and the reward. The thumbnail (brand/thumb_1920x1080.png) already shows this: an angry goose guarding its egg in the Dune terrain.
+
 ## Live ops (the reason people join)
 - Schedule every half hour on every server: Lucky Hour (:00), Egg Rain (:10), Coin Rain (:20).
 - Admin commands in chat (group owner/rank 250+; everyone in Studio): `/event <name> [seconds]`, `/give <coins>`, `/giveall <coins>`, `/announce <text>`, `/clear`, `/help`. Admin events go to EVERY server through MessagingService.
@@ -24,4 +27,4 @@ Grab eggs off a conveyor, hatch them into meme characters that earn coins, and r
 `Shared/Game/Eggs` (tables, hatch roll, conveyor odds), `Base` (slots, hatching, steal, lock), `Economy` (prices, offline, number format), `Events`, `Admin`.
 
 ## Next
-Game passes (2x coins, 2x luck, extra slot), Robux luck boosts, aura face-offs, rebirth, daily reward, invite prompt, thumbnails and TikTok plan (docs/GROWTH.md).
+The Wilds (above), game passes (2x coins, 2x luck, extra slot), Robux luck boosts, aura face-offs, rebirth, daily reward, invite prompt, thumbnails and TikTok plan (docs/GROWTH.md).
