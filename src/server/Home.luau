@@ -10,6 +10,7 @@ local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Belt = require(ReplicatedStorage.Shared.Game.Belt)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
 local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
+local TreadmillTier = require(ReplicatedStorage.Shared.Game.TreadmillTier)
 local Plots = require(script.Parent.Plots)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
@@ -74,6 +75,17 @@ local function refreshLabels(player: Player)
 	plot.display.level.Text = if state.treadmill >= Progression.MAX_TREADMILL
 		then "MAX LEVEL"
 		else `LEVEL {state.treadmill}`
+	-- the tier's name on the console and its colour on the belt: an upgrade is visible from across the plaza
+	local tier = TreadmillTier.of(state.treadmill)
+	plot.display.title.Text = `{string.upper(tier.name)} TREADMILL`
+	local colour = Color3.fromRGB(tier.color[1], tier.color[2], tier.color[3])
+	plot.treadmill.Color = Color3.new(colour.R * 0.3, colour.G * 0.3, colour.B * 0.3)
+	for _, part in plot.model:GetChildren() do
+		if part.Name == "Ridge" and part:IsA("BasePart") then
+			part.Color = colour
+			part.Material = if tier.glow then Enum.Material.Neon else Enum.Material.SmoothPlastic
+		end
+	end
 	plot.display.rate.Text = `+{Economy.format(Progression.trainRate(state.treadmill, 1))} speed/s`
 	local reborn = plot.rebirthPad:FindFirstChildOfClass("ProximityPrompt")
 	if reborn then
