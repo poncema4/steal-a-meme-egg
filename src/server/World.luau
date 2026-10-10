@@ -18,6 +18,7 @@ export type Plot = {
 	spawn: BasePart,
 	slots: { BasePart },
 	treadmill: BasePart,
+	display: { title: TextLabel, level: TextLabel, rate: TextLabel },
 	slotPad: BasePart,
 	rebirthPad: BasePart,
 	sign: TextLabel,
@@ -128,6 +129,84 @@ local function buildFence(model: Model, f: Frame, color: Color3)
 	end
 end
 
+World.TREAD_LENGTH = 20
+World.TREAD_RIDGES = 10
+
+type TreadmillDisplay = { title: TextLabel, level: TextLabel, rate: TextLabel }
+
+local function screenLabel(
+	parent: Instance,
+	name: string,
+	size: UDim2,
+	position: UDim2,
+	textSize: number,
+	color: Color3
+): TextLabel
+	local label = Instance.new("TextLabel")
+	label.Name = name
+	label.Size = size
+	label.Position = position
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.FredokaOne
+	label.TextScaled = true
+	label.TextSize = textSize
+	label.TextColor3 = color
+	label.Text = ""
+	label.Parent = parent
+	return label
+end
+
+-- A real-looking treadmill: a dark belt with lighter tread ridges (the client slides them while someone runs), rollers at both
+-- ends, side rails in the pen's colour, and an upright console with handrails and a display at the front. The belt is the part
+-- you stand on and upgrade; everything is positioned in the pen's own (right, up, front) frame.
+local function buildTreadmill(model: Model, f: Frame, accent: Color3): (Part, TreadmillDisplay)
+	local ahead = World.PEN / 2 + 13
+	local length = World.TREAD_LENGTH
+	local steel = Color3.fromRGB(150, 156, 172)
+	local dark = Color3.fromRGB(34, 36, 44)
+	local belt =
+		part("Treadmill", Vector3.new(6.4, 0.5, length), cf(f, 0, 0.65, ahead), Color3.fromRGB(30, 30, 36), model)
+	belt.Material = Enum.Material.SmoothPlastic
+	for i = 0, World.TREAD_RIDGES - 1 do
+		local ridge = part(
+			"Ridge",
+			Vector3.new(6.0, 0.1, 0.7),
+			cf(f, 0, 0.95, ahead - length / 2 + (i + 0.5) * length / World.TREAD_RIDGES),
+			Color3.fromRGB(74, 76, 90),
+			model
+		)
+		ridge.CanCollide = false
+		ridge:SetAttribute("Slot", i)
+	end
+	for _, side in { -1, 1 } do
+		part("TreadRail", Vector3.new(0.9, 1.1, length + 0.6), cf(f, side * 3.85, 0.55, ahead), accent, model)
+		-- the console legs and the handrail along each side
+		part("ConsoleLeg", Vector3.new(0.6, 4.4, 0.6), cf(f, side * 3.85, 3.3, ahead + length / 2 - 0.6), steel, model)
+		part("Handrail", Vector3.new(0.4, 0.4, 9), cf(f, side * 3.85, 3.7, ahead + length / 2 - 5.1), steel, model)
+	end
+	for _, end_ in { -1, 1 } do
+		local roller =
+			part("Roller", Vector3.new(6.6, 1.3, 1.3), cf(f, 0, 0.65, ahead + end_ * (length / 2 + 0.3)), steel, model)
+		roller.Shape = Enum.PartType.Cylinder
+	end
+	part("ConsoleBar", Vector3.new(8.1, 0.5, 0.5), cf(f, 0, 5.7, ahead + length / 2 - 0.6), steel, model)
+	-- the display faces the runner (back toward the pen): a part's Front face points along its LookVector
+	local screenAt = at(f, 0, 4.4, ahead + length / 2 - 0.2)
+	local screen = part("Console", Vector3.new(5.6, 2.4, 0.4), CFrame.lookAt(screenAt, screenAt - f.front), dark, model)
+	local gui = Instance.new("SurfaceGui")
+	gui.Name = "ConsoleGui"
+	gui.Face = Enum.NormalId.Front
+	gui.Parent = screen
+	local title =
+		screenLabel(gui, "Title", UDim2.fromScale(1, 0.3), UDim2.fromScale(0, 0.03), 20, Color3.fromRGB(120, 230, 255))
+	local level = screenLabel(gui, "Level", UDim2.fromScale(1, 0.35), UDim2.fromScale(0, 0.32), 30, Color3.new(1, 1, 1))
+	local rate =
+		screenLabel(gui, "Rate", UDim2.fromScale(1, 0.3), UDim2.fromScale(0, 0.68), 20, Color3.fromRGB(90, 255, 110))
+	title.Text = "TREADMILL"
+	level.Text = "LEVEL 0"
+	return belt, { title = title, level = level, rate = rate }
+end
+
 local function buildPlot(index: number, parent: Instance): Plot
 	local f = frameOf(index)
 	local color = PLOT_COLORS[(index - 1) % #PLOT_COLORS + 1]
@@ -163,12 +242,7 @@ local function buildPlot(index: number, parent: Instance): Plot
 	spawn.Color = Color3.fromRGB(255, 255, 255)
 	spawn.Parent = model
 	-- the treadmill lies in front of the pen, in the plaza; you run toward the plaza on it to train speed
-	local ahead = World.PEN / 2 + 12
-	local treadmill =
-		part("Treadmill", Vector3.new(7, 0.5, 20), cf(f, 0, 0.25, ahead), Color3.fromRGB(70, 70, 80), model)
-	for k = -3, 3 do
-		part("TreadStripe", Vector3.new(6, 0.2, 1), cf(f, 0, 0.6, ahead + k * 2.6), Color3.fromRGB(255, 220, 0), model)
-	end
+	local treadmill, display = buildTreadmill(model, f, color)
 	-- the green pad buys another base slot; the purple one rebirths (both inside the pen, at the front corners)
 	local slotPad = part("SlotPad", Vector3.new(5, 0.5, 5), cf(f, -14, 0.45, 16), Color3.fromRGB(60, 200, 90), model)
 	local rebirthPad =
@@ -195,6 +269,7 @@ local function buildPlot(index: number, parent: Instance): Plot
 		spawn = spawn,
 		slots = slots,
 		treadmill = treadmill,
+		display = display,
 		slotPad = slotPad,
 		rebirthPad = rebirthPad,
 		sign = label,

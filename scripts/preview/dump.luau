@@ -26,6 +26,8 @@ for _, inst in world.workspace:GetDescendants() do
 			b = math.floor(c.B * 255 + 0.5),
 			-- the turn about the vertical axis, in radians (so rotated pens and walls draw correctly)
 			yaw = math.atan2(-right.Z, right.X),
+			-- turned a quarter turn about the front axis (a cylinder lying down is a disc): width and height swap
+			rolled = math.abs(right.Y) > 0.9,
 		})
 	end
 end

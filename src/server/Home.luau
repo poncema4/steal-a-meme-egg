@@ -70,15 +70,10 @@ local function refreshLabels(player: Player)
 			then "fully upgraded"
 			else `level {state.treadmill + 1}: {Economy.format(Progression.treadmillCost(state.treadmill))} coins`
 	end
-	local tag = plot.treadmill:FindFirstChild("Tag")
-	local label = tag and tag:FindFirstChild("L1")
-	if label and label:IsA("TextLabel") then
-		label.Text = `Treadmill level {state.treadmill}`
-	end
-	local rate = tag and tag:FindFirstChild("L2")
-	if rate and rate:IsA("TextLabel") then
-		rate.Text = `+{Economy.format(Progression.trainRate(state.treadmill, 1))} speed XP per second`
-	end
+	plot.display.level.Text = if state.treadmill >= Progression.MAX_TREADMILL
+		then "MAX LEVEL"
+		else `LEVEL {state.treadmill}`
+	plot.display.rate.Text = `+{Economy.format(Progression.trainRate(state.treadmill, 1))} speed/s`
 	local reborn = plot.rebirthPad:FindFirstChildOfClass("ProximityPrompt")
 	if reborn then
 		reborn.ObjectText = if state.rebirths >= Rebirth.MAX
@@ -108,27 +103,6 @@ function Home.start(plots: { World.Plot })
 				sfx(who, "coin")
 			end
 		end)
-		-- what this treadmill is and what it gives, floating above it
-		local gui = Instance.new("BillboardGui")
-		gui.Name = "Tag"
-		gui.Size = UDim2.fromOffset(240, 50)
-		gui.StudsOffset = Vector3.new(0, 5, 0)
-		gui.AlwaysOnTop = true
-		gui.MaxDistance = 80
-		gui.Parent = plot.treadmill
-		for i, text in { "Treadmill", "run on it to train speed" } do
-			local l = Instance.new("TextLabel")
-			l.Name = `L{i}`
-			l.Size = UDim2.new(1, 0, 0, 24)
-			l.Position = UDim2.fromOffset(0, (i - 1) * 24)
-			l.BackgroundTransparency = 1
-			l.Font = Enum.Font.FredokaOne
-			l.TextScaled = true
-			l.TextColor3 = if i == 1 then Color3.fromRGB(255, 230, 90) else Color3.new(1, 1, 1)
-			l.TextStrokeTransparency = 0.2
-			l.Text = text
-			l.Parent = gui
-		end
 		local reborn = addPrompt(plot.rebirthPad, "Rebirth", "", 1.2)
 		reborn.Triggered:Connect(function(who)
 			if Plots.of(who) ~= plot then
@@ -170,6 +144,7 @@ function Home.start(plots: { World.Plot })
 					-- the belt carries you backward at about your own walking pace, so you have to keep running to stay on it
 					local pace = if humanoid then humanoid.WalkSpeed * 0.9 else 0
 					plot.treadmill.AssemblyLinearVelocity = Vector3.new(-plot.front.X * pace, 0, -plot.front.Z * pace)
+					plot.treadmill:SetAttribute("BeltSpeed", if running then pace else 0)
 					if running then
 						Session.addSpeedXp(
 							player,
@@ -178,6 +153,7 @@ function Home.start(plots: { World.Plot })
 					end
 				else
 					plot.treadmill.AssemblyLinearVelocity = Vector3.zero
+					plot.treadmill:SetAttribute("BeltSpeed", 0)
 				end
 				if Session.carrying(player) and insidePlot(root, plot) then
 					local ok, message = Session.deliver(player)
