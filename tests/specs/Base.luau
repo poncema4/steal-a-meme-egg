@@ -35,31 +35,6 @@ return function(t)
 	Base.placeCharacter(gold, "BonkBean", "Gold")
 	t.equal("a Gold character pays double", Base.income(gold, 1), 4)
 
-	-- locking
-	local victim, thief = Base.new(3), Base.new(3)
-	Base.placeCharacter(victim, "SleepySock")
-	t.equal("an unlocked base can be raided", Base.canSteal(victim, thief, 1, 100), nil)
-	local locked, _ = Base.lock(victim, 100, 45, 90)
-	t.check("locking works the first time", locked)
-	t.equal("a locked base cannot be raided", Base.canSteal(victim, thief, 1, 120), "locked")
-	t.equal("the lock ends on time", Base.canSteal(victim, thief, 1, 145), nil)
-	local again, wait = Base.lock(victim, 150, 45, 90)
-	t.check("the lock is on cooldown", not again and wait == 40, tostring(wait))
-	local third = Base.lock(victim, 190, 45, 90)
-	t.check("and works again after the cooldown", third)
-
-	-- raiding
-	local v2, th2 = Base.new(3), Base.new(1)
-	Base.placeCharacter(v2, "SleepySock")
-	Base.placeCharacter(v2, "BonkBean", "Gold")
-	t.equal("an empty slot cannot be raided", Base.canSteal(v2, th2, 3, 0), "empty")
-	local ok, slot = Base.steal(v2, th2, 2, 0)
-	t.check("a raid moves the character", ok and slot == 1)
-	t.equal("it left the victim", v2.slots[2], nil)
-	t.equal("and kept its mutation", th2.slots[1].mutation, "Gold")
-	t.equal("a thief with no room is refused", select(2, Base.steal(v2, th2, 1, 0)), "full")
-	t.equal("the refused raid took nothing", v2.slots[1].id, "SleepySock")
-
 	t.equal("growing adds a slot", Base.grow(Base.new(6), 12), 7)
 	t.equal("but not past the max", Base.grow(Base.new(12), 12), 12)
 end

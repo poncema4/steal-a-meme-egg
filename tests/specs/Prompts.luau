@@ -1,5 +1,5 @@
 --!strict
--- What each player's screen shows: your own pads and other people's characters to steal, not the other way round.
+-- What each player's screen shows: only your own base shows its pads.
 -- Also checks the shapes the server builds (rings stand flat, eggs and heads wear sphere meshes).
 local Fake = require("../fake/Roblox")
 local Prompts = require("../../src/client/Prompts")
@@ -18,14 +18,11 @@ return function(t)
 	t.check("your pads are visible to you", Prompts.visible("Rebirth", 5, 5))
 	t.check("someone else's pads are hidden", not Prompts.visible("Rebirth", 6, 5))
 	t.check(
-		"all six owner actions follow the same rule",
+		"all the owner actions follow the same rule",
 		Prompts.visible("Skip hatch", 5, 5)
-			and not Prompts.visible("Lock base", 6, 5)
 			and not Prompts.visible("Buy slot", 6, 5)
+			and not Prompts.visible("Buy speed", 6, 5)
 	)
-	t.check("you can steal from other people", Prompts.visible("Steal", 6, 5))
-	t.check("but not from yourself", not Prompts.visible("Steal", 5, 5))
-	t.check("and not from a base nobody owns", not Prompts.visible("Steal", 0, 5))
 
 	-- on the real world
 	local world = Fake.world()
@@ -47,25 +44,25 @@ return function(t)
 	local started, why = pcall(world.load("src/client/Prompts").start, ana)
 	t.check("the prompt filter starts", started, tostring(why))
 	local anaPlot, benPlot = plots.of(ana).model, plots.of(ben).model
-	local mySteal = world.prompts(anaPlot, "Steal")[1]
-	local theirSteal = world.prompts(benPlot, "Steal")[1]
-	t.check("Ana does not see Steal on her own character", mySteal ~= nil and not mySteal.Enabled)
-	t.check("Ana sees Steal on Ben's character", theirSteal ~= nil and theirSteal.Enabled)
+	t.equal(
+		"characters in a base cannot be stolen: there is no Steal prompt",
+		#world.prompts(world.workspace, "Steal"),
+		0
+	)
+	t.equal("and there is no lock pad", #world.prompts(world.workspace, "Lock base"), 0)
 	t.check("Ana sees her own rebirth pad", world.prompts(anaPlot, "Rebirth")[1].Enabled)
 	t.check("Ana does not see Ben's rebirth pad", not world.prompts(benPlot, "Rebirth")[1].Enabled)
-	t.check("Ana does not see Ben's lock pad", not world.prompts(benPlot, "Lock base")[1].Enabled)
 
-	-- a new character appearing later is filtered too
-	session.get(ana).base.slots[2] = { kind = "char", id = "SleepySock", mutation = "Normal" }
-	session.changed(ana)
-	local steals = world.prompts(anaPlot, "Steal")
-	local allHidden = #steals >= 1
-	for _, p in steals do
+	-- a new prompt appearing later is filtered too
+	session.grantEgg(ben, "Soggy")
+	local skips = world.prompts(benPlot, "Skip hatch")
+	local allHidden = #skips >= 1
+	for _, p in skips do
 		if p.Enabled then
 			allHidden = false
 		end
 	end
-	t.check("characters that appear later are filtered too", allHidden)
+	t.check("Ben's skip-hatch prompt that appears later is hidden from Ana", allHidden)
 
 	-- the shapes the server builds
 	local wilds = world.load("src/server/Wilds")

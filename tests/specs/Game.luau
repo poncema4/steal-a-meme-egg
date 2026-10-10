@@ -1,6 +1,6 @@
 --!strict
 -- Runs the REAL server scripts against the fake Roblox world: the map is built, players get bases, eggs are granted and
--- hatch and earn, characters are raided, locks hold, and admin events change the multipliers.
+-- hatch and earn, and admin events change the multipliers.
 local Fake = require("../fake/Roblox")
 local Daily = require("../../src/shared/Game/Daily")
 local Eggs = require("../../src/shared/Game/Eggs")
@@ -70,37 +70,11 @@ return function(t)
 	t.check("a hatch plays the pop", heard)
 	t.equal("the hatched egg counts as a character", ana:GetAttribute("Characters"), 1)
 	t.equal("and is no longer hatching", ana:GetAttribute("EggsHatching"), 0)
-	t.check(
-		"the egg hatched into a character",
-		anaPlot.Slot_1.Item.Body:FindFirstChildOfClass("ProximityPrompt") ~= nil
-	)
+	t.check("the egg hatched into a character with a head", anaPlot.Slot_1.Item:FindFirstChild("Head") ~= nil)
 	t.check("a character earns income", (ana:GetAttribute("Income") :: number) >= 1)
 	local before = ana:GetAttribute("Coins") :: number
 	world.advance(5)
 	t.check("coins grow while characters work", (ana:GetAttribute("Coins") :: number) > before)
-
-	-- raiding
-	local steals = world.prompts(anaPlot, "Steal")
-	t.equal("a character in a base can be stolen", #steals, 1)
-	steals[1].Triggered:Fire(ana)
-	t.check("the owner cannot steal their own", #world.prompts(anaPlot, "Steal") == 1)
-	steals[1].Triggered:Fire(ben)
-	t.equal("a raid removes it from the victim", #world.prompts(anaPlot, "Steal"), 0)
-	t.equal("and puts it in the thief's base", #world.prompts(benPlot, "Steal"), 1)
-
-	-- locking: Ben locks, Ana's raid fails
-	local locks = world.prompts(benPlot, "Lock base")
-	t.equal("a base has a lock pad", #locks, 1)
-	locks[1].Triggered:Fire(ana) -- not the owner: nothing happens
-	world.prompts(benPlot, "Steal")[1].Triggered:Fire(ana)
-	t.equal("an unlocked base can be raided by anyone", #world.prompts(benPlot, "Steal"), 0)
-	t.equal("and it landed with the raider", #world.prompts(anaPlot, "Steal"), 1)
-	world.prompts(anaPlot, "Lock base")[1].Triggered:Fire(ana)
-	world.prompts(anaPlot, "Steal")[1].Triggered:Fire(ben)
-	t.equal("a locked base cannot be raided", #world.prompts(anaPlot, "Steal"), 1)
-	world.advance(50)
-	world.prompts(anaPlot, "Steal")[1].Triggered:Fire(ben)
-	t.equal("the lock runs out", #world.prompts(anaPlot, "Steal"), 0)
 
 	-- admin events
 	local liveOps = world.load("src/server/LiveOps")

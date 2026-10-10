@@ -1,10 +1,9 @@
 --!strict
 -- Gives each player a base plot and keeps its parts in step with their Base state: eggs that count down, characters that
--- glow by mutation and can be raided. Visuals are plain parts (no meshes) so Rojo carries everything.
+-- glow by mutation. Visuals are plain parts (no meshes) so Rojo carries everything.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Config = require(ReplicatedStorage.Shared.Config)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Session = require(script.Parent.Session)
@@ -30,17 +29,10 @@ local RARITY_COLORS: { [string]: Color3 } = {
 
 local plots: { World.Plot } = {}
 local owned: { [Player]: World.Plot } = {}
-local onSteal: (Player, Player, number) -> () = function(_thief: Player, _owner: Player, _slot: number) end
-local onLock: (Player) -> () = function(_player: Player) end
 local onNotice: (Player, string) -> () = function(_player: Player, _text: string) end
 local onInstant: (Player, number) -> () = function(_player: Player, _slot: number) end
 local instantAvailable: (Player) -> boolean = function(_player: Player)
 	return false
-end
-
-function Plots.setHandlers(steal: (Player, Player, number) -> (), lock: (Player) -> ())
-	onSteal = steal
-	onLock = lock
 end
 
 function Plots.setInstant(handler: (Player, number) -> (), available: (Player) -> boolean)
@@ -176,16 +168,6 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		local suffix = if item.mutation ~= "Normal" and item.mutation then `{item.mutation} ` else ""
 		local per = if c then c.income * (Eggs.Mutations[item.mutation or "Normal"] or 1) else 0
 		tag(head, { suffix .. name, `+{Economy.format(per)}/s` }, 3)
-		local prompt = Instance.new("ProximityPrompt")
-		prompt.ActionText = "Steal"
-		prompt.ObjectText = name
-		prompt.HoldDuration = Config.Steal.HoldSeconds
-		prompt.MaxActivationDistance = Config.Steal.Reach
-		prompt.RequiresLineOfSight = false
-		prompt.Parent = body
-		prompt.Triggered:Connect(function(who)
-			onSteal(who, owner, n)
-		end)
 	end
 	model.Parent = pedestal
 end
@@ -235,19 +217,6 @@ function Plots.assign(player: Player): World.Plot?
 			plot.sign.Text = string.upper(player.DisplayName) .. "'S BASE"
 			owned[player] = plot
 			player.RespawnLocation = plot.spawn :: SpawnLocation
-			if not plot.lockPad:FindFirstChildOfClass("ProximityPrompt") then
-				local prompt = Instance.new("ProximityPrompt")
-				prompt.ActionText = "Lock base"
-				prompt.ObjectText = "keep raiders out"
-				prompt.HoldDuration = 0.3
-				prompt.MaxActivationDistance = 10
-				prompt.Parent = plot.lockPad
-				prompt.Triggered:Connect(function(who)
-					if plot.model:GetAttribute("OwnerUserId") == who.UserId then
-						onLock(who)
-					end
-				end)
-			end
 			return plot
 		end
 	end

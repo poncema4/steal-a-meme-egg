@@ -1,6 +1,6 @@
 # Steal a Meme Egg
 
-A simple, fast Roblox game by **Nexus Hollow Studios** (group owner: Swag_Boy435 / V1RTU4L): grab eggs off a conveyor, hatch them into meme characters that earn coins, and raid your friends' bases before they lock up. Live events and admin drops keep servers busy.
+A simple, fast Roblox game by **Nexus Hollow Studios** (group owner: Swag_Boy435 / V1RTU4L): steal eggs from meme guardians out in themed terrains, run them home to your base, hatch them into meme characters that earn coins, and train speed on your treadmill to go further. Live events and admin drops keep servers busy.
 
 The code is plain Luau in this repo. **Rojo** syncs it into Roblox Studio, **Lune** tests the game logic on any computer, and a GitHub Action can publish the place to Roblox.
 
@@ -20,9 +20,7 @@ Eggs ride a conveyor down the middle of the home lawn; out east, five themed ter
 
 | Do this | How |
 |---|---|
-| Buy an egg off the belt | walk up, press E |
 | Steal a guardian's egg | hold E on the egg in a nest (Meadow, then Dune, Lava, Frost, Cosmic) |
-| Steal from another player | hold E on a character in their base (lock yours with the red pad) |
 | Skip a hatch | hold E on the hatching egg (coins), or F for an instant hatch (token/Robux) |
 | Train speed / buy speed / buy a slot / rebirth | treadmill (stand on it), and the pads at the sides of your base |
 | Admin (group rank 250+, anyone in Studio) | chat: `/event luckyhour`, `/give 1000`, `/giveall 500`, `/announce hi`, `/clear`, `/help` |

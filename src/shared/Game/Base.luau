@@ -15,12 +15,10 @@ export type Item = {
 export type Base = {
 	size: number,
 	slots: { [number]: Item },
-	lockedUntil: number, -- the base cannot be raided before this time
-	lockReadyAt: number, -- the lock cannot be used again before this time
 }
 
 function Base.new(size: number): Base
-	return { size = size, slots = {}, lockedUntil = 0, lockReadyAt = 0 }
+	return { size = size, slots = {} }
 end
 
 function Base.firstFree(base: Base): number?
@@ -95,48 +93,6 @@ function Base.income(base: Base, multiplier: number): number
 		end
 	end
 	return total * multiplier
-end
-
-function Base.isLocked(base: Base, now: number): boolean
-	return now < base.lockedUntil
-end
-
--- Locks the base for `seconds`. Fails (false, seconds-left) while it is on cooldown.
-function Base.lock(base: Base, now: number, seconds: number, cooldown: number): (boolean, number)
-	if now < base.lockReadyAt then
-		return false, base.lockReadyAt - now
-	end
-	base.lockedUntil = now + seconds
-	base.lockReadyAt = now + cooldown
-	return true, 0
-end
-
--- Why a raid would fail right now, or nil if it would work.
-function Base.canSteal(victim: Base, thief: Base, slot: number, now: number): string?
-	local item = victim.slots[slot]
-	if not item then
-		return "empty"
-	end
-	if Base.isLocked(victim, now) then
-		return "locked"
-	end
-	if Base.firstFree(thief) == nil then
-		return "full"
-	end
-	return nil
-end
-
--- The raid: moves the item from the victim's slot into the thief's first free slot. Returns (ok, reason-or-slot).
-function Base.steal(victim: Base, thief: Base, slot: number, now: number): (boolean, string | number)
-	local why = Base.canSteal(victim, thief, slot, now)
-	if why then
-		return false, why
-	end
-	local item = victim.slots[slot]
-	victim.slots[slot] = nil
-	local target = Base.firstFree(thief) :: number
-	thief.slots[target] = item
-	return true, target
 end
 
 -- Adds a slot (up to max). Returns the new size.

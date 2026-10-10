@@ -4,7 +4,7 @@
 - Rules: eggs/characters/mutations, bases, economy, events, admin, zones, progression, guardians, nests, limited eggs, store, objective hints, rebirth, daily reward.
 - World: home lawn with 12 base plots, a conveyor, a sign to the Wilds, walls; the Wilds: 5 terrains, 6 nests each, guardians that chase, gates keyed to Meme Points.
 - Layout: nest and scenery positions come from `Rng` + `Layout` (shared, deterministic, no Roblox `Random`), so the tests check exactly the map players get (nests apart, scenery clear of nests/guardians/gates, all inside the walls).
-- Services: sessions + saving, conveyor, raiding and locking, treadmill/speed/slot pads, live events with a half-hourly schedule, admin chat commands (cross-server through MessagingService), limited eggs with shared stock, purchases with safe receipts, ten original sounds, shop screen, HUD with an always-on objective line.
+- Services: sessions + saving, treadmill/speed/slot pads, live events with a half-hourly schedule, admin chat commands (cross-server through MessagingService), limited eggs with shared stock, purchases with safe receipts, ten original sounds, shop screen, HUD with an always-on objective line.
 - Creator Hub: experience under Nexus Hollow Studios (universe 10770101743, place 115281364108212), icon and thumbnail ACTIVE, genre Simulation/Idle, description set, three passes created OFF-SALE (coins2x 2026694498, luck2x 2026622537, train2x 2025116507), ten sounds in the audio library.
 
 ## NOT verified (no Studio on Linux): please playtest and send screenshots or the Output text
