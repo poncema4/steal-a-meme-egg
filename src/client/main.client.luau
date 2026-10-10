@@ -9,7 +9,7 @@ local Prompts = require(script.Parent.Prompts)
 local Shop = require(script.Parent.Shop)
 
 print(`{Config.GameName} client v{Config.Version} started`)
-Hud.start(Players.LocalPlayer)
 Prompts.start(Players.LocalPlayer)
 Audio.start()
 Shop.start(Players.LocalPlayer)
+Hud.start(Players.LocalPlayer, { shop = Shop.toggle })

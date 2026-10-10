@@ -350,6 +350,8 @@ function Fake.world()
 		ChildAdded = true,
 		MouseEnter = true,
 		MouseLeave = true,
+		MouseButton1Down = true,
+		MouseButton1Up = true,
 		InputBegan = true,
 	}
 	local Methods = {}
@@ -1005,7 +1007,14 @@ function Fake.world()
 		data[service("Players")].props.LocalPlayer = player
 		local camera = create("Camera")
 		data[camera].props.Name = "Camera"
+		data[camera].props.ViewportSize = Vector2.new(1280, 720)
 		data[workspaceInstance].props.CurrentCamera = camera
+	end
+
+	-- Resizes the fake client's screen (a phone, a TV...) and tells whoever is listening, like Roblox does.
+	function world.setViewport(x, y)
+		local camera = data[workspaceInstance].props.CurrentCamera
+		camera.ViewportSize = Vector2.new(x, y)
 	end
 
 	-- One rendered frame on the client.

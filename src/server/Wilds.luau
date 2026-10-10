@@ -436,7 +436,7 @@ function Wilds.start()
 						x = back
 					end
 					local zone = Zones.at(x)
-					player:SetAttribute("Zone", if zone then zone.name else "Home Base")
+					player:SetAttribute("Zone", if zone then zone.name else "Safe Zone")
 				end
 			end
 		end
