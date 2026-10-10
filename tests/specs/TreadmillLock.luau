@@ -2,6 +2,7 @@
 -- The treadmill like the real game: step on and you are locked to it (the game runs for you, no keys to hold) until you jump off,
 -- and your speed climbs continuously while you are on it.
 local Fake = require("../fake/Roblox")
+local Belt = require("../../src/shared/Game/Belt")
 local Progression = require("../../src/shared/Game/Progression")
 
 return function(t)
@@ -26,6 +27,13 @@ return function(t)
 	t.check("the smooth level never goes backward as XP grows", rising)
 	t.check("the speed number rises between whole levels", Progression.speedStat(0.5) > Progression.speedStat(0))
 	t.check("and so does walking speed", Progression.walkSpeed(0.5) > Progression.walkSpeed(0))
+
+	-- the belt keeps a runner in the middle: exactly their speed at the middle, faster if they creep forward, slower if they slip back
+	t.equal("at the middle the belt runs exactly as fast as you", Belt.pace(40, 0), 40)
+	t.check("creeping forward speeds it up", Belt.pace(40, 2) > 40)
+	t.check("slipping back slows it down", Belt.pace(40, -2) < 40)
+	t.check("it never runs backward or away", Belt.pace(40, -50) >= 0 and Belt.pace(40, 50) <= 40 * Belt.MAX)
+	t.equal("a standing player gets a still belt", Belt.pace(0, 3), 0)
 
 	local world = Fake.world()
 	local V3 = world.Vector3
@@ -119,6 +127,22 @@ return function(t)
 	session.setCarry(ana, nil)
 	world.advance(0.3)
 	t.equal("with empty hands it locks", ana:GetAttribute("TreadmillLocked"), true)
+
+	-- on the belt: the pace follows where you stand
+	local walk = world.humanoid(ana).WalkSpeed
+	local centre = belt.Position
+	root.AssemblyLinearVelocity = V3.new(0, 0, 0)
+	root.Position = centre + plot.front * 3 + V3.new(0, 3, 0)
+	world.advance(0.3)
+	t.check("ahead of the middle the belt runs faster than you", (belt:GetAttribute("BeltSpeed") :: number) > walk)
+	root.AssemblyLinearVelocity = V3.new(0, 0, 0)
+	root.Position = centre - plot.front * 3 + V3.new(0, 3, 0)
+	world.advance(0.3)
+	t.check("behind the middle it runs slower", (belt:GetAttribute("BeltSpeed") :: number) < walk)
+	root.AssemblyLinearVelocity = V3.new(0, 0, 0)
+	root.Position = centre + V3.new(0, 3, 0)
+	world.advance(0.3)
+	t.check("in the middle it matches your speed", math.abs((belt:GetAttribute("BeltSpeed") :: number) - walk) < 0.2)
 	world.humanoid(ana).Health = 0
 	world.advance(0.3)
 	t.equal("dying unlocks", ana:GetAttribute("TreadmillLocked"), false)

@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
+local Belt = require(ReplicatedStorage.Shared.Game.Belt)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
 local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
 local Plots = require(script.Parent.Plots)
@@ -206,8 +207,12 @@ function Home.start(plots: { World.Plot })
 					lock(player, plot, root)
 				end
 				if locked[player] then
-					-- the belt carries you backward at your own pace and the game runs for you, so you stay put and train
-					local pace = if humanoid then humanoid.WalkSpeed * 0.95 else 0
+					-- the belt carries you backward exactly as fast as you run (a little more when you creep toward the front edge, a
+					-- little less when you slip back), so you stay in the middle and train for as long as you like
+					local belt = plot.treadmill
+					local away = root.Position - belt.Position
+					local ahead = away.X * plot.front.X + away.Z * plot.front.Z
+					local pace = if humanoid then Belt.pace(humanoid.WalkSpeed, ahead) else 0
 					plot.treadmill.AssemblyLinearVelocity = Vector3.new(-plot.front.X * pace, 0, -plot.front.Z * pace)
 					plot.treadmill:SetAttribute("BeltSpeed", pace)
 					Session.addSpeedXp(
