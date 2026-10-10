@@ -34,6 +34,7 @@ local specs = {
 	require("./specs/PanelsUi"),
 	require("./specs/Trap"),
 	require("./specs/TrapsWorld"),
+	require("./specs/MutatedEggs"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),

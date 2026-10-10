@@ -3,38 +3,42 @@
 -- random function, so a test can pick the egg.
 local Nest = {}
 
-export type Nest = { tier: string?, regrow: number }
+export type Nest = { tier: string?, mutation: string, regrow: number }
 
-function Nest.new(tier: string): Nest
-	return { tier = tier, regrow = 0 }
+function Nest.new(tier: string, mutation: string?): Nest
+	return { tier = tier, mutation = mutation or "Normal", regrow = 0 }
 end
 
 function Nest.hasEgg(n: Nest): boolean
 	return n.tier ~= nil
 end
 
--- Takes the egg out. Returns its tier, or nil if the nest is empty.
-function Nest.take(n: Nest, regrowSeconds: number): string?
-	local tier = n.tier
+-- Takes the egg out. Returns its tier and mutation, or nil if the nest is empty.
+function Nest.take(n: Nest, regrowSeconds: number): (string?, string)
+	local tier, mutation = n.tier, n.mutation
 	if tier then
 		n.tier = nil
+		n.mutation = "Normal"
 		n.regrow = regrowSeconds
 	end
-	return tier
+	return tier, mutation
 end
 
 -- Puts a recovered egg back (the thief was caught).
-function Nest.giveBack(n: Nest, tier: string)
+function Nest.giveBack(n: Nest, tier: string, mutation: string?)
 	n.tier = tier
+	n.mutation = mutation or "Normal"
 	n.regrow = 0
 end
 
 -- Counts down the regrow timer; when it ends the nest gets a new egg from `pick()`. Returns true on the tick it regrows.
-function Nest.tick(n: Nest, dt: number, pick: () -> string): boolean
+function Nest.tick(n: Nest, dt: number, pick: () -> (string, string?)): boolean
 	if n.tier == nil then
 		n.regrow -= dt
 		if n.regrow <= 0 then
-			n.tier = pick()
+			local tier, mutation = pick()
+			n.tier = tier
+			n.mutation = mutation or "Normal"
 			n.regrow = 0
 			return true
 		end

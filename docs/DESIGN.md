@@ -52,3 +52,6 @@ The Wilds (above), game passes (2x coins, 2x luck, extra slot), Robux luck boost
 
 ## Traps
 Press 1, 2 or 3 (gamepad X, tap a hotbar slot) out in a terrain to put a trap down where you stand. At most 3 per player at once, 2 s between placements, they rot after 90 s. A guardian that is chasing (or heading home) and runs within 5 studs of a trap is held for 3.5 s; the trap is used up. Sleeping guardians do not spring them. Not in the Safe Zone. Rules: `Shared/Game/Trap`, `Guardian.stunned`; server: `src/server/Traps.luau`.
+
+## Mutated eggs
+A nest can grow a Gold or Rainbow egg (`Eggs.nestMutation`: Meadow about 8% Gold and 2% Rainbow, more in each deeper terrain, capped at 40% and 12%). The egg is Gold or Rainbow-coloured with a tag in the nest, keeps its mutation when stolen, carried, dropped and returned, and when delivered: Gold is worth double Meme Points (and sale price), Rainbow five times. In your base it hatches into a pet with that mutation (a Normal egg still rolls the usual chance at hatching). Saved with the base.

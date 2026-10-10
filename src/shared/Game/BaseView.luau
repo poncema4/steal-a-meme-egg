@@ -14,7 +14,10 @@ function BaseView.encode(base: Base.Base): string
 	for slot = 1, base.size do
 		local item = base.slots[slot]
 		if item and item.kind == "egg" and item.tier then
-			table.insert(rows, `{slot},e,{item.tier},{math.max(0, math.ceil(item.hatchLeft or 0))}`)
+			table.insert(
+				rows,
+				`{slot},e,{item.tier},{math.max(0, math.ceil(item.hatchLeft or 0))},{item.eggMutation or "Normal"}`
+			)
 		elseif item and item.kind == "char" and item.id then
 			table.insert(rows, `{slot},c,{item.id},{item.mutation or "Normal"}`)
 		end
@@ -25,11 +28,16 @@ end
 function BaseView.decode(text: string): { Row }
 	local rows: { Row } = {}
 	for chunk in string.gmatch(text, "[^;]+") do
-		local slot, kind, id, extra = string.match(chunk, "^(%d+),([ec]),(%w+),(%w+)$")
+		local slot, kind, id, extra, more = string.match(chunk, "^(%d+),([ec]),(%w+),(%w+),?(%w*)$")
 		local n = tonumber(slot)
 		if n and kind and id and extra and n >= 1 and n <= 12 and #rows < 12 then
 			if kind == "e" and Eggs.tier(id) then
-				table.insert(rows, { slot = n, kind = "egg", id = id, secondsLeft = tonumber(extra) or 0 })
+				local named = more or ""
+				local mutation = if named ~= "" and Eggs.Mutations[named] then named else "Normal"
+				table.insert(
+					rows,
+					{ slot = n, kind = "egg", id = id, secondsLeft = tonumber(extra) or 0, mutation = mutation }
+				)
 			elseif kind == "c" and Eggs.character(id) and Eggs.Mutations[extra] then
 				table.insert(rows, { slot = n, kind = "char", id = id, mutation = extra })
 			end

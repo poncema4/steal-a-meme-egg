@@ -100,12 +100,19 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 	if item.kind == "egg" and item.tier then
 		World.roundify(body)
 		body.Size = Vector3.new(4, 5, 4)
-		body.Color = TIER_COLORS[item.tier] or Color3.new(1, 1, 1)
-		body.Material = Enum.Material.SmoothPlastic
+		local mutated = item.eggMutation ~= nil and item.eggMutation ~= "Normal"
+		body.Color = if item.eggMutation == "Gold"
+			then Color3.fromRGB(255, 205, 40)
+			elseif item.eggMutation == "Rainbow" then Color3.fromRGB(255, 120, 200)
+			else TIER_COLORS[item.tier] or Color3.new(1, 1, 1)
+		body.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
 		body.CFrame = pedestal.CFrame + Vector3.new(0, 3.2, 0)
 		body.Parent = model
 		local tier = Eggs.tier(item.tier)
-		tag(body, { tier and tier.name or "Egg", `hatching {math.ceil(item.hatchLeft or 0)}s` }, 3.4)
+		tag(body, {
+			(if mutated then `{item.eggMutation} ` else "") .. (if tier then tier.name else "Egg"),
+			`hatching {math.ceil(item.hatchLeft or 0)}s`,
+		}, 3.4)
 		if tier then
 			local skip = Instance.new("ProximityPrompt")
 			skip.Name = "SkipPrompt"

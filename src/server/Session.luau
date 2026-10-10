@@ -31,6 +31,7 @@ export type State = {
 	collection: Collection.Collection, -- the Index: every character (and mutation) ever seen in this player's base
 	carry: string?, -- the egg tier being carried back from the Wilds
 	carryFrom: string?, -- which nest it came from (so a catch can put it back)
+	carryMutation: string, -- the carried egg's mutation (Normal, Gold or Rainbow)
 	purchases: Store.Purchases, -- passes owned, receipts seen, hatch tokens, paid limited eggs waiting for room
 	rebirths: number,
 	dailyLast: number?, -- the UTC day of the last daily reward
@@ -131,6 +132,7 @@ local function publish(state: State)
 		if level >= Progression.MAX_LEVEL then 1 else left / Progression.xpForNext(level)
 	)
 	state.player:SetAttribute("Carrying", state.carry or "")
+	state.player:SetAttribute("CarryingMutation", if state.carry then state.carryMutation else "")
 	local owned = {}
 	for key, has in state.purchases.passes do
 		if has then
@@ -381,22 +383,23 @@ function Session.claimDaily(player: Player): boolean
 	return true
 end
 
-function Session.carrying(player: Player): (string?, string?)
+function Session.carrying(player: Player): (string?, string?, string?)
 	local state = states[player]
 	if not state then
-		return nil, nil
+		return nil, nil, nil
 	end
-	return state.carry, state.carryFrom
+	return state.carry, state.carryFrom, if state.carry then state.carryMutation else nil
 end
 
 -- Starts or ends carrying an egg (nil clears it). Slows or restores the runner.
-function Session.setCarry(player: Player, tier: string?, from: string?)
+function Session.setCarry(player: Player, tier: string?, from: string?, mutation: string?)
 	local state = states[player]
 	if not state then
 		return
 	end
 	state.carry = tier
 	state.carryFrom = if tier then from else nil
+	state.carryMutation = if tier and mutation and Eggs.Mutations[mutation] then mutation else "Normal"
 	publish(state)
 	Session.applySpeed(player)
 end
@@ -408,19 +411,22 @@ function Session.deliver(player: Player): (boolean, string)
 		return false, "nothing to deliver"
 	end
 	local tier = state.carry
-	local points = Progression.pointsForEgg(tier)
+	local mutation = state.carryMutation
+	-- a Gold egg is worth double, a Rainbow egg five times, in Meme Points and in sale price
+	local worth = Eggs.Mutations[mutation] or 1
+	local points = Progression.pointsForEgg(tier) * worth
 	state.mp += points
-	state.carry, state.carryFrom = nil, nil
+	state.carry, state.carryFrom, state.carryMutation = nil, nil, "Normal"
 	local message = `+{points} Meme Points!`
 	if Base.firstFree(state.base) == nil then
 		-- a full base must never trap you carrying an egg you cannot drop: it is sold for half its price instead
 		local def = Eggs.tier(tier)
-		local coins = if def then math.floor(def.price * 0.5) else 0
+		local coins = if def then math.floor(def.price * 0.5 * worth) else 0
 		state.coins += coins
 		message =
 			`Base full! Sold the egg for {Economy.format(coins)} coins (+{points} Meme Points). Buy a slot to keep eggs!`
 	else
-		Base.placeEgg(state.base, tier)
+		Base.placeEgg(state.base, tier, mutation)
 	end
 	Session.applySpeed(player)
 	Session.changed(player)
@@ -490,6 +496,7 @@ local function serialise(state: State): { [string]: any }
 				kind = item.kind,
 				tier = item.tier,
 				hatchLeft = item.hatchLeft,
+				eggMutation = item.eggMutation,
 				id = item.id,
 				mutation = item.mutation,
 			}
@@ -563,6 +570,11 @@ local function restore(state: State, saved: { [string]: any })
 					kind = "egg",
 					tier = item.tier,
 					hatchLeft = sane(item.hatchLeft, def.hatchSeconds, 0.1, def.hatchSeconds),
+					eggMutation = if type(item.eggMutation) == "string"
+							and item.eggMutation ~= "Normal"
+							and Eggs.Mutations[item.eggMutation]
+						then item.eggMutation
+						else nil,
 				}
 			elseif item.kind == "char" and type(item.id) == "string" and Eggs.character(item.id) then
 				local mutation = if type(item.mutation) == "string" and Eggs.Mutations[item.mutation]
@@ -631,6 +643,7 @@ local function add(player: Player, onJoin: (Player) -> ())
 		rebirths = 0,
 		dailyStreak = 0,
 		slow = false,
+		carryMutation = "Normal",
 	}
 	states[player] = state
 	load(state)

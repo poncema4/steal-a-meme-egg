@@ -218,7 +218,10 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 				end
 				local tier = Eggs.tier(row.id)
 				local left = row.secondsLeft or 0
-				entry.title.Text = if tier then tier.name else row.id
+				local mutated = row.mutation ~= nil and row.mutation ~= "Normal"
+				entry.title.Text = (if mutated then `{row.mutation} ` else "") .. (if tier then tier.name else row.id)
+				entry.title.TextColor3 = (if row.mutation then MUTATION_COLORS[row.mutation] else nil)
+					or Color3.new(1, 1, 1)
 				entry.timer.Text = `hatching in {left}s`
 				entry.skip.Text = if tier
 					then `Skip {Economy.format(Economy.skipCost(tier.price, left, tier.hatchSeconds))}`

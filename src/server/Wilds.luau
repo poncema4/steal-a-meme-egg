@@ -205,13 +205,32 @@ local function buildGuardian(entry: Entry, parent: Instance, c: Eggs.Character)
 	entry.model = model
 end
 
-local function setEgg(entry: Entry, tier: string?)
+-- How a mutated egg looks: Gold glows gold, Rainbow cycles through every colour (see the heartbeat).
+local MUTATION_COLORS: { [string]: Color3 } = {
+	Gold = Color3.fromRGB(255, 205, 40),
+	Rainbow = Color3.fromRGB(255, 120, 200),
+}
+
+local function setEgg(entry: Entry, tier: string?, mutation: string?)
 	entry.egg.Transparency = if tier then 0 else 1
 	entry.prompt.Enabled = tier ~= nil
+	local tint: Color3? = if mutation then MUTATION_COLORS[mutation] else nil
+	local mutated = tier ~= nil and tint ~= nil
+	entry.egg:SetAttribute("Mutation", if mutated and mutation then mutation else "Normal")
+	local tag = entry.egg:FindFirstChild("MutationTag")
+	if tag and tag:IsA("BillboardGui") then
+		tag.Enabled = mutated
+		local text = tag:FindFirstChild("L1")
+		if text and text:IsA("TextLabel") and mutation then
+			text.Text = `* {string.upper(mutation)} *`
+			text.TextColor3 = tint or Color3.new(1, 1, 1)
+		end
+	end
 	if tier then
-		entry.egg.Color = TIER_COLORS[tier] or Color3.new(1, 1, 1)
+		entry.egg.Color = tint or TIER_COLORS[tier] or Color3.new(1, 1, 1)
+		entry.egg.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
 		local def = Eggs.tier(tier)
-		entry.prompt.ObjectText = def and def.name or "Egg"
+		entry.prompt.ObjectText = (if mutated then `{mutation} ` else "") .. (if def then def.name else "Egg")
 	end
 end
 
@@ -233,13 +252,18 @@ local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, parent: Inst
 		prompt.MaxActivationDistance = 11
 		prompt.RequiresLineOfSight = false
 		prompt.Parent = egg
+		label(egg, { "" }, 4.6, 200)
+		local mutationTag = egg:FindFirstChild("Tag")
+		if mutationTag then
+			mutationTag.Name = "MutationTag"
+		end
 		local pool = Eggs.tier(tier)
 		local pick = pool and pool.pool[1].id or "SoggyToast"
 		local c = Eggs.character(pick) or Eggs.Characters.SoggyToast
 		local entry: Entry = {
 			id = model.Name,
 			zone = zone,
-			nest = Nest.new(tier),
+			nest = Nest.new(tier, Eggs.nestMutation(table.find(Zones.List, zone) or 1, math.random)),
 			guardian = Guardian.new(x + Layout.GUARDIAN_OFFSET, z, zone.guardianSpeed),
 			model = model,
 			egg = egg,
@@ -250,7 +274,7 @@ local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, parent: Inst
 		model.Parent = parent
 		buildGuardian(entry, parent, c)
 		entry.model:PivotTo(CFrame.new(entry.guardian.x, BODY_Y, entry.guardian.z))
-		setEgg(entry, tier)
+		setEgg(entry, tier, entry.nest.mutation)
 		prompt.Triggered:Connect(function(who)
 			Wilds.steal(who, entry)
 		end)
@@ -318,12 +342,12 @@ function Wilds.steal(player: Player, entry: Entry)
 		notify(player, `You need {entry.zone.mp} Meme Points for {entry.zone.name}`)
 		return
 	end
-	local tier = Nest.take(entry.nest, Config.Wilds.NestRespawnSeconds)
+	local tier, mutation = Nest.take(entry.nest, Config.Wilds.NestRespawnSeconds)
 	if not tier then
 		return
 	end
 	entry.thief = player
-	Session.setCarry(player, tier, entry.id)
+	Session.setCarry(player, tier, entry.id, mutation)
 	setEgg(entry, nil)
 	Guardian.alert(entry.guardian, Config.Wilds.ChaseSeconds)
 	sfx(player, "steal")
@@ -336,7 +360,11 @@ end
 local function recover(entry: Entry, message: string?, sendHome: boolean?)
 	local thief = entry.thief
 	entry.thief = nil
-	local carried = if thief then Session.carrying(thief) else nil
+	local carried: string?, carriedMutation: string? = nil, nil
+	if thief then
+		local tier, _, mutation = Session.carrying(thief)
+		carried, carriedMutation = tier, mutation
+	end
 	if thief and carried then
 		Session.setCarry(thief, nil)
 		local root = rootOf(thief)
@@ -349,8 +377,8 @@ local function recover(entry: Entry, message: string?, sendHome: boolean?)
 		end
 	end
 	if carried then
-		Nest.giveBack(entry.nest, carried)
-		setEgg(entry, carried)
+		Nest.giveBack(entry.nest, carried, carriedMutation)
+		setEgg(entry, carried, carriedMutation)
 	end
 end
 
@@ -409,10 +437,15 @@ function Wilds.start()
 			if
 				entry.thief == nil
 				and Nest.tick(entry.nest, dt * nestRate(), function()
-					return Zones.eggFor(entry.zone, math.random)
+					return Zones.eggFor(entry.zone, math.random),
+						Eggs.nestMutation(table.find(Zones.List, entry.zone) or 1, math.random)
 				end)
 			then
-				setEgg(entry, entry.nest.tier)
+				setEgg(entry, entry.nest.tier, entry.nest.mutation)
+			end
+			-- a Rainbow egg slowly cycles through every colour
+			if entry.egg:GetAttribute("Mutation") == "Rainbow" and entry.nest.tier ~= nil then
+				entry.egg.Color = Color3.fromHSV((os.clock() * 0.25) % 1, 0.6, 1)
 			end
 		end
 		-- the gates, and the "Zone" label the HUD shows
