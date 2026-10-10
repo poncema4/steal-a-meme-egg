@@ -98,6 +98,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		root: Frame,
 		portrait: Frame,
 		letter: TextLabel,
+		picture: ImageLabel?,
 		name: TextLabel,
 		income: TextLabel,
 		chips: { [string]: TextLabel },
@@ -115,6 +116,21 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		corner(portrait, 12)
 		local letter = Ui.label(portrait, "Letter", 44)
 		letter.Size = UDim2.fromScale(1, 1)
+		-- the portrait: a rendered picture where we have one (a black silhouette until discovered), else the letter tile
+		local picture: ImageLabel? = nil
+		local artId = Ui.petIconId(c.id)
+		if artId then
+			local image = Instance.new("ImageLabel")
+			image.Name = "Picture"
+			image.BackgroundTransparency = 1
+			image.Size = UDim2.fromScale(1.05, 1.05)
+			image.Position = UDim2.fromScale(-0.025, -0.025)
+			image.Image = artId
+			image.ScaleType = Enum.ScaleType.Fit
+			image.Parent = portrait
+			letter.Visible = false
+			picture = image
+		end
 		local name = Ui.label(root, "Name", 17)
 		name.Position = UDim2.fromOffset(0, 90)
 		name.Size = UDim2.new(1, 0, 0, 22)
@@ -129,10 +145,16 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			chip.Position = UDim2.fromOffset(6 + (i - 1) * 72, 140)
 			chips[mutation] = chip
 		end
-		table.insert(
-			cardList,
-			{ root = root, portrait = portrait, letter = letter, name = name, income = income, chips = chips, char = c }
-		)
+		table.insert(cardList, {
+			root = root,
+			portrait = portrait,
+			letter = letter,
+			picture = picture,
+			name = name,
+			income = income,
+			chips = chips,
+			char = c,
+		})
 	end
 
 	local function refreshIndex()
@@ -143,6 +165,9 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			local seen = Collection.has(found, card.char.id)
 			card.name.Text = if seen then card.char.name else "???"
 			card.letter.Text = if seen then string.sub(card.char.name, 1, 1) else "?"
+			if card.picture then
+				card.picture.ImageColor3 = if seen then Color3.new(1, 1, 1) else Color3.new(0, 0, 0) -- undiscovered: a silhouette
+			end
 			card.portrait.BackgroundColor3 = if seen
 				then (RARITY_COLORS[card.char.rarity] or RARITY_COLORS.Common)
 				else Color3.fromRGB(70, 70, 84)
@@ -250,7 +275,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	petLayout.Padding = UDim.new(0, 8)
 	petLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	petLayout.Parent = petList
-	local petRows: { [number]: { root: Frame, title: TextLabel, income: TextLabel } } = {}
+	local petRows: { [number]: { root: Frame, title: TextLabel, income: TextLabel, picture: ImageLabel } } = {}
 
 	local function refreshPets()
 		local rows = BaseView.decode(attr(player, "BaseItems"))
@@ -265,19 +290,27 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 					local root = frame(petList, `PetRow_{row.slot}`, UDim2.new(1, -8, 0, Ui.tap(gui, 56)))
 					root.LayoutOrder = row.slot
 					corner(root, 10)
+					local picture = Instance.new("ImageLabel")
+					picture.Name = "Picture"
+					picture.BackgroundTransparency = 1
+					picture.Size = UDim2.fromOffset(48, 48)
+					picture.Position = UDim2.new(0, 8, 0.5, -24)
+					picture.ScaleType = Enum.ScaleType.Fit
+					picture.Parent = root
 					local title = Ui.label(root, "Title", 22)
-					title.Position = UDim2.fromOffset(12, 0)
-					title.Size = UDim2.fromScale(0.62, 1)
+					title.Position = UDim2.fromOffset(64, 0)
+					title.Size = UDim2.fromScale(0.55, 1)
 					title.TextXAlignment = Enum.TextXAlignment.Left
 					local income = Ui.label(root, "Income", 22, Color3.fromRGB(80, 255, 90))
 					income.AnchorPoint = Vector2.new(1, 0)
 					income.Position = UDim2.new(1, -12, 0, 0)
 					income.Size = UDim2.fromScale(0.34, 1)
 					income.TextXAlignment = Enum.TextXAlignment.Right
-					entry = { root = root, title = title, income = income }
+					entry = { root = root, title = title, income = income, picture = picture }
 					petRows[row.slot] = entry
 				end
 				local c = Eggs.character(row.id)
+				entry.picture.Image = Ui.petIconId(row.id) or ""
 				local mutation = row.mutation or "Normal"
 				local multiplier = Eggs.Mutations[mutation] or 1
 				entry.title.Text = (if c then c.name else row.id)

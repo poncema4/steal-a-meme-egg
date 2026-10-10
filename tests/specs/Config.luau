@@ -1,5 +1,6 @@
 --!strict
 local Config = require("../../src/shared/Config")
+local Eggs = require("../../src/shared/Game/Eggs")
 
 return function(t)
 	-- every sound the game asks for exists and is a real asset id
@@ -41,6 +42,27 @@ return function(t)
 		end
 	end
 	t.check("every HUD icon has its own asset id", iconsOk)
+
+	-- every character has a portrait with its own asset id
+	local portraits = Config.PetIcons :: { [string]: string }
+	local portraitsOk = true
+	for charId in Eggs.Characters do
+		local id = portraits[charId]
+		if id == nil or string.match(id, "^rbxassetid://%d+$") == nil or used[id] then
+			portraitsOk = false
+			print(`  bad portrait {charId}: {tostring(id)} ({tostring(id and used[id])})`)
+		else
+			used[id] = charId
+		end
+	end
+	t.check("every character has a portrait with its own asset id", portraitsOk)
+	local extra = false
+	for charId in portraits do
+		if Eggs.Characters[charId] == nil then
+			extra = true
+		end
+	end
+	t.check("and there are no portraits for characters that do not exist", not extra)
 
 	-- the studio group and save settings are what Creator Hub shows
 	t.equal("the studio group id", Config.GroupId, 749648777)
