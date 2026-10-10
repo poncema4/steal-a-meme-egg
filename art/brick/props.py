@@ -132,7 +132,11 @@ def treadmill_topper(g):
 RECIPES = {"Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
 
 
+# the big, round props use bigger bricks: far fewer parts (there are about thirty of each in a terrain) and a chunkier toy look
+UNITS = {"Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
+
+
 def build(name):
-    g = Grid(U)
+    g = Grid(UNITS.get(name, U))
     RECIPES[name](g)
     return g
