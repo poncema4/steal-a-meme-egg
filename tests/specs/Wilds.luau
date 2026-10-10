@@ -130,11 +130,13 @@ return function(t)
 	entry.prompt.Triggered:Fire(ana)
 	t.check("the nest egg can be stolen again after a catch", ana:GetAttribute("Carrying") ~= "")
 	local speed = world.humanoid(ana).WalkSpeed
-	for _ = 1, 130 do
+	for _ = 1, 70 do
 		root.Position = root.Position - V3.new(speed * 0.1, 0, 0)
 		world.advance(0.1)
 	end
 	t.equal("a runner faster than the guardian keeps the egg", ana:GetAttribute("Carrying") ~= "", true)
+	root.Position = V3.new(entry.egg.Position.X, 3, 150) -- out by the wall, far from the boss
+	world.advance(8)
 	t.check("and the guardian gave up", entry.guardian.state ~= "Chase")
 	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
@@ -157,7 +159,7 @@ return function(t)
 	root.Position = V3.new(entry.egg.Position.X - 7, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
 	t.check("a thief is out with the egg", ana:GetAttribute("Carrying") ~= "")
-	root.Position = V3.new(entry.egg.Position.X - 191, 3, entry.egg.Position.Z) -- far from the guardian, not home yet
+	root.Position = V3.new(entry.egg.Position.X, 3, 150) -- far from the boss out by the wall, not home yet
 	world.advance(40)
 	t.check("the thief still has the egg after 40 seconds", ana:GetAttribute("Carrying") ~= "")
 	t.check("so the nest has not grown a new one", not entry.prompt.Enabled)

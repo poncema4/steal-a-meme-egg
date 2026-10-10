@@ -545,7 +545,13 @@ function Fake.world()
 		return d.signals["prop:" .. name]
 	end
 	function Methods.GetPivot(self)
-		return data[self].props.CFrame or CFrame.identity
+		-- like Roblox: a model's pivot is its PrimaryPart's position (once it has one), else wherever it was last moved to
+		local d = data[self]
+		local primary = d.props.PrimaryPart
+		if d.class == "Model" and primary then
+			return primary.CFrame
+		end
+		return d.props.CFrame or CFrame.identity
 	end
 	function Methods.Kick(self, message)
 		table.insert(world.kicked, { player = self, message = message })

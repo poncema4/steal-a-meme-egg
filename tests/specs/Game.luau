@@ -8,6 +8,7 @@ local Zones = require("../../src/shared/Game/Zones")
 
 return function(t)
 	local world = Fake.world()
+	world.workspace:SetAttribute("ShowAllPlots", true) -- these checks look at every base, not just the occupied ones
 	world.studio = false
 	local storage = world.service("ReplicatedStorage")
 	local ok, err = pcall(world.load, "src/server/main.server")
@@ -84,10 +85,11 @@ return function(t)
 	local firstDay = (Daily.reward(1, 0))
 	t.equal("a joining player starts with coins and the first daily reward", ana:GetAttribute("Coins"), 150 + firstDay)
 	t.equal("and the starting slots", ana:GetAttribute("Slots"), 6)
-	local anaPlot = (map :: Instance):FindFirstChild("Plot_1") :: Instance
-	local benPlot = (map :: Instance):FindFirstChild("Plot_2") :: Instance
-	t.equal("the first player owns plot 1", anaPlot:GetAttribute("OwnerUserId"), 11)
-	t.equal("the second owns plot 2", benPlot:GetAttribute("OwnerUserId"), 12)
+	-- the first player gets the middle of the arc (base 4), the second the one beside it (base 5)
+	local anaPlot = (map :: Instance):FindFirstChild("Plot_4") :: Instance
+	local benPlot = (map :: Instance):FindFirstChild("Plot_5") :: Instance
+	t.equal("the first player owns base 4, the middle of the arc", anaPlot:GetAttribute("OwnerUserId"), 11)
+	t.equal("the second owns base 5, next to it", benPlot:GetAttribute("OwnerUserId"), 12)
 
 	-- an egg in the base hatches
 	local session = world.load("src/server/Session")

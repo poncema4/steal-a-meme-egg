@@ -347,6 +347,17 @@ local function buildCorridor(map: Instance)
 		map
 	)
 	plaza.Shape = Enum.PartType.Cylinder
+	-- where a player first appears, before their base is assigned (an unused base has no spawn: it is parked underground)
+	local lobby = Instance.new("SpawnLocation")
+	lobby.Name = "LobbySpawn"
+	lobby.Size = Vector3.new(6, 1, 6)
+	lobby.CFrame = CFrame.new(World.PLAZA.X, 0.55, World.PLAZA.Z)
+	lobby.Anchored = true
+	lobby.CanCollide = false
+	lobby.Neutral = true
+	lobby.Duration = 0
+	lobby.Transparency = 1
+	lobby.Parent = map
 	local tans = { Color3.fromRGB(205, 150, 98), Color3.fromRGB(190, 136, 86) }
 	local segments = math.ceil(length / band)
 	for _, side in { -1, 1 } do

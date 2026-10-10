@@ -25,6 +25,7 @@ end
 
 return function(t)
 	local world = Fake.world()
+	world.workspace:SetAttribute("ShowAllPlots", true) -- these checks look at every base, not just the occupied ones
 	local V3 = world.Vector3
 	local ok, err = pcall(world.load, "src/server/main.server")
 	t.check("the server starts", ok, tostring(err))
@@ -49,7 +50,11 @@ return function(t)
 	t.equal("a handrail each side", count(model, "Handrail"), 2)
 	t.check("a console with a display", count(model, "Console") == 1 and find(model, "ConsoleGui") ~= nil)
 	t.check("the belt is long enough to run on", plot.treadmill.Size.Z >= 18)
-	t.check("and low enough to step onto", plot.treadmill.Position.Y + plot.treadmill.Size.Y / 2 <= 1.0)
+	t.check(
+		"and low enough to step onto",
+		plot.treadmill.Position.Y + plot.treadmill.Size.Y / 2 <= 1.0,
+		tostring(plot.treadmill.Position)
+	)
 	-- the console faces the runner (back toward the pen)
 	local console = find(model, "Console") :: Part
 	local look = console.CFrame.LookVector
