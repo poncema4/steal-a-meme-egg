@@ -22,10 +22,6 @@ return function(t)
 	end
 	t.check("every level costs more XP and more coins than the last", increasing)
 
-	t.equal("level 0 jumps at the base power", Progression.jumpPower(0), Progression.BASE_JUMP)
-	t.equal("the top level jumps at the max power", Progression.jumpPower(Progression.MAX_LEVEL), Progression.MAX_JUMP)
-	t.check("jump power grows with level", Progression.jumpPower(15) > Progression.jumpPower(5))
-	t.equal("jump power is capped", Progression.jumpPower(999), Progression.MAX_JUMP)
 	t.equal("level 0 walks at the base speed", Progression.walkSpeed(0), Progression.BASE_SPEED)
 	t.check("each level is faster", Progression.walkSpeed(5) > Progression.walkSpeed(4))
 	t.equal("speed stops growing at the cap", Progression.walkSpeed(99), Progression.walkSpeed(Progression.MAX_LEVEL))

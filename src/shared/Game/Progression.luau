@@ -31,15 +31,6 @@ function Progression.walkSpeed(level: number): number
 	return Progression.BASE_SPEED + math.clamp(level, 0, Progression.MAX_LEVEL) * Progression.SPEED_PER_LEVEL
 end
 
--- Jump power rises with the speed level too (Roblox default is 50), so the treadmill also trains jump height.
-Progression.BASE_JUMP = 50
-Progression.MAX_JUMP = 80
-
-function Progression.jumpPower(level: number): number
-	local l = math.clamp(level, 0, Progression.MAX_LEVEL)
-	return Progression.BASE_JUMP + (Progression.MAX_JUMP - Progression.BASE_JUMP) * l / Progression.MAX_LEVEL
-end
-
 -- Carrying an egg slows you down a little, so a guardian can still catch a careless runner.
 Progression.CARRY_FACTOR = 0.9
 
