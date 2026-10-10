@@ -5,6 +5,7 @@
 local Players = game:GetService("Players")
 
 local Look = require(script.Parent.Look)
+local Models = require(script.Parent.Models)
 local World = require(script.Parent.World)
 
 local Carry = {}
@@ -75,6 +76,19 @@ function Carry.sync(player: Player)
 		egg = part
 	end
 	local shape = egg :: Part
+	-- the real egg model rides on the (now invisible) anchor part; it is rebuilt if the tier or mutation changed
+	local shown = shape:GetAttribute("ModelKey")
+	local key = `{tier}/{mutationName}`
+	if shown ~= key then
+		local old = shape:FindFirstChild("Visual")
+		if old then
+			old:Destroy()
+		end
+		shape:SetAttribute("ModelKey", key)
+		if Models.attach(shape, "Eggs", tier, mutationName, 0.75) then
+			shape.Transparency = 1
+		end
+	end
 	shape.Color = Look.eggColor(tier, mutationName)
 	shape.Material = if Look.isMutated(mutationName) then Enum.Material.Neon else Enum.Material.SmoothPlastic
 	local light = shape:FindFirstChildOfClass("PointLight")

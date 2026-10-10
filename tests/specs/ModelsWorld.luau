@@ -96,4 +96,20 @@ return function(t)
 		(wilds:FindFirstChild("Boss_Dune") :: Instance):FindFirstChild("Visual") == nil
 	)
 	t.check("every treadmill wears its topper", plot.model:FindFirstChild("TreadmillTopper") ~= nil)
+
+	-- a stolen egg rides on your head as its model
+	world.spawnCharacter(ana)
+	world.advance(0.6)
+	local wildsMod = world.load("src/server/Wilds")
+	local entry = wildsMod.entries()[1]
+	entry.nest.tier = "Soggy"
+	entry.nest.mutation = "Gold"
+	world.root(ana).Position = world.Vector3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
+	entry.prompt.Triggered:Fire(ana)
+	world.advance(0.3)
+	local carried = (ana.Character :: Instance):FindFirstChild("CarryEgg") :: Instance
+	t.check("a carried egg wears its model", carried ~= nil and carried:FindFirstChild("Visual") ~= nil)
+	local blob = carried:FindFirstChild("Visual"):FindFirstChild("Blob") :: BasePart
+	t.check("welded so it moves with you", blob:FindFirstChildOfClass("WeldConstraint") ~= nil and not blob.Anchored)
+	t.check("a gold egg shines", blob.Material == Enum.Material.Neon)
 end
