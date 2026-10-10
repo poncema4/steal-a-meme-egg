@@ -32,10 +32,15 @@ local plots: { World.Plot } = {}
 local owned: { [Player]: World.Plot } = {}
 local onSteal: (Player, Player, number) -> () = function(_thief: Player, _owner: Player, _slot: number) end
 local onLock: (Player) -> () = function(_player: Player) end
+local onNotice: (Player, string) -> () = function(_player: Player, _text: string) end
 
 function Plots.setHandlers(steal: (Player, Player, number) -> (), lock: (Player) -> ())
 	onSteal = steal
 	onLock = lock
+end
+
+function Plots.setNotify(fn: (Player, string) -> ())
+	onNotice = fn
 end
 
 function Plots.of(player: Player): World.Plot?
@@ -100,6 +105,22 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		body.Parent = model
 		local tier = Eggs.tier(item.tier)
 		tag(body, { tier and tier.name or "Egg", `hatching {math.ceil(item.hatchLeft or 0)}s` }, 3.4)
+		if tier then
+			local skip = Instance.new("ProximityPrompt")
+			skip.ActionText = "Skip hatch"
+			skip.ObjectText =
+				`{Economy.format(Economy.skipCost(tier.price, item.hatchLeft or 0, tier.hatchSeconds))} coins`
+			skip.HoldDuration = 0.4
+			skip.MaxActivationDistance = 10
+			skip.RequiresLineOfSight = false
+			skip.Parent = body
+			skip.Triggered:Connect(function(who)
+				if who == owner then
+					local _, message = Session.skipHatch(owner, n)
+					onNotice(owner, message)
+				end
+			end)
+		end
 	else
 		local c = Eggs.character(item.id or "")
 		body.Size = Vector3.new(3.5, 4.5, 2.5)

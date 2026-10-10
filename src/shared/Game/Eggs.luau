@@ -79,6 +79,43 @@ Eggs.Tiers = {
 	},
 } :: { Tier }
 
+-- Limited eggs: not on the belt and not in the Wilds. One rotates in every half hour with a shared stock (Shared/Game/Limited).
+Eggs.LimitedTiers = {
+	{
+		id = "GooseGold",
+		name = "Golden Goose Egg",
+		price = 1000000000,
+		hatchSeconds = 600,
+		pool = {
+			{ id = "GoldenGoose", weight = 60 },
+			{ id = "PlatinumGoose", weight = 30 },
+			{ id = "MythicGoose", weight = 10 },
+		},
+	},
+	{
+		id = "CatCosmic",
+		name = "Cosmic Cat Egg",
+		price = 1000000000,
+		hatchSeconds = 600,
+		pool = {
+			{ id = "CosmicKitten", weight = 60 },
+			{ id = "NebulaCat", weight = 30 },
+			{ id = "GalaxyTiger", weight = 10 },
+		},
+	},
+	{
+		id = "MemeLord",
+		name = "Meme Lord Egg",
+		price = 1000000000,
+		hatchSeconds = 600,
+		pool = {
+			{ id = "MemeLordJr", weight = 60 },
+			{ id = "MemeLordPrime", weight = 30 },
+			{ id = "MemeLordOmega", weight = 10 },
+		},
+	},
+} :: { Tier }
+
 local function char(id: string, name: string, rarity: string, income: number): Character
 	return { id = id, name = name, rarity = rarity, income = income }
 end
@@ -102,6 +139,15 @@ Eggs.Characters = {
 	TaxAngel = char("TaxAngel", "Tax Angel", "Legendary", 1500000),
 	FinalBossHamster = char("FinalBossHamster", "Final Boss Hamster", "Legendary", 4000000),
 	OmegaMeme = char("OmegaMeme", "Omega Meme", "Mythic", 12000000),
+	GoldenGoose = char("GoldenGoose", "Golden Goose", "Limited", 15000000),
+	PlatinumGoose = char("PlatinumGoose", "Platinum Goose", "Limited", 30000000),
+	MythicGoose = char("MythicGoose", "Mythic Goose", "Limited", 60000000),
+	CosmicKitten = char("CosmicKitten", "Cosmic Kitten", "Limited", 18000000),
+	NebulaCat = char("NebulaCat", "Nebula Cat", "Limited", 36000000),
+	GalaxyTiger = char("GalaxyTiger", "Galaxy Tiger", "Limited", 70000000),
+	MemeLordJr = char("MemeLordJr", "Meme Lord Jr", "Limited", 20000000),
+	MemeLordPrime = char("MemeLordPrime", "Meme Lord Prime", "Limited", 40000000),
+	MemeLordOmega = char("MemeLordOmega", "Meme Lord Omega", "Limited", 80000000),
 } :: { [string]: Character }
 
 -- a mutated character earns more
@@ -109,6 +155,9 @@ Eggs.Mutations = { Normal = 1, Gold = 2, Rainbow = 5 } :: { [string]: number }
 
 local tierIndex: { [string]: Tier } = {}
 for _, tier in Eggs.Tiers do
+	tierIndex[tier.id] = tier
+end
+for _, tier in Eggs.LimitedTiers do
 	tierIndex[tier.id] = tier
 end
 
