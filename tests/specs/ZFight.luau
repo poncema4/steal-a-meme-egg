@@ -32,6 +32,7 @@ end
 
 return function(t)
 	local world = Fake.world()
+	world.workspace:SetAttribute("ShowAllPlots", true) -- these checks look at every base, not just the occupied ones
 	local ok, err = pcall(world.load, "src/server/main.server")
 	t.check("the world builds", ok, tostring(err))
 	if not ok then

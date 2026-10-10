@@ -307,9 +307,29 @@ function Plots.updateTimers(player: Player)
 	end
 end
 
+-- A base exists only while someone lives there: an empty one is parked far underground (and its spawn is switched off), and comes
+-- back to its place on the arc when a player takes it. So a server with three players shows three bases, like the real game.
+local PARK_DEPTH = 600
+local homes: { [Model]: CFrame } = {}
+
+function Plots.setActive(plot: World.Plot, on: boolean)
+	local home = homes[plot.model]
+	if not home then
+		homes[plot.model] = plot.model:GetPivot()
+		home = homes[plot.model]
+	end
+	plot.model:PivotTo(if on then home else home - Vector3.new(0, PARK_DEPTH, 0));
+	(plot.spawn :: SpawnLocation).Enabled = on
+end
+
+-- Whoever joins first gets the middle of the arc, so a small server looks balanced instead of lopsided.
+local FILL_ORDER = { 4, 5, 3, 6, 2, 7, 1, 8 }
+
 function Plots.assign(player: Player): World.Plot?
-	for _, plot in plots do
-		if plot.model:GetAttribute("OwnerUserId") == 0 then
+	for _, index in FILL_ORDER do
+		local plot = plots[index]
+		if plot and plot.model:GetAttribute("OwnerUserId") == 0 then
+			Plots.setActive(plot, true)
 			plot.model:SetAttribute("OwnerUserId", player.UserId)
 			plot.sign.Text = string.upper(player.DisplayName) .. "'S BASE"
 			owned[player] = plot
@@ -331,10 +351,17 @@ function Plots.release(player: Player)
 	for n = 1, 12 do
 		clearSlot(plot.slots[n])
 	end
+	Plots.setActive(plot, false)
 end
 
 function Plots.start(world: { plots: { World.Plot } })
 	plots = world.plots
+	-- every base starts parked; tools that want to see them all (the map preview, layout tests) set this on the workspace first
+	if workspace:GetAttribute("ShowAllPlots") ~= true then
+		for _, plot in plots do
+			Plots.setActive(plot, false)
+		end
+	end
 	Session.onChanged(Plots.refresh)
 	task.spawn(function()
 		while true do

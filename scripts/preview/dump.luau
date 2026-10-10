@@ -7,6 +7,7 @@ local serde = require("@lune/serde")
 local Fake = require("../../tests/fake/Roblox")
 
 local world = Fake.world()
+world.workspace:SetAttribute("ShowAllPlots", true) -- the preview shows every base, not just the occupied ones
 world.load("src/server/main.server")
 local parts = {}
 for _, inst in world.workspace:GetDescendants() do
