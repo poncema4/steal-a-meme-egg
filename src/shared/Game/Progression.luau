@@ -27,14 +27,26 @@ function Progression.levelFor(xp: number): (number, number)
 	return level, left
 end
 
+-- The level as a smooth number: 4.5 is halfway through level 4. Speed follows this, so it rises every moment you train,
+-- not in jumps at each whole level.
+function Progression.levelFloat(xp: number): number
+	local level, left = Progression.levelFor(xp)
+	if level >= Progression.MAX_LEVEL then
+		return Progression.MAX_LEVEL
+	end
+	return level + left / Progression.xpForNext(level)
+end
+
 function Progression.walkSpeed(level: number): number
 	return Progression.BASE_SPEED + math.clamp(level, 0, Progression.MAX_LEVEL) * Progression.SPEED_PER_LEVEL
 end
 
 -- The "Speed" number shown on the HUD and the leaderboard: it doubles every level, so it grows like the numbers players
 -- see in other games, while the real WalkSpeed above stays sensible.
+Progression.SPEED_STAT_BASE = 100 -- big enough that the number visibly climbs every second you train
+
 function Progression.speedStat(level: number): number
-	return math.floor(10 * 2 ^ math.clamp(level, 0, Progression.MAX_LEVEL))
+	return math.floor(Progression.SPEED_STAT_BASE * 2 ^ math.clamp(level, 0, Progression.MAX_LEVEL))
 end
 
 -- Slow Mode caps your walking speed at the Roblox default, for placing things carefully on your base.

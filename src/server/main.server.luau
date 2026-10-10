@@ -30,6 +30,9 @@ announceRemote.Parent = remotes
 local dropRemote = Instance.new("RemoteEvent")
 dropRemote.Name = "Drop"
 dropRemote.Parent = remotes
+local leaveRemote = Instance.new("RemoteEvent")
+leaveRemote.Name = "LeaveTreadmill"
+leaveRemote.Parent = remotes
 local slowRemote = Instance.new("RemoteEvent")
 slowRemote.Name = "SlowMode"
 slowRemote.Parent = remotes
@@ -88,6 +91,9 @@ baseRemote.OnServerEvent:Connect(function(player: Player, kind: any, slot: any)
 	elseif kind == "instant" then
 		PurchaseService.instantHatch(player, slot)
 	end
+end)
+leaveRemote.OnServerEvent:Connect(function(player: Player)
+	Home.leave(player)
 end)
 slowRemote.OnServerEvent:Connect(function(player: Player, on: any)
 	if typeof(on) == "boolean" then
