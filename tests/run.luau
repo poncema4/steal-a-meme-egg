@@ -28,6 +28,8 @@ local specs = {
 	require("./specs/Layout"),
 	require("./specs/ZFight"),
 	require("./specs/Controls"),
+	require("./specs/UiScale"),
+	require("./specs/HudUi"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),

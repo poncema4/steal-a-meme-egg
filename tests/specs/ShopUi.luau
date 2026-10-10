@@ -33,16 +33,15 @@ return function(t)
 	end
 	world.advance(6)
 
-	local gui = ana.PlayerGui:FindFirstChild("RaidShop") :: Instance
+	local gui = ana.PlayerGui:FindFirstChild("Shop") :: Instance
 	t.check("the shop screen exists", gui ~= nil)
 	local panel = find(gui, "Panel") :: Frame
-	local openButton = find(gui, "ShopButton") :: TextButton
 	t.check("it starts closed", not panel.Visible)
-	openButton.Activated:Fire()
-	t.check("the SHOP button opens it", panel.Visible);
+	shop.toggle()
+	t.check("toggling opens it", panel.Visible);
 	(find(gui, "Close") :: TextButton).Activated:Fire()
 	t.check("the X closes it", not panel.Visible)
-	openButton.Activated:Fire()
+	shop.toggle()
 
 	-- the limited egg card
 	local current = Limited.current(world.workspace:GetServerTimeNow())

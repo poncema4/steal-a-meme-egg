@@ -23,3 +23,15 @@ Sources: Marco's two screenshots (brand/reference1.png, brand/reference2.png, fr
 - Top right: a People list with Speed and Money/s per player.
 - Floating green "+$1.8B" numbers rise above pets as they earn.
 - Eggs and pets can have mutations.
+
+## More detail from gameplay frames (Marco's video, base game only)
+- Panels: dark charcoal rounded panel with a thick black outline, a bright gradient title bar with a heavy white title, a red square X on the top-right corner. Buttons are chunky gradient fills (green action, blue, orange, red) with a thick black outline and a white heavy label.
+- Sell panel: "Sort By" column on the left (Weight, Value, Select All), a grid of item cards (picture, weight in Kg, green $ value), "Total Value: $0" and a green Sell button at the bottom.
+- Inventory: a hotbar-style "All Items" grid with a search box at the bottom centre.
+- A pen holds one big display egg with a tag above it ("Egg 17h 59m": hatch timers can be hours).
+- On join: "You earn $2.2Qa/Day offline!" banner.
+- Left stack: Shop (green), Index (blue), Slow Mode (small toggle). Right edge: red egg button with a count badge, orange pets button, a green potion button with a timer.
+- Scaling: everything is relative to the screen so the same layout works on phone, console and desktop.
+
+## How ours maps (src/client/Ui.luau, Hud.luau)
+Ui.screen scales to the real screen (UiScale: touch uses a smaller design screen so everything is bigger, 44 px minimum tap target, device safe area, rescales on resize). Ui.panel = the dark panel with title bar and red X; B on a gamepad closes it and a gamepad cursor starts on its first button. Preview without Studio: `lune run scripts/preview/dump_ui out.json 844 390 touch` then `python3 scripts/preview/render_ui.py out.json out.png`.
