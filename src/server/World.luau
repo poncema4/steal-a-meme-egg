@@ -185,6 +185,14 @@ function World.build(): { plots: { Plot }, belt: BasePart }
 			map
 		)
 	end
+	-- invisible walls so nobody walks off the lawn: west, north and south (the east side opens into the Wilds)
+	local function wall(name: string, size: Vector3, position: Vector3)
+		local w = part(name, size, CFrame.new(position), Color3.new(1, 1, 1), map)
+		w.Transparency = 1
+	end
+	wall("HomeWallWest", Vector3.new(2, 60, 262), Vector3.new(-211, 30, 0))
+	wall("HomeWallNorth", Vector3.new(394, 60, 2), Vector3.new(-14, 30, -131))
+	wall("HomeWallSouth", Vector3.new(394, 60, 2), Vector3.new(-14, 30, 131))
 	local plots = {}
 	for i = 1, World.PLOTS do
 		plots[i] = buildPlot(i, map)

@@ -7,6 +7,7 @@ local RunService = game:GetService("RunService")
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Events = require(ReplicatedStorage.Shared.Game.Events)
+local Objective = require(ReplicatedStorage.Shared.Game.Objective)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 
 local Hud = {}
@@ -46,6 +47,8 @@ function Hud.start(player: Player)
 	local banner = label(gui, "Banner", UDim2.fromOffset(480, 34), UDim2.new(0.5, 0, 0, 82), 26)
 	banner.TextColor3 = Color3.fromRGB(120, 255, 160)
 	local nextUp = label(gui, "NextEvent", UDim2.fromOffset(480, 22), UDim2.new(0.5, 0, 0, 118), 18)
+	local objective = label(gui, "Objective", UDim2.fromOffset(760, 30), UDim2.new(0.5, 0, 0, 184), 20)
+	objective.TextColor3 = Color3.fromRGB(255, 240, 150)
 	local carry = label(gui, "Carry", UDim2.fromOffset(640, 40), UDim2.new(0.5, 0, 0, 148), 28)
 	carry.TextColor3 = Color3.fromRGB(255, 120, 120)
 	-- bottom-left stat block: where you are, how fast you are, how far you can go
@@ -92,6 +95,18 @@ function Hud.start(player: Player)
 		stats.Text = `{zoneName}\nMeme Points: {Economy.format(mp)}\nSpeed level {level}`
 			.. (if locked then `\nNext: {locked.name} at {Economy.format(locked.mp)}` else "\nEvery terrain open!")
 		local carrying = (player:GetAttribute("Carrying") :: string?) or ""
+		local slots = (player:GetAttribute("Slots") :: number?) or 6
+		local eggs, characters =
+			(player:GetAttribute("EggsHatching") :: number?) or 0, (player:GetAttribute("Characters") :: number?) or 0
+		objective.Text = Objective.hint({
+			carrying = carrying ~= "",
+			eggs = eggs,
+			characters = characters,
+			freeSlots = slots - eggs - characters,
+			coins = (player:GetAttribute("Coins") :: number?) or 0,
+			mp = mp,
+			speedLevel = level,
+		})
 		local def = if carrying ~= "" then Eggs.tier(carrying) else nil
 		carry.Text = if def then `CARRYING {string.upper(def.name)}: RUN HOME!` else ""
 		banner.Text = table.concat(lines, "   ")

@@ -101,6 +101,19 @@ local function publish(state: State)
 	table.sort(owned)
 	state.player:SetAttribute("Passes", table.concat(owned, ","))
 	state.player:SetAttribute("HatchTokens", state.purchases.hatchTokens)
+	local eggs, characters = 0, 0
+	for i = 1, state.base.size do
+		local item = state.base.slots[i]
+		if item then
+			if item.kind == "egg" then
+				eggs += 1
+			else
+				characters += 1
+			end
+		end
+	end
+	state.player:SetAttribute("EggsHatching", eggs)
+	state.player:SetAttribute("Characters", characters)
 end
 
 -- Applies the player's speed (level, minus the carry penalty) to their character.

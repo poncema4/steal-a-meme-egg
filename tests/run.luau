@@ -28,6 +28,7 @@ local specs = {
 	require("./specs/Events"),
 	require("./specs/Admin"),
 	require("./specs/Limited"),
+	require("./specs/Objective"),
 	require("./specs/Store"),
 	require("./specs/Zones"),
 	require("./specs/Progression"),
