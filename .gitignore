@@ -47,3 +47,4 @@ desktop.ini
 node_modules/
 art/renders/*.png
 !art/renders/keyart_*.png
+!src/models/**/*.rbxmx
