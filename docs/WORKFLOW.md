@@ -5,3 +5,6 @@ Rojo does NOT carry meshes: export from Blender into `assets/`, then Studio > As
 
 ## Thumbnail and icon
 `scripts/blender.sh art/blender/thumb.py` renders the scene (Blender 4.5 portable in ~/tools), then `python3 brand/make_thumb.py` adds the text layer and writes `brand/thumb_1920x1080.png` and `brand/icon_512.png`. Layout follows the top Roblox egg games (rainbow egg name, green income line, red arrow, "!!", a pet guarding its egg and an avatar running off with it); the art itself is ours.
+
+## Map preview (no Studio needed)
+`lune run scripts/preview/dump /tmp/map.json` builds the real server world in the fake Roblox and writes every part to JSON; `python3 scripts/preview/render.py /tmp/map.json out_prefix [x0 x1]` draws `out_prefix_top.png` and `out_prefix_side.png`. Use it to look at the layout after any map change (the z-fight test checks flicker, this shows placement).

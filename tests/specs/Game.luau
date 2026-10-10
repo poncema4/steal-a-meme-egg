@@ -23,22 +23,44 @@ return function(t)
 		end
 	end
 	t.equal("there are 12 base plots", plotCount, 12)
-	local walls = 0
+	-- the corridor: walls on both sides, a red line ending the Safe Zone, and SAFE ZONE written on the ground
+	local walls = { [-1] = 0, [1] = 0 }
 	for _, child in (map :: Instance):GetChildren() do
-		if string.match(child.Name, "^HomeWall") then
-			walls += 1
+		if child.Name == "Wall" then
+			walls[if child.Position.Z < 0 then -1 else 1] += 1
 		end
 	end
-	t.equal("the home lawn is walled on three sides", walls, 3)
-	local sign = (map :: Instance):FindFirstChild("WildsSign")
-	t.check("a sign points the way to the Wilds", sign ~= nil)
-	local signText = ""
-	for _, d in ((sign or map) :: Instance):GetDescendants() do
+	t.check("the corridor has walls along both sides", walls[-1] > 10 and walls[1] > 10)
+	t.check("and a wall at each end", (map :: Instance):FindFirstChild("EndWall") ~= nil)
+	local line = (map :: Instance):FindFirstChild("RedLine") :: Part
+	t.check("a red line marks the edge of the Safe Zone", line ~= nil)
+	local writing = ""
+	for _, d in ((map :: Instance):FindFirstChild("SafeZoneText") or map :: Instance):GetDescendants() do
 		if d:IsA("TextLabel") then
-			signText ..= (d :: TextLabel).Text .. " "
+			writing ..= (d :: TextLabel).Text
 		end
 	end
-	t.check("and says so", string.find(signText, "WILDS", 1, true) ~= nil)
+	t.equal("SAFE ZONE is written on the ground", writing, "SAFE ZONE")
+	-- every pen sits inside the Safe Zone, inside the walls, and apart from the others
+	local centers: { Vector3 } = {}
+	for _, child in (map :: Instance):GetChildren() do
+		if string.match(child.Name, "^Plot_") then
+			table.insert(centers, (child :: Model).PrimaryPart.Position)
+		end
+	end
+	local penOk, apart = true, true
+	for i, c in centers do
+		if c.X - 23 < -190 or c.X + 23 > line.Position.X or math.abs(c.Z) + 23 > 110 then
+			penOk = false
+		end
+		for j = i + 1, #centers do
+			if math.abs(c.X - centers[j].X) < 46 and math.abs(c.Z - centers[j].Z) < 46 then
+				apart = false
+			end
+		end
+	end
+	t.check("every pen is inside the Safe Zone and the walls", penOk)
+	t.check("and no two pens overlap", apart)
 
 	local ana = world.addPlayer("Ana", 11)
 	local ben = world.addPlayer("Ben", 12)

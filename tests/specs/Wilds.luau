@@ -190,14 +190,15 @@ return function(t)
 	t.equal("nothing was added to the full base", full.base.slots[1].kind, "char")
 
 	-- 6) the gates
-	root.Position = V3.new(500, 3, 0)
+	local duneX = Zones.List[2].startX
+	root.Position = V3.new(duneX + 60, 3, 0)
 	world.advance(0.7)
-	t.check("a player without enough points is pushed out of the Dune", root.Position.X < 440)
+	t.check("a player without enough points is pushed out of the Dune", root.Position.X < duneX)
 	t.equal("the HUD zone is the Meadow-side or home", ana:GetAttribute("Zone") ~= "Dune Desert", true)
 	session.addPoints(ana, 25)
-	root.Position = V3.new(500, 3, 0)
+	root.Position = V3.new(duneX + 60, 3, 0)
 	world.advance(0.7)
-	t.check("with the points they can stay", root.Position.X >= 500)
+	t.check("with the points they can stay", root.Position.X >= duneX + 60)
 	t.equal("and the zone shows", ana:GetAttribute("Zone"), "Dune Desert")
 	local dune = entries[7]
 	t.equal("the seventh nest is the Dune's first", dune.zone.id, "Dune")

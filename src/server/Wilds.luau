@@ -287,21 +287,6 @@ function Wilds.build(): Folder
 		gate.CanCollide = false
 		label(gate, { zone.name, if zone.mp > 0 then `{zone.mp} Meme Points` else "open" }, 14, 260)
 	end
-	-- invisible walls keep everyone on the strip
-	local first, last = Zones.List[1], Zones.List[#Zones.List]
-	local x0, x1 = first.startX - 20, Zones.endX(last)
-	for _, side in { -1, 1 } do
-		local wall = box(
-			"Wall",
-			Vector3.new(x1 - x0, 60, 2),
-			CFrame.new((x0 + x1) / 2, 30, side * (Zones.WIDTH / 2 + 1)),
-			Color3.new(1, 1, 1),
-			folder
-		)
-		wall.Transparency = 1
-	end
-	local cap = box("EndWall", Vector3.new(2, 60, Zones.WIDTH), CFrame.new(x1 + 1, 30, 0), Color3.new(1, 1, 1), folder)
-	cap.Transparency = 1
 	return folder
 end
 
