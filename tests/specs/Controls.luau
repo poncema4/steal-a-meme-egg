@@ -74,6 +74,43 @@ return function(t)
 		slow:FireServer(junk)
 	end
 	t.equal("junk from the client changes nothing", ana:GetAttribute("SlowMode"), true)
+	-- the Eggs panel's buttons, the base view and the Index
+	local action = remotes:FindFirstChild("BaseAction") :: RemoteEvent
+	t.check("the server offers BaseAction", action ~= nil)
+	t.equal("the base view starts empty", ana:GetAttribute("BaseItems"), "")
+	t.equal("and so does the Index", ana:GetAttribute("Index"), "")
+	session.get(ana).coins = 1e9
+	session.grantEgg(ana, "Soggy")
+	t.check(
+		"an egg shows in the base view",
+		string.find(tostring(ana:GetAttribute("BaseItems")), "1,e,Soggy", 1, true) ~= nil
+	)
+	local coins = ana:GetAttribute("Coins") :: number
+	for _, junk in
+		{
+			{ "skip", 0 },
+			{ "skip", 1.5 },
+			{ "skip", math.huge },
+			{ "skip", "1" },
+			{ "skip", 99 },
+			{ "explode", 1 },
+			{ 5, 1 },
+			{ "skip", 0 / 0 },
+		}
+	do
+		action:FireServer(junk[1], junk[2])
+	end
+	action:FireServer()
+	t.equal("junk requests change nothing", ana:GetAttribute("Characters"), 0)
+	t.equal("and cost nothing", ana:GetAttribute("Coins"), coins)
+	action:FireServer("skip", 1)
+	t.equal("Skip hatches the egg", ana:GetAttribute("Characters"), 1)
+	t.check("and it costs coins", (ana:GetAttribute("Coins") :: number) < coins)
+	t.check(
+		"the hatched character is in the base view",
+		string.find(tostring(ana:GetAttribute("BaseItems")), "1,c,", 1, true) ~= nil
+	)
+	t.check("and in the Index", #tostring(ana:GetAttribute("Index")) > 0)
 	t.equal(
 		"the speed stat is published",
 		ana:GetAttribute("SpeedStat"),

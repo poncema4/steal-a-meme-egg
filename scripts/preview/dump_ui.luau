@@ -29,11 +29,23 @@ session.add(ana, 123456789)
 session.addSpeedXp(ana, 800)
 local shop = world.load("src/client/Shop")
 shop.start(ana)
-world.load("src/client/Hud").start(ana, { shop = shop.toggle, index = function() end, eggs = function() end, pets = function() end, trophy = function() end })
+local panels = world.load("src/client/Panels").start(ana)
+world.load("src/client/Hud").start(ana, { shop = shop.toggle, index = panels.index, eggs = panels.eggs, pets = panels.pets })
+-- something to look at in every panel
+session.get(ana).base.slots[1] = { kind = "char", id = "BonkBean", mutation = "Gold" }
+session.get(ana).base.slots[2] = { kind = "char", id = "DiscoPickle", mutation = "Normal" }
+session.get(ana).coins = 5e6
+session.grantEgg(ana, "Disco")
+session.grantEgg(ana, "Spicy")
+session.changed(ana)
 world.advance(1)
-if process.args[5] == "shop" then
+local which = process.args[5]
+if which == "shop" then
 	shop.toggle()
+elseif which == "index" or which == "eggs" or which == "pets" then
+	(panels :: any)[which]()
 end
+world.advance(1)
 
 local rects = {}
 local ZERO = { X = { Scale = 0, Offset = 0 }, Y = { Scale = 0, Offset = 0 } }
@@ -43,12 +55,15 @@ local function sizeOf(g: any, parentW: number, parentH: number): (number, number
 end
 
 local function walk(node: any, x: number, y: number, w: number, h: number, scale: number, depth: number)
-	local list = nil
+	local list, grid = nil, nil
 	for _, c in node:GetChildren() do
 		if c:IsA("UIListLayout") then
 			list = c
+		elseif c:IsA("UIGridLayout") then
+			grid = c
 		end
 	end
+	local gridIndex = 0
 	local children = node:GetChildren()
 	table.sort(children, function(a: any, b: any)
 		return (a.LayoutOrder or 0) < (b.LayoutOrder or 0)
@@ -56,13 +71,22 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 	local cursor = 0
 	local used = 0
 	for _, c in children do
-		if (c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton")) and c.Visible ~= false then
+		if (c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("ScrollingFrame")) and c.Visible ~= false then
 			local cw, ch = sizeOf(c, w, h)
+			if grid then
+				cw, ch = (grid :: any).CellSize.X.Offset, (grid :: any).CellSize.Y.Offset
+			end
 			if c.AutomaticSize == world.enum.AutomaticSize.Y then
 				ch = 0
 			end
 			local cx, cy
-			if list then
+			if grid then
+				local padX, padY = (grid :: any).CellPadding.X.Offset, (grid :: any).CellPadding.Y.Offset
+				local columns = math.max(1, math.floor((w + padX) / (cw + padX)))
+				cx = x + (gridIndex % columns) * (cw + padX)
+				cy = y + (gridIndex // columns) * (ch + padY)
+				gridIndex += 1
+			elseif list then
 				cx = x
 				cy = y + cursor
 				cursor += ch + (((list :: any).Padding or { Offset = 0 }).Offset or 0)

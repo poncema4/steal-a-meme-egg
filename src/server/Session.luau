@@ -12,6 +12,8 @@ local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
+local BaseView = require(ReplicatedStorage.Shared.Game.BaseView)
+local Collection = require(ReplicatedStorage.Shared.Game.Collection)
 local Daily = require(ReplicatedStorage.Shared.Game.Daily)
 local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
 local Store = require(ReplicatedStorage.Shared.Game.Store)
@@ -26,6 +28,7 @@ export type State = {
 	mp: number, -- Meme Points: decide how far into the Wilds you may go
 	speedXp: number, -- total speed XP earned by running
 	treadmill: number, -- treadmill upgrade level
+	collection: Collection.Collection, -- the Index: every character (and mutation) ever seen in this player's base
 	carry: string?, -- the egg tier being carried back from the Wilds
 	carryFrom: string?, -- which nest it came from (so a catch can put it back)
 	purchases: Store.Purchases, -- passes owned, receipts seen, hatch tokens, paid limited eggs waiting for room
@@ -110,6 +113,9 @@ local function publish(state: State)
 	state.player:SetAttribute("Coins", math.floor(state.coins))
 	state.player:SetAttribute("Income", Base.income(state.base, income))
 	state.player:SetAttribute("Slots", state.base.size)
+	Collection.record(state.collection, state.base)
+	state.player:SetAttribute("Index", Collection.encode(state.collection))
+	state.player:SetAttribute("BaseItems", BaseView.encode(state.base))
 	local level, left = Progression.levelFor(state.speedXp)
 	state.player:SetAttribute("MemePoints", state.mp)
 	state.player:SetAttribute("SpeedLevel", level)
@@ -497,6 +503,7 @@ local function serialise(state: State): { [string]: any }
 		mp = state.mp,
 		speedXp = state.speedXp,
 		treadmill = state.treadmill,
+		index = Collection.encode(state.collection),
 		passes = state.purchases.passes,
 		receipts = state.purchases.receiptOrder,
 		hatchTokens = state.purchases.hatchTokens,
@@ -522,6 +529,8 @@ local function restore(state: State, saved: { [string]: any })
 	state.mp = sane(saved.mp, 0, 0, 1e15)
 	state.speedXp = sane(saved.speedXp, 0, 0, 1e12)
 	state.treadmill = math.floor(sane(saved.treadmill, 0, 0, Progression.MAX_TREADMILL))
+	state.collection =
+		Collection.decode(if typeof(saved.index) == "string" then string.sub(saved.index, 1, 4000) else "")
 	state.rebirths = math.floor(sane(saved.rebirths, 0, 0, Rebirth.MAX))
 	local last = tonumber(saved.dailyLast)
 	state.dailyLast = if last ~= nil and last == last and last ~= math.huge and last ~= -math.huge then last else nil
@@ -617,6 +626,7 @@ local function add(player: Player, onJoin: (Player) -> ())
 		mp = 0,
 		speedXp = 0,
 		treadmill = 0,
+		collection = Collection.new(),
 		purchases = Store.new(),
 		rebirths = 0,
 		dailyStreak = 0,

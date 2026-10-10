@@ -32,6 +32,11 @@ local slowRemote = Instance.new("RemoteEvent")
 slowRemote.Name = "SlowMode"
 slowRemote.Parent = remotes
 
+-- the Eggs panel's Skip / Instant buttons (the same actions as the prompts on the eggs themselves)
+local baseRemote = Instance.new("RemoteEvent")
+baseRemote.Name = "BaseAction"
+baseRemote.Parent = remotes
+
 local sfxRemote = Instance.new("RemoteEvent")
 sfxRemote.Name = "Sfx"
 sfxRemote.Parent = remotes
@@ -68,6 +73,17 @@ Plots.setNotify(notify)
 Wilds.setNestRate(LiveOps.nestRate)
 dropRemote.OnServerEvent:Connect(function(player: Player)
 	Wilds.drop(player)
+end)
+baseRemote.OnServerEvent:Connect(function(player: Player, kind: any, slot: any)
+	if typeof(slot) ~= "number" or slot ~= slot or slot % 1 ~= 0 or slot < 1 or slot > 12 then
+		return
+	end
+	if kind == "skip" then
+		local _, message = Session.skipHatch(player, slot)
+		notify(player, message)
+	elseif kind == "instant" then
+		PurchaseService.instantHatch(player, slot)
+	end
 end)
 slowRemote.OnServerEvent:Connect(function(player: Player, on: any)
 	if typeof(on) == "boolean" then

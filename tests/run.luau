@@ -30,6 +30,8 @@ local specs = {
 	require("./specs/Controls"),
 	require("./specs/UiScale"),
 	require("./specs/HudUi"),
+	require("./specs/BaseView"),
+	require("./specs/PanelsUi"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),
