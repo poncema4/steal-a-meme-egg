@@ -82,6 +82,36 @@ function Models.place(parent: Instance, kind: string, id: string, at: CFrame, sc
 	return true
 end
 
+-- Fixes a model to `host` so it moves with it (a carried egg rides on your character): every part is welded to the host and made
+-- weightless and non-solid. The model stands on the host's bottom face, shrunk by `scale`.
+function Models.attach(host: BasePart, kind: string, id: string, mutation: string?, scale: number): boolean
+	local source = template(kind, id)
+	if not source then
+		return false
+	end
+	local clone = source:Clone()
+	clone.Name = "Visual"
+	pcall(function()
+		(clone :: any):ScaleTo(scale)
+	end)
+	local floorY = host.Position.Y - host.Size.Y / 2
+	clone:PivotTo(CFrame.new(host.Position.X, floorY, host.Position.Z) * host.CFrame.Rotation)
+	tint(clone, mutation, floorY)
+	for _, part in clone:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.Massless = true
+			part.CanCollide = false
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = host
+			weld.Part1 = part
+			weld.Parent = part
+		end
+	end
+	clone.Parent = host
+	return true
+end
+
 function Models.hide(host: BasePart)
 	local old = host.Parent and host.Parent:FindFirstChild("Visual")
 	if old then
