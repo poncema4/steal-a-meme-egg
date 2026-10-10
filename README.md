@@ -14,6 +14,21 @@ brand        store art
 docs         DESIGN, WORKFLOW, GROWTH
 ```
 
+## The game in one minute
+
+Eggs ride a conveyor down the middle of the home lawn; out east, five themed terrains (the Wilds) are guarded by meme characters sitting on better eggs. Steal an egg, run it home before the guardian catches you, and it hatches in your base into a character that earns coins every second. Meme Points (from delivered eggs) open deeper terrains; speed (treadmill or coins) lets you outrun faster guardians; limited eggs, rebirths, a daily reward and live events keep you coming back.
+
+| Do this | How |
+|---|---|
+| Buy an egg off the belt | walk up, press E |
+| Steal a guardian's egg | hold E on the egg in a nest (Meadow, then Dune, Lava, Frost, Cosmic) |
+| Steal from another player | hold E on a character in their base (lock yours with the red pad) |
+| Skip a hatch | hold E on the hatching egg (coins), or F for an instant hatch (token/Robux) |
+| Train speed / buy speed / buy a slot / rebirth | treadmill (stand on it), and the pads at the sides of your base |
+| Admin (group rank 250+, anyone in Studio) | chat: `/event luckyhour`, `/give 1000`, `/giveall 500`, `/announce hi`, `/clear`, `/help` |
+
+More: `docs/DESIGN.md` (rules and numbers), `docs/HANDOFF.md` (state and open items), `docs/MONETIZATION.md`, `docs/AUDIO.md`, `docs/TESTING.md`.
+
 ## Set everything up
 
 ### Windows PC (where Roblox Studio runs)
