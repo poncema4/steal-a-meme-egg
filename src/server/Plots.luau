@@ -236,6 +236,50 @@ function Plots.refresh(player: Player)
 end
 
 -- Counts down the hatching timers on screen without rebuilding every part.
+-- A hatch pops: a burst of confetti over the pedestal and a flash of light, then it fades away.
+function Plots.hatchBurst(player: Player, slots: { number })
+	local plot = owned[player]
+	if not plot then
+		return
+	end
+	for _, n in slots do
+		local pedestal = plot.slots[n]
+		if pedestal then
+			local spot = Instance.new("Part")
+			spot.Name = "HatchBurst"
+			spot.Anchored = true
+			spot.CanCollide = false
+			spot.CanTouch = false
+			spot.CanQuery = false
+			spot.Transparency = 1
+			spot.Size = Vector3.new(1, 1, 1)
+			spot.CFrame = pedestal.CFrame + Vector3.new(0, 4, 0)
+			spot.Parent = pedestal
+			local confetti = Instance.new("ParticleEmitter")
+			confetti.Rate = 0
+			confetti.Lifetime = NumberRange.new(1, 1.8)
+			confetti.Speed = NumberRange.new(14, 26)
+			confetti.SpreadAngle = Vector2.new(180, 180)
+			confetti.Acceleration = Vector3.new(0, -24, 0)
+			confetti.Size = NumberSequence.new(0.7, 0.2)
+			confetti.LightEmission = 0.4
+			confetti.Color = ColorSequence.new(Color3.fromRGB(255, 220, 60), Color3.fromRGB(255, 90, 200))
+			confetti.Parent = spot
+			local flash = Instance.new("PointLight")
+			flash.Color = Color3.fromRGB(255, 240, 160)
+			flash.Range = 24
+			flash.Brightness = 3
+			flash.Parent = spot
+			pcall(function()
+				(confetti :: any):Emit(50)
+			end)
+			task.delay(2.2, function()
+				spot:Destroy()
+			end)
+		end
+	end
+end
+
 function Plots.updateTimers(player: Player)
 	local plot = owned[player]
 	local state = Session.get(player)
