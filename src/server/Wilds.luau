@@ -51,6 +51,14 @@ end
 
 local sfx: (Player, string) -> () = function(_player: Player, _name: string) end
 
+local nestRate: () -> number = function()
+	return 1
+end
+
+function Wilds.setNestRate(fn: () -> number)
+	nestRate = fn
+end
+
 function Wilds.setSfx(fn: (Player, string) -> ())
 	sfx = fn
 end
@@ -405,7 +413,7 @@ function Wilds.start()
 			-- thief could take the regrown egg and overwrite the first one's record
 			if
 				entry.thief == nil
-				and Nest.tick(entry.nest, dt, function()
+				and Nest.tick(entry.nest, dt * nestRate(), function()
 					return Zones.eggFor(entry.zone, math.random)
 				end)
 			then

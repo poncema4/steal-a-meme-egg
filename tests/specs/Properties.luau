@@ -129,16 +129,9 @@ return function(t)
 			if not Eggs.Mutations[Eggs.mutation(luck, math.random)] then
 				broken = "a mutation that does not exist"
 			end
-			if not Eggs.tier(Eggs.conveyorTier(luck, math.random)) then
-				broken = "a belt egg that does not exist"
-			end
 		end
 	end
-	t.check(
-		"every roll names a real character, mutation and belt egg, even for strange luck",
-		broken == nil,
-		tostring(broken)
-	)
+	t.check("every roll names a real character and mutation, even for strange luck", broken == nil, tostring(broken))
 
 	-- 4) a guardian never moves faster than its speed and never reaches NaN, whoever it chases
 	for _ = 1, 200 do

@@ -136,7 +136,7 @@ return function(t)
 		"the live event multipliers are sane",
 		finite(liveOps.luck()) and finite(liveOps.income()) and liveOps.luck() >= 1 and liveOps.income() >= 1
 	)
-	t.check("the belt rate is sane", liveOps.beltRate() >= 1)
+	t.check("the nest regrow rate is sane", liveOps.nestRate() >= 1)
 	world.advance(5)
 	t.check("the world still ticks after all of it", finite(ana:GetAttribute("Coins")))
 

@@ -1,6 +1,6 @@
 --!strict
--- Runs the REAL server scripts against the fake Roblox world: the map is built, players get bases, eggs are bought off the
--- belt, hatch and earn, characters are raided, locks hold, and admin events change the multipliers.
+-- Runs the REAL server scripts against the fake Roblox world: the map is built, players get bases, eggs are granted and
+-- hatch and earn, characters are raided, locks hold, and admin events change the multipliers.
 local Fake = require("../fake/Roblox")
 local Daily = require("../../src/shared/Game/Daily")
 local Eggs = require("../../src/shared/Game/Eggs")
@@ -52,27 +52,12 @@ return function(t)
 	t.equal("the first player owns plot 1", anaPlot:GetAttribute("OwnerUserId"), 11)
 	t.equal("the second owns plot 2", benPlot:GetAttribute("OwnerUserId"), 12)
 
-	-- buying off the belt
-	local conveyor = world.load("src/server/Conveyor")
-	conveyor.spawn("Soggy")
-	local buys = world.prompts(world.workspace, "Buy")
-	t.equal("an egg on the belt can be bought", #buys, 1)
-	buys[1].Triggered:Fire(ana)
-	t.equal("buying takes the price", ana:GetAttribute("Coins"), 150 + firstDay - 100)
+	-- an egg in the base hatches
+	local session = world.load("src/server/Session")
+	t.check("a free egg can be placed", session.grantEgg(ana, "Soggy"))
 	t.equal("the new egg counts as hatching", ana:GetAttribute("EggsHatching"), 1)
 	t.equal("and there are no characters yet", ana:GetAttribute("Characters"), 0)
-	t.equal("and removes the egg from the belt", #world.prompts(world.workspace, "Buy"), 0)
 	t.check("the egg shows on the player's base", anaPlot.Slot_1:FindFirstChild("Item") ~= nil)
-
-	-- too poor: the 1000-coin egg is refused
-	conveyor.spawn("Disco")
-	world.prompts(world.workspace, "Buy")[1].Triggered:Fire(ana)
-	t.equal(
-		"a player who cannot afford an egg keeps their coins",
-		math.floor(ana:GetAttribute("Coins") :: number),
-		150 + firstDay - 100
-	)
-	t.equal("and the egg stays on the belt", #world.prompts(world.workspace, "Buy"), 1)
 
 	-- hatching and earning
 	world.advance(9)
@@ -142,7 +127,7 @@ return function(t)
 	liveOps.command(ana, "/clear")
 	t.equal("/clear ends events", liveOps.luck(), 1)
 	liveOps.command(ana, "/event eggrain 30")
-	t.equal("Egg Rain speeds up the belt", liveOps.beltRate(), 6)
+	t.equal("Egg Rain speeds up nest regrowth", liveOps.nestRate(), 6)
 
 	-- saving: leave and come back with the same things
 	local saved = ben:GetAttribute("Coins") :: number

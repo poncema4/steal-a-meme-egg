@@ -34,8 +34,8 @@ function LiveOps.income(): number
 	return income
 end
 
--- Egg Rain makes the belt spawn six times as fast.
-function LiveOps.beltRate(): number
+-- Egg Rain makes empty nests grow their eggs back six times as fast.
+function LiveOps.nestRate(): number
 	for _, id in Events.active(state, Session.now()) do
 		if Events.Defs[id].eggRain then
 			return 6
