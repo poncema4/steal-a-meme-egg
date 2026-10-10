@@ -1,6 +1,6 @@
 --!strict
 -- A soak test: twelve simulated players doing random things for ten simulated minutes (stealing, being caught, delivering,
--- buying, raiding each other, using the pads, admin events, leaving and rejoining). It checks that nothing throws and that
+-- stealing from guardians, using the pads, admin events, leaving and rejoining). It checks that nothing throws and that
 -- the numbers that must always hold really always hold.
 local Fake = require("../fake/Roblox")
 local Zones = require("../../src/shared/Game/Zones")
@@ -123,17 +123,8 @@ return function(t)
 						end
 					elseif roll < 0.2 then
 						session.grantEgg(p, "Soggy") -- eggs also arrive from the daily reward and the shop
-					elseif roll < 0.26 and home then
-						local other = players[math.random(1, #players)]
-						local otherPlot = plots.of(other)
-						if otherPlot and other ~= p then
-							local prompts = world.prompts(otherPlot.model, "Steal")
-							if #prompts > 0 then
-								prompts[math.random(1, #prompts)].Triggered:Fire(p)
-							end
-						end
 					elseif roll < 0.3 and home then
-						for _, action in { "Buy speed", "Buy slot", "Lock base", "Skip hatch" } do
+						for _, action in { "Buy speed", "Buy slot", "Skip hatch" } do
 							local found = world.prompts(home.model, action)
 							if #found > 0 and math.random() < 0.3 then
 								found[math.random(1, #found)].Triggered:Fire(p)

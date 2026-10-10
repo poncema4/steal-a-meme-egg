@@ -24,7 +24,7 @@ return function(t)
 	math.randomseed(2024)
 	local _ = rng
 
-	-- 1) bases: steals, placements, hatching and locking never create or destroy items, and slots stay in range
+	-- 1) bases: placements and hatching never create or destroy items, and slots stay in range
 	local broken: string? = nil
 	local a, b = Base.new(6), Base.new(8)
 	local placed = 0
@@ -32,9 +32,8 @@ return function(t)
 	local now = 0
 	for i = 1, 6000 do
 		now += math.random() * 3
-		local op = math.random(1, 7)
-		local x, y = if math.random() < 0.5 then a else b, nil
-		y = if x == a then b else a
+		local op = math.random(1, 5)
+		local x = if math.random() < 0.5 then a else b
 		if op == 1 then
 			if Base.placeEgg(x, Eggs.Tiers[math.random(1, #Eggs.Tiers)].id) then
 				placed += 1
@@ -44,21 +43,12 @@ return function(t)
 				placed += 1
 			end
 		elseif op == 3 then
-			local before = itemCount(a) + itemCount(b)
-			local ok = Base.steal(x, y, math.random(1, x.size), now)
-			local after = itemCount(a) + itemCount(b)
-			if before ~= after then
-				broken = `step {i}: a steal changed the item total ({before} -> {after}, ok={tostring(ok)})`
-			end
-		elseif op == 4 then
-			Base.lock(x, now, 45, 90)
-		elseif op == 5 then
 			Base.tick(x, math.random() * 20, function(tier)
 				return Eggs.roll(tier, 1 + math.random() * 4, math.random)
 			end, function()
 				return Eggs.mutation(1 + math.random() * 4, math.random)
 			end)
-		elseif op == 6 then
+		elseif op == 4 then
 			x.slots[math.random(1, x.size)] = nil
 			placed = itemCount(a) + itemCount(b) -- (we removed one on purpose: re-sync the expectation)
 		else
@@ -82,33 +72,7 @@ return function(t)
 	t.check("6000 random base operations never broke a rule", broken == nil, tostring(broken))
 	broken = nil
 
-	-- 2) a steal moves exactly one item, to the thief, keeping what it is
-	for _ = 1, 500 do
-		local victim, thief = Base.new(6), Base.new(6)
-		for s = 1, 6 do
-			if math.random() < 0.7 then
-				victim.slots[s] = {
-					kind = "char",
-					id = ids[math.random(1, #ids)],
-					mutation = if math.random() < 0.5 then "Gold" else "Normal",
-				}
-			end
-		end
-		local slot = math.random(1, 6)
-		local item = victim.slots[slot]
-		local ok, result = Base.steal(victim, thief, slot, 0)
-		if item then
-			if not ok or thief.slots[result :: number] ~= item or victim.slots[slot] ~= nil then
-				broken = "a steal did not move the very same item"
-			end
-		elseif ok then
-			broken = "an empty slot was stolen from"
-		end
-	end
-	t.check("500 random steals moved exactly the stolen item", broken == nil, tostring(broken))
-	broken = nil
-
-	-- 3) the odds always name a real character and a real mutation, whatever the luck and the dice
+	-- 2) the odds always name a real character and a real mutation, whatever the luck and the dice
 	local weird = { 0, 1, 1.5, 3, 5, 100, 1e6, -2, 0 / 0 }
 	for _, tier in Eggs.Tiers do
 		for _, luck in weird do

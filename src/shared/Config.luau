@@ -11,12 +11,6 @@ return table.freeze({
 		SlotCostBase = 1000, -- the next slot costs SlotCostBase * 4^(slots - StartSlots)
 		OfflineCapSeconds = 2 * 60 * 60, -- coming back after a long time pays at most this many seconds of income
 	}),
-	Steal = table.freeze({
-		HoldSeconds = 1.5, -- hold E on a character in someone's base to take it
-		LockSeconds = 45, -- a base lock lasts this long...
-		LockCooldownSeconds = 90, -- ...and cannot be used again for this long after it started
-		Reach = 14, -- studs
-	}),
 	-- The Wilds: guarded eggs out in themed terrains (see Shared/Game/Zones, Guardian, Nest, Progression).
 	Wilds = table.freeze({
 		ChaseSeconds = 12, -- a guardian gives up after this long

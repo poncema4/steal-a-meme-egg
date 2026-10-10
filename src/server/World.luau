@@ -9,7 +9,6 @@ export type Plot = {
 	model: Model,
 	spawn: BasePart,
 	slots: { BasePart },
-	lockPad: BasePart,
 	treadmill: BasePart,
 	slotPad: BasePart,
 	rebirthPad: BasePart,
@@ -101,14 +100,6 @@ local function buildPlot(index: number, parent: Instance): Plot
 	spawn.Transparency = 0.5
 	spawn.Color = Color3.fromRGB(255, 255, 255)
 	spawn.Parent = model
-	-- the lock pad sits at the belt side of the plot
-	local lockPad = part(
-		"LockPad",
-		Vector3.new(8, 1, 3),
-		CFrame.new(center + Vector3.new(14, 0.5, 21 * facing)),
-		Color3.fromRGB(230, 60, 60),
-		model
-	)
 	-- the treadmill trains speed while you stand on it; the green pad buys another base slot
 	local treadmill = part(
 		"Treadmill",
@@ -165,7 +156,6 @@ local function buildPlot(index: number, parent: Instance): Plot
 		model = model,
 		spawn = spawn,
 		slots = slots,
-		lockPad = lockPad,
 		treadmill = treadmill,
 		slotPad = slotPad,
 		rebirthPad = rebirthPad,

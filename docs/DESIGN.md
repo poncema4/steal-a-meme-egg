@@ -1,7 +1,7 @@
 # Design: Steal a Meme Egg
 
 ## One sentence
-Grab eggs off a conveyor, hatch them into meme characters that earn coins, and raid your friends' bases before they lock up.
+Steal eggs from meme guardians, run them home, hatch them into meme characters that earn coins. Players cannot steal from each other (trading may come later).
 
 ## Why this shape (research 2026-10-10, see the research notes in the studio folder)
 - Steal-a-X loops are the biggest lane on Roblox (Steal An Egg 1.6M players). The loop beats the theme.
@@ -24,7 +24,7 @@ Speed: stand on your treadmill to train (2 XP per second) or buy the next level 
 
 Meme Points per delivered egg: Soggy 1, Disco 5, Spicy 25, Golden 150, Cosmic 1,000, Divine 10,000.
 
-The conveyor and raiding other players' bases stay: the belt is the safe, expensive way to get eggs; the Wilds are the risky, rewarding way.
+There is no conveyor and no raiding: the Wilds are the only source of eggs (plus daily rewards and the shop).
 
 ## Hatching and limited eggs (built)
 Eggs take real time to hatch (8 s up to 5 minutes by tier). Hold E on a hatching egg in your base to skip the wait for coins: 60% of the egg's price, scaled by how much time is left (`Economy.skipCost`).

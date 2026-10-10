@@ -1,19 +1,17 @@
 --!strict
--- Keeps each player's screen uncluttered. The server makes ONE prompt per thing, so everyone would see "Steal" on their own
--- characters and "Rebirth" on other people's bases. A prompt's Enabled flag changed on the client only affects that client,
--- so each screen switches off what does not belong to its player: your base shows your pads, other bases show Steal.
+-- Keeps each player's screen uncluttered. The server makes ONE prompt per thing, so everyone would see "Rebirth" on other
+-- people's bases. A prompt's Enabled flag changed on the client only affects that client, so each screen switches off what
+-- does not belong to its player: only your own base shows its pads.
 local Prompts = {}
 
--- which actions belong to the base's owner, and which belong to visitors
+-- which actions belong to the base's owner
 local OWNER_ONLY = {
 	["Skip hatch"] = true,
 	["Instant hatch"] = true,
 	["Buy speed"] = true,
 	["Buy slot"] = true,
 	["Rebirth"] = true,
-	["Lock base"] = true,
 }
-local VISITOR_ONLY = { Steal = true }
 
 local function plotOf(prompt: Instance): Instance?
 	local node = prompt.Parent
@@ -30,9 +28,6 @@ end
 function Prompts.visible(action: string, ownerId: number, myId: number): boolean
 	if OWNER_ONLY[action] then
 		return ownerId == myId
-	end
-	if VISITOR_ONLY[action] then
-		return ownerId ~= myId and ownerId ~= 0
 	end
 	return true
 end
