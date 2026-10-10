@@ -5,7 +5,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
+local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Events = require(ReplicatedStorage.Shared.Game.Events)
+local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 
 local Hud = {}
 
@@ -44,6 +46,13 @@ function Hud.start(player: Player)
 	local banner = label(gui, "Banner", UDim2.fromOffset(480, 34), UDim2.new(0.5, 0, 0, 82), 26)
 	banner.TextColor3 = Color3.fromRGB(120, 255, 160)
 	local nextUp = label(gui, "NextEvent", UDim2.fromOffset(480, 22), UDim2.new(0.5, 0, 0, 118), 18)
+	local carry = label(gui, "Carry", UDim2.fromOffset(640, 40), UDim2.new(0.5, 0, 0, 148), 28)
+	carry.TextColor3 = Color3.fromRGB(255, 120, 120)
+	-- bottom-left stat block: where you are, how fast you are, how far you can go
+	local stats = label(gui, "Stats", UDim2.fromOffset(360, 96), UDim2.new(0, 190, 1, -110), 22)
+	stats.TextXAlignment = Enum.TextXAlignment.Left
+	stats.TextYAlignment = Enum.TextYAlignment.Top
+	stats.Position = UDim2.new(0, 190, 1, -110)
 	local toast = label(gui, "Toast", UDim2.fromOffset(640, 40), UDim2.fromScale(0.5, 0.78), 26)
 
 	local toastToken = 0
@@ -76,6 +85,15 @@ function Hud.start(player: Player)
 				table.insert(lines, `{def.name}  {clock((tonumber(ends) :: number) - now)}`)
 			end
 		end
+		local mp = (player:GetAttribute("MemePoints") :: number?) or 0
+		local level = (player:GetAttribute("SpeedLevel") :: number?) or 0
+		local zoneName = (player:GetAttribute("Zone") :: string?) or "Home Base"
+		local locked = Zones.nextLocked(mp)
+		stats.Text = `{zoneName}\nMeme Points: {Economy.format(mp)}\nSpeed level {level}`
+			.. (if locked then `\nNext: {locked.name} at {Economy.format(locked.mp)}` else "\nEvery terrain open!")
+		local carrying = (player:GetAttribute("Carrying") :: string?) or ""
+		local def = if carrying ~= "" then Eggs.tier(carrying) else nil
+		carry.Text = if def then `CARRYING {string.upper(def.name)}: RUN HOME!` else ""
 		banner.Text = table.concat(lines, "   ")
 		local nextId, startsAt =
 			string.match(tostring(ReplicatedStorage:GetAttribute("NextEvent") or ""), "^(%w+):(%d+%.?%d*)$")

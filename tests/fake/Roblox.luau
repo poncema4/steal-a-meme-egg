@@ -105,6 +105,13 @@ CF.__mul = function(a, b)
 	end
 	return cf(apply(a.r, b.p) + a.p, matmul(a.r, b.r))
 end
+-- CFrame + Vector3 moves the position and keeps the rotation (what Roblox does)
+CF.__add = function(a, b)
+	return cf(a.p + b, a.r)
+end
+CF.__sub = function(a, b)
+	return cf(a.p - b, a.r)
+end
 CF.__index = function(t, k)
 	if k == "Position" then
 		return t.p
@@ -168,6 +175,26 @@ function Color3.new(r, g, b)
 end
 function Color3.fromRGB(r, g, b)
 	return setmetatable({ R = r / 255, G = g / 255, B = b / 255 }, C3)
+end
+function Color3.fromHSV(h, s, v)
+	-- standard HSV to RGB
+	local i = math.floor(h * 6)
+	local f = h * 6 - i
+	local p, q, t = v * (1 - s), v * (1 - f * s), v * (1 - (1 - f) * s)
+	local r, g, b = v, t, p
+	local k = i % 6
+	if k == 1 then
+		r, g, b = q, v, p
+	elseif k == 2 then
+		r, g, b = p, v, t
+	elseif k == 3 then
+		r, g, b = p, q, v
+	elseif k == 4 then
+		r, g, b = t, p, v
+	elseif k == 5 then
+		r, g, b = v, p, q
+	end
+	return setmetatable({ R = r, G = g, B = b }, C3)
 end
 local UDim = {
 	new = function(s, o)
@@ -753,6 +780,22 @@ function Fake.world()
 			NumberSequence = NumberSequence,
 			ColorSequence = ColorSequence,
 			Enum = world.enum,
+			Random = {
+				-- a small deterministic generator standing in for Roblox's Random.new(seed)
+				new = function(seed)
+					local state = (seed or 1) % 2147483646 + 1
+					return {
+						NextNumber = function(_, lo, hi)
+							state = (state * 16807) % 2147483647
+							local r = state / 2147483647
+							if lo and hi then
+								return lo + r * (hi - lo)
+							end
+							return r
+						end,
+					}
+				end,
+			},
 			RaycastParams = {
 				new = function()
 					return { FilterDescendantsInstances = {} }

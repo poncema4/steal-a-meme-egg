@@ -31,6 +31,7 @@ local specs = {
 	require("./specs/Progression"),
 	require("./specs/Guardian"),
 	require("./specs/Game"),
+	require("./specs/Wilds"),
 }
 
 for _, spec in specs do

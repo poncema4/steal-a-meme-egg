@@ -37,6 +37,14 @@ return function(t)
 	t.check("level 10 takes at least 10 minutes of treadmill", to10 / perSecond >= 600, tostring(to10 / perSecond))
 	t.equal("a training multiplier scales the rate", Progression.trainRate(2), perSecond * 2)
 
+	t.equal("carrying an egg is 10% slower", Progression.carrySpeed(20, true), 18)
+	t.equal("not carrying is full speed", Progression.carrySpeed(20, false), 20)
+	-- even carrying, a maxed player still outruns the fastest guardian (27)
+	t.check(
+		"a maxed carrier outruns the fastest guardian",
+		Progression.carrySpeed(Progression.walkSpeed(Progression.MAX_LEVEL), true) > 27
+	)
+
 	-- Meme Points: every egg is worth something and rarer is worth more
 	local last = 0
 	local worth = true

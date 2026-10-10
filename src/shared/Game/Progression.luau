@@ -31,6 +31,13 @@ function Progression.walkSpeed(level: number): number
 	return Progression.BASE_SPEED + math.clamp(level, 0, Progression.MAX_LEVEL) * Progression.SPEED_PER_LEVEL
 end
 
+-- Carrying an egg slows you down a little, so a guardian can still catch a careless runner.
+Progression.CARRY_FACTOR = 0.9
+
+function Progression.carrySpeed(speed: number, carrying: boolean): number
+	return if carrying then speed * Progression.CARRY_FACTOR else speed
+end
+
 -- Coins to buy the next speed level outright.
 function Progression.speedCost(level: number): number
 	return math.floor(250 * 1.55 ^ level)

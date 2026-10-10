@@ -45,8 +45,8 @@ return function(t)
 	t.equal("the boundary belongs to the next terrain", (Zones.at(440) :: Zones.Zone).id, "Dune")
 	t.equal("past the last terrain is nothing", Zones.at(1500), nil)
 	t.equal("zero points opens only the Meadow", Zones.furthest(0).id, "Meadow")
-	t.equal("100 points opens the Dune", Zones.furthest(100).id, "Dune")
-	t.equal("99 points does not", Zones.furthest(99).id, "Meadow")
+	t.equal("40 points opens the Dune", Zones.furthest(40).id, "Dune")
+	t.equal("39 points does not", Zones.furthest(39).id, "Meadow")
 	t.equal("everything open at the top", Zones.furthest(1e9).id, "Cosmic")
 	t.equal("the next locked terrain after the Meadow", (Zones.nextLocked(0) :: Zones.Zone).id, "Dune")
 	t.equal("nothing is locked at the top", Zones.nextLocked(1e9), nil)
@@ -55,7 +55,7 @@ return function(t)
 	t.equal("a player in an unlocked terrain stays", Zones.pushBack(300, 0), nil)
 	t.equal("a player in the home area stays", Zones.pushBack(50, 0), nil)
 	t.equal("a player in a locked terrain is pushed to its entrance", Zones.pushBack(500, 0), 436)
-	t.equal("with enough points they stay", Zones.pushBack(500, 100), nil)
+	t.equal("with enough points they stay", Zones.pushBack(500, 40), nil)
 
 	-- which egg a nest grows
 	local meadow = Zones.List[1]
@@ -74,7 +74,29 @@ return function(t)
 		"Disco"
 	)
 
-	-- balance: the speed a terrain expects is reachable, and the last chaser is slower than a maxed player
+	-- balance: the speed level a terrain demands (to outrun its guardians while carrying an egg) is reachable and rises
+	local previous = -1
+	for _, zone in Zones.List do
+		local need = 0
+		while
+			need <= Progression.MAX_LEVEL
+			and Progression.carrySpeed(Progression.walkSpeed(need), true) <= zone.guardianSpeed
+		do
+			need += 1
+		end
+		t.check(
+			`{zone.id} can be outrun by level {need}`,
+			need <= Progression.MAX_LEVEL and need >= previous,
+			tostring(need)
+		)
+		previous = need
+	end
+	t.equal(
+		"a new player can outrun the first terrain's guardians",
+		Progression.carrySpeed(Progression.walkSpeed(0), true) > Zones.List[1].guardianSpeed,
+		true
+	)
+	-- ...and the last chaser is slower than a maxed player
 	local top = Progression.walkSpeed(Progression.MAX_LEVEL)
 	for _, zone in Zones.List do
 		t.check(

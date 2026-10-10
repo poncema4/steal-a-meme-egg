@@ -10,8 +10,11 @@ export type Plot = {
 	spawn: BasePart,
 	slots: { BasePart },
 	lockPad: BasePart,
+	treadmill: BasePart,
+	slotPad: BasePart,
 	sign: TextLabel,
 	index: number,
+	center: Vector3,
 }
 
 World.PLOTS = 12
@@ -96,6 +99,30 @@ local function buildPlot(index: number, parent: Instance): Plot
 		Color3.fromRGB(230, 60, 60),
 		model
 	)
+	-- the treadmill trains speed while you stand on it; the green pad buys another base slot
+	local treadmill = part(
+		"Treadmill",
+		Vector3.new(5, 0.5, 18),
+		CFrame.new(center + Vector3.new(20, 0.25, 0)),
+		Color3.fromRGB(70, 70, 80),
+		model
+	)
+	for k = -3, 3 do
+		part(
+			"TreadStripe",
+			Vector3.new(4, 0.05, 1),
+			CFrame.new(center + Vector3.new(20, 0.52, k * 2.4)),
+			Color3.fromRGB(255, 220, 0),
+			model
+		)
+	end
+	local slotPad = part(
+		"SlotPad",
+		Vector3.new(5, 0.5, 5),
+		CFrame.new(center + Vector3.new(-20, 0.25, 15 * facing)),
+		Color3.fromRGB(60, 200, 90),
+		model
+	)
 	local sign = part(
 		"SignPost",
 		Vector3.new(14, 8, 1),
@@ -117,7 +144,17 @@ local function buildPlot(index: number, parent: Instance): Plot
 	label.Text = "FREE BASE"
 	label.Parent = gui
 	model.Parent = parent
-	return { model = model, spawn = spawn, slots = slots, lockPad = lockPad, sign = label, index = index }
+	return {
+		model = model,
+		spawn = spawn,
+		slots = slots,
+		lockPad = lockPad,
+		treadmill = treadmill,
+		slotPad = slotPad,
+		sign = label,
+		index = index,
+		center = center,
+	}
 end
 
 function World.build(): { plots: { Plot }, belt: BasePart }
