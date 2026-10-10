@@ -2,7 +2,7 @@
 
 ## Built and merged (all through PRs, 658 automated checks, CI green)
 - Rules: eggs/characters/mutations, bases, economy, events, admin, zones, progression, guardians, nests, limited eggs, store, objective hints, rebirth, daily reward.
-- World: one walled corridor: Safe Zone with 12 fenced pens (3 rows x 4), red line, SAFE ZONE ground text; the Wilds: 5 terrains, 6 nests each, guardians that chase, gates keyed to Meme Points.
+- World: one walled corridor: Safe Zone with 8 fenced pens in a semicircle (8 players per server), treadmills in front of each pen, red line, gateway sign; the Wilds: 5 terrains, 6 nests each, guardians that chase, gates keyed to Meme Points.
 - Layout: nest and scenery positions come from `Rng` + `Layout` (shared, deterministic, no Roblox `Random`), so the tests check exactly the map players get (nests apart, scenery clear of nests/guardians/gates, all inside the walls).
 - Services: sessions + saving, treadmill/speed/slot pads, live events with a half-hourly schedule, admin chat commands (cross-server through MessagingService), limited eggs with shared stock, purchases with safe receipts, ten original sounds, shop screen, HUD with an always-on objective line.
 - Creator Hub: experience under Nexus Hollow Studios (universe 10770101743, place 115281364108212), icon and thumbnail ACTIVE, genre Simulation/Idle, description set, three passes created OFF-SALE (coins2x 2026694498, luck2x 2026622537, train2x 2025116507), ten sounds in the audio library.

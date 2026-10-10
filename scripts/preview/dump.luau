@@ -24,8 +24,8 @@ for _, inst in world.workspace:GetDescendants() do
 			r = math.floor(c.R * 255 + 0.5),
 			g = math.floor(c.G * 255 + 0.5),
 			b = math.floor(c.B * 255 + 0.5),
-			-- 90 degree turns swap the footprint
-			turned = math.abs(right.X) < 0.5 and math.abs(look.X) < 0.5 and math.abs(right.Z) > 0.5,
+			-- the turn about the vertical axis, in radians (so rotated pens and walls draw correctly)
+			yaw = math.atan2(-right.Z, right.X),
 		})
 	end
 end

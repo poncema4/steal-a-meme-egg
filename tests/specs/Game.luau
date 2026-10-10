@@ -4,6 +4,7 @@
 local Fake = require("../fake/Roblox")
 local Daily = require("../../src/shared/Game/Daily")
 local Eggs = require("../../src/shared/Game/Eggs")
+local Zones = require("../../src/shared/Game/Zones")
 
 return function(t)
 	local world = Fake.world()
@@ -22,7 +23,7 @@ return function(t)
 			plotCount += 1
 		end
 	end
-	t.equal("there are 12 base plots", plotCount, 12)
+	t.equal("there are 8 base plots", plotCount, 8)
 	-- the corridor: walls on both sides, a red line ending the Safe Zone, and SAFE ZONE written on the ground
 	local walls = { [-1] = 0, [1] = 0 }
 	for _, child in (map :: Instance):GetChildren() do
@@ -34,32 +35,46 @@ return function(t)
 	t.check("and a wall at each end", (map :: Instance):FindFirstChild("EndWall") ~= nil)
 	local line = (map :: Instance):FindFirstChild("RedLine") :: Part
 	t.check("a red line marks the edge of the Safe Zone", line ~= nil)
-	local writing = ""
-	for _, d in ((map :: Instance):FindFirstChild("SafeZoneText") or map :: Instance):GetDescendants() do
-		if d:IsA("TextLabel") then
-			writing ..= (d :: TextLabel).Text
+	-- the gateway over the red line: SAFE ZONE on the side that faces the pens, THE WILDS on the other
+	local gate = (map :: Instance):FindFirstChild("GateSign") :: Part
+	t.check("a gateway stands over the red line", gate ~= nil)
+	local faces: { [string]: string } = {}
+	for _, d in gate:GetChildren() do
+		if d:IsA("SurfaceGui") then
+			faces[tostring((d :: SurfaceGui).Face)] = ((d :: Instance):FindFirstChild("GateText") :: TextLabel).Text
 		end
 	end
-	t.equal("SAFE ZONE is written on the ground", writing, "SAFE ZONE")
-	-- every pen sits inside the Safe Zone, inside the walls, and apart from the others
+	local front = faces[tostring(world.enum.NormalId.Front)]
+	t.equal("its front face says SAFE ZONE", front, "SAFE ZONE")
+	t.check(
+		"and its back face points to the Wilds",
+		string.find(faces[tostring(world.enum.NormalId.Back)] or "", "WILDS", 1, true) ~= nil
+	)
+	t.check("the front face looks toward the pens (west)", gate.CFrame.LookVector.X < -0.99)
+	-- pens stand in a semicircle: all west of the red line, inside the walls, the same distance from the plaza, clear of each other
 	local centers: { Vector3 } = {}
 	for _, child in (map :: Instance):GetChildren() do
 		if string.match(child.Name, "^Plot_") then
 			table.insert(centers, (child :: Model).PrimaryPart.Position)
 		end
 	end
-	local penOk, apart = true, true
+	local World = world.load("src/server/World")
+	local penOk, apart, ring = true, true, true
 	for i, c in centers do
-		if c.X - 23 < -190 or c.X + 23 > line.Position.X or math.abs(c.Z) + 23 > 110 then
+		if c.X - 23 < World.SAFE_BACK or c.X + 23 > line.Position.X or math.abs(c.Z) + 23 > Zones.WIDTH / 2 then
 			penOk = false
 		end
+		if math.abs((c - World.PLAZA).Magnitude - World.RADIUS) > 0.5 then
+			ring = false
+		end
 		for j = i + 1, #centers do
-			if math.abs(c.X - centers[j].X) < 46 and math.abs(c.Z - centers[j].Z) < 46 then
+			if (c - centers[j]).Magnitude < World.PEN + 1 then
 				apart = false
 			end
 		end
 	end
 	t.check("every pen is inside the Safe Zone and the walls", penOk)
+	t.check("the pens stand on a circle around the plaza", ring)
 	t.check("and no two pens overlap", apart)
 
 	local ana = world.addPlayer("Ana", 11)
@@ -134,12 +149,12 @@ return function(t)
 	t.check("a returning player keeps their coins", math.abs((ben2:GetAttribute("Coins") :: number) - saved) < 5)
 	t.check("every character id is real", Eggs.character("SoggyToast") ~= nil)
 
-	-- a full server: the 13th player gets no base and is sent away instead of standing around
-	for i = 1, 11 do
+	-- a full server: the 9th player gets no base and is sent away instead of standing around
+	for i = 1, 7 do
 		world.addPlayer(`Crowd{i}`, 200 + i)
 	end
 	world.advance(0.6)
-	local thirteenth = world.addPlayer("Overflow", 299)
+	local ninth = world.addPlayer("Overflow", 299)
 	world.advance(0.6)
 	local planted = 0
 	for _, child in (map :: Instance):GetChildren() do
@@ -147,15 +162,15 @@ return function(t)
 			planted += 1
 		end
 	end
-	t.equal("twelve players fill the twelve bases", planted, 12)
-	local overflow = #world.players - 12
-	t.check("there are players past twelve", overflow >= 1)
+	t.equal("eight players fill the eight bases", planted, 8)
+	local overflow = #world.players - 8
+	t.check("there are players past eight", overflow >= 1)
 	t.equal("nobody is sent away at once", #world.kicked, 0)
 	world.advance(7)
-	t.equal("every player past twelve is sent away a few seconds later", #world.kicked, overflow)
+	t.equal("every player past eight is sent away a few seconds later", #world.kicked, overflow)
 	local kickedOverflow = false
 	for _, k in world.kicked do
-		if k.player == thirteenth then
+		if k.player == ninth then
 			kickedOverflow = true
 		end
 		t.check("each is sent away with a message that says why", string.find(k.message, "full", 1, true) ~= nil)

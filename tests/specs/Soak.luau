@@ -1,5 +1,5 @@
 --!strict
--- A soak test: twelve simulated players doing random things for ten simulated minutes (stealing, being caught, delivering,
+-- A soak test: eight simulated players doing random things for ten simulated minutes (stealing, being caught, delivering,
 -- stealing from guardians, using the pads, admin events, leaving and rejoining). It checks that nothing throws and that
 -- the numbers that must always hold really always hold.
 local Fake = require("../fake/Roblox")
@@ -22,7 +22,7 @@ return function(t)
 	local entries = wilds.entries()
 
 	local players: { any } = {}
-	for i = 1, 12 do
+	for i = 1, 8 do
 		local p = world.addPlayer(`Soak{i}`, 500 + i)
 		world.spawnCharacter(p)
 		table.insert(players, p)
@@ -180,7 +180,7 @@ return function(t)
 		end
 	end
 	t.check(
-		"ten simulated minutes of 12 players ran without an error or a broken invariant",
+		"ten simulated minutes of 8 players ran without an error or a broken invariant",
 		failure == nil,
 		tostring(failure)
 	)

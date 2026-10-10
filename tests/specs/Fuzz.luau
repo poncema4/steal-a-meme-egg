@@ -160,7 +160,7 @@ return function(t)
 			end
 		end
 	end
-	t.check("a stranger pressing every prompt in the world is harmless", count > 50, tostring(count))
+	t.check("a stranger pressing every prompt in the world is harmless", count > 30, tostring(count))
 	local sstate = session.get(stranger)
 	t.check("and their numbers are still sane", finite(sstate.coins) and sstate.coins >= 0)
 

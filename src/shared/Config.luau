@@ -103,6 +103,6 @@ return table.freeze({
 		AutosaveSeconds = 60,
 	}),
 	Server = table.freeze({
-		MaxPlayers = 12,
+		MaxPlayers = 8,
 	}),
 })
