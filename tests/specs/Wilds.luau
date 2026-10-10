@@ -17,7 +17,12 @@ return function(t)
 	local session = world.load("src/server/Session")
 	local plotsMod = world.load("src/server/Plots")
 	local entries = wilds.entries()
-	t.equal("every terrain has its nests and guardians", #entries, #Zones.List * 6)
+	local expected = 0
+	for _, zone in Zones.List do
+		expected += zone.nests
+	end
+	t.equal("every terrain has its nests and guardians", #entries, expected)
+	t.equal("each terrain has 5 nests", Zones.List[1].nests, 5)
 	local folder = world.workspace:FindFirstChild("Wilds") :: Instance
 	t.check("the Wilds folder is built", folder ~= nil)
 	local gates = 0
