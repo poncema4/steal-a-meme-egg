@@ -11,10 +11,20 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
+local Progression = require(ReplicatedStorage.Shared.Game.Progression)
 
 local Session = {}
 
-export type State = { player: Player, coins: number, base: Base.Base, loaded: boolean }
+export type State = {
+	player: Player,
+	coins: number,
+	base: Base.Base,
+	loaded: boolean,
+	mp: number, -- Meme Points: decide how far into the Wilds you may go
+	speedXp: number, -- total treadmill/bought speed XP
+	carry: string?, -- the egg tier being carried back from the Wilds
+	carryFrom: string?, -- which nest it came from (so a catch can put it back)
+}
 
 local states: { [Player]: State } = {}
 local listeners: { (Player) -> () } = {}
@@ -55,6 +65,117 @@ local function publish(state: State)
 	state.player:SetAttribute("Coins", math.floor(state.coins))
 	state.player:SetAttribute("Income", Base.income(state.base, income))
 	state.player:SetAttribute("Slots", state.base.size)
+	local level, left = Progression.levelFor(state.speedXp)
+	state.player:SetAttribute("MemePoints", state.mp)
+	state.player:SetAttribute("SpeedLevel", level)
+	state.player:SetAttribute(
+		"SpeedProgress",
+		if level >= Progression.MAX_LEVEL then 1 else left / Progression.xpForNext(level)
+	)
+	state.player:SetAttribute("Carrying", state.carry or "")
+end
+
+-- Applies the player's speed (level, minus the carry penalty) to their character.
+function Session.applySpeed(player: Player)
+	local state = states[player]
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if state and humanoid then
+		local level = Progression.levelFor(state.speedXp)
+		humanoid.WalkSpeed = Progression.carrySpeed(Progression.walkSpeed(level), state.carry ~= nil)
+	end
+end
+
+function Session.speedLevel(player: Player): number
+	local state = states[player]
+	return if state then (Progression.levelFor(state.speedXp)) else 0
+end
+
+function Session.addPoints(player: Player, points: number)
+	local state = states[player]
+	if state then
+		state.mp += points
+		publish(state)
+	end
+end
+
+-- Training XP (treadmill). Returns the new level.
+function Session.addSpeedXp(player: Player, xp: number): number
+	local state = states[player]
+	if not state then
+		return 0
+	end
+	local before = Progression.levelFor(state.speedXp)
+	state.speedXp += xp
+	local after = Progression.levelFor(state.speedXp)
+	publish(state)
+	if after ~= before then
+		Session.applySpeed(player)
+	end
+	return after
+end
+
+-- Buys the next speed level with coins: jumps the XP to the start of that level. Returns (ok, message).
+function Session.buySpeed(player: Player): (boolean, string)
+	local state = states[player]
+	if not state then
+		return false, "not ready"
+	end
+	local level = Progression.levelFor(state.speedXp)
+	if level >= Progression.MAX_LEVEL then
+		return false, "max speed!"
+	end
+	local cost = Progression.speedCost(level)
+	if not Session.spend(player, cost) then
+		return false, `speed {level + 1} costs {Economy.format(cost)}`
+	end
+	local total = 0
+	for n = 0, level do
+		total += Progression.xpForNext(n)
+	end
+	state.speedXp = total
+	publish(state)
+	Session.applySpeed(player)
+	return true, `Speed level {level + 1}!`
+end
+
+function Session.carrying(player: Player): (string?, string?)
+	local state = states[player]
+	if not state then
+		return nil, nil
+	end
+	return state.carry, state.carryFrom
+end
+
+-- Starts or ends carrying an egg (nil clears it). Slows or restores the runner.
+function Session.setCarry(player: Player, tier: string?, from: string?)
+	local state = states[player]
+	if not state then
+		return
+	end
+	state.carry = tier
+	state.carryFrom = if tier then from else nil
+	publish(state)
+	Session.applySpeed(player)
+end
+
+-- Puts the carried egg in the player's base (it starts hatching) and pays Meme Points. Returns (ok, message).
+function Session.deliver(player: Player): (boolean, string)
+	local state = states[player]
+	if not state or not state.carry then
+		return false, "nothing to deliver"
+	end
+	if Base.firstFree(state.base) == nil then
+		return false, "your base is full!"
+	end
+	local tier = state.carry
+	Base.placeEgg(state.base, tier)
+	local points = Progression.pointsForEgg(tier)
+	state.mp += points
+	state.carry, state.carryFrom = nil, nil
+	Session.applySpeed(player)
+	Session.changed(player)
+	return true, `+{points} Meme Points!`
 end
 
 function Session.changed(player: Player)
@@ -118,11 +239,20 @@ local function serialise(state: State): { [string]: any }
 			}
 		end
 	end
-	return { coins = state.coins, size = state.base.size, slots = slots, savedAt = clock() }
+	return {
+		coins = state.coins,
+		size = state.base.size,
+		slots = slots,
+		savedAt = clock(),
+		mp = state.mp,
+		speedXp = state.speedXp,
+	}
 end
 
 local function restore(state: State, saved: { [string]: any })
 	state.coins = tonumber(saved.coins) or Config.Economy.StartCoins
+	state.mp = math.max(tonumber(saved.mp) or 0, 0)
+	state.speedXp = math.max(tonumber(saved.speedXp) or 0, 0)
 	state.base = Base.new(
 		math.clamp(
 			tonumber(saved.size) or Config.Economy.StartSlots,
@@ -181,10 +311,16 @@ local function add(player: Player, onJoin: (Player) -> ())
 		coins = Config.Economy.StartCoins,
 		base = Base.new(Config.Economy.StartSlots),
 		loaded = false,
+		mp = 0,
+		speedXp = 0,
 	}
 	states[player] = state
 	load(state)
 	publish(state)
+	player.CharacterAdded:Connect(function()
+		task.defer(Session.applySpeed, player)
+	end)
+	Session.applySpeed(player)
 	onJoin(player)
 	Session.changed(player)
 end

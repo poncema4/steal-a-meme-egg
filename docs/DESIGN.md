@@ -15,8 +15,18 @@ Grab eggs off a conveyor, hatch them into meme characters that earn coins, and r
 4. Hold E on a character in someone else's base to steal it. Lock your base (45 s, 90 s cooldown) to be safe.
 5. Coins buy better eggs and more slots (up to 12).
 
-## The Wilds (next build, from Marco 2026-10-10)
-Same idea as the top egg games: out past the bases are themed terrains (Meadow, Dune desert, Volcano, Cosmic...). Each is guarded by meme characters that sit on their eggs. You sneak up, hold E to steal the egg from the meme (it gets angry and chases you), and run it back to your base to hatch. Rarer terrains guard rarer eggs. The conveyor stays as the safe starter income; the Wilds are the risk and the reward. The thumbnail (brand/thumb_1920x1080.png) already shows this: an angry goose guarding its egg in the Dune terrain.
+## The Wilds (built)
+A long strip of themed terrains east of the bases (x 200 to 1400): Meme Meadow, Dune Desert, Lava Lands, Frozen Peaks, Cosmic Void. Each has 6 nests; on every nest a meme guardian sits on an egg. Hold E on the egg to steal it. The guardian chases you (it gives up after 12 s or 150 studs, and takes the egg back if it touches you; you wake up at home). Carry the egg into your own base to start it hatching and earn Meme Points. You carry one egg at a time and run 10% slower while carrying.
+
+Gates: each terrain needs Meme Points (0 / 40 / 250 / 2,500 / 20,000). The server pushes you back from a terrain you have not unlocked. Rarer terrains hold rarer eggs and faster guardians (12 / 17 / 21 / 25 / 29 studs per second).
+
+Speed: stand on your treadmill to train (2 XP per second) or buy the next level with coins at its prompt. Speed levels 0 to 30 raise walk speed from 16 to 43. The level you need to outrun a terrain while carrying: Meadow 0, Dune 4, Lava 9, Frost 14, Cosmic 18 (tested in `tests/specs/Zones`).
+
+Meme Points per delivered egg: Soggy 1, Disco 5, Spicy 25, Golden 150, Cosmic 1,000, Divine 10,000.
+
+The conveyor and raiding other players' bases stay: the belt is the safe, expensive way to get eggs; the Wilds are the risky, rewarding way.
+
+Next in this area: instant-hatch and skip purchases, limited-stock eggs, then game passes and Robux products.
 
 ## Live ops (the reason people join)
 - Schedule every half hour on every server: Lucky Hour (:00), Egg Rain (:10), Coin Rain (:20).
