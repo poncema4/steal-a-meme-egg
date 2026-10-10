@@ -41,12 +41,13 @@ function Progression.walkSpeed(level: number): number
 	return Progression.BASE_SPEED + math.clamp(level, 0, Progression.MAX_LEVEL) * Progression.SPEED_PER_LEVEL
 end
 
--- The "Speed" number shown on the HUD and the leaderboard: it doubles every level, so it grows like the numbers players
--- see in other games, while the real WalkSpeed above stays sensible.
-Progression.SPEED_STAT_BASE = 100 -- big enough that the number visibly climbs every second you train
+-- The "Speed" number shown on the HUD and the leaderboard: always 100 times your real run speed, so a bigger number means a
+-- quicker you (16 studs/s shows 1,600, the top level shows 4,300).
+Progression.SPEED_STAT_PER_STUD = 100
+Progression.SPEED_STAT_BASE = Progression.BASE_SPEED * Progression.SPEED_STAT_PER_STUD
 
 function Progression.speedStat(level: number): number
-	return math.floor(Progression.SPEED_STAT_BASE * 2 ^ math.clamp(level, 0, Progression.MAX_LEVEL))
+	return math.floor(Progression.walkSpeed(level) * Progression.SPEED_STAT_PER_STUD)
 end
 
 -- Slow Mode caps your walking speed at the Roblox default, for placing things carefully on your base.

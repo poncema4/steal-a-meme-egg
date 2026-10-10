@@ -11,6 +11,7 @@ export type Zone = {
 	length: number,
 	nests: number, -- guarded eggs in this terrain
 	guardianSpeed: number, -- studs per second
+	boss: string, -- the meme character that guards the whole terrain (its model is Models.Bosses.Boss<id>)
 	eggs: { string }, -- egg tiers its nests grow (the first is the common one)
 	ground: { number }, -- r, g, b (0-255) of the floor
 	sky: { number },
@@ -22,6 +23,7 @@ Zones.GATE_DEPTH = 6
 Zones.List = {
 	{
 		id = "Meadow",
+		boss = "SoggyToast",
 		name = "Meme Meadow",
 		mp = 0,
 		startX = 10,
@@ -34,6 +36,7 @@ Zones.List = {
 	},
 	{
 		id = "Dune",
+		boss = "PharaohPancake",
 		name = "Dune Desert",
 		mp = 25,
 		startX = 250,
@@ -46,6 +49,7 @@ Zones.List = {
 	},
 	{
 		id = "Volcano",
+		boss = "VolcanoVicar",
 		name = "Lava Lands",
 		mp = 250,
 		startX = 490,
@@ -58,6 +62,7 @@ Zones.List = {
 	},
 	{
 		id = "Frost",
+		boss = "SleepySock",
 		name = "Frozen Peaks",
 		mp = 2500,
 		startX = 730,
@@ -70,6 +75,7 @@ Zones.List = {
 	},
 	{
 		id = "Cosmic",
+		boss = "FinalBossHamster",
 		name = "Cosmic Void",
 		mp = 20000,
 		startX = 970,

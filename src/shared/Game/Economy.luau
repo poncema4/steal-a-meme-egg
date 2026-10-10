@@ -37,4 +37,12 @@ function Economy.format(n: number): string
 	return text .. SUFFIXES[i]
 end
 
+-- The whole number with thousands separators (1,600), for stats that must visibly tick up one by one.
+function Economy.full(n: number): string
+	local text = tostring(math.floor(n))
+	local out = string.gsub(string.reverse(text), "(%d%d%d)", "%1,")
+	out = string.reverse(out)
+	return (string.gsub(out, "^,", ""))
+end
+
 return Economy

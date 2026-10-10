@@ -108,6 +108,10 @@ return function(t)
 			if prop.x < zone.startX + Zones.GATE_DEPTH + 8 then
 				gateClear = false
 			end
+			local boss = Layout.bossSpot(zone)
+			if math.sqrt((prop.x - boss.x) ^ 2 + (prop.z - boss.z) ^ 2) < Layout.BOSS_CLEAR then
+				clear = false
+			end
 		end
 		t.check(`{zone.id}: no scenery on top of a nest or its guardian`, clear)
 		t.check(`{zone.id}: scenery stays inside the terrain`, boundsOk)
