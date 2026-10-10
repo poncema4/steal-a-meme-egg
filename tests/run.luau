@@ -36,6 +36,7 @@ local specs = {
 	require("./specs/Wilds"),
 	require("./specs/Shop"),
 	require("./specs/Purchases"),
+	require("./specs/ShopUi"),
 }
 
 for _, spec in specs do

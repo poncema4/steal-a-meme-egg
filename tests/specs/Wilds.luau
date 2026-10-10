@@ -28,6 +28,18 @@ return function(t)
 	end
 	t.equal("every terrain has a gate", gates, #Zones.List)
 
+	local function feetY(entry: any): number
+		local body = entry.model:FindFirstChild("Body")
+		return body.Position.Y - body.Size.Y / 2
+	end
+	local grounded = true
+	for _, e in entries do
+		if math.abs(feetY(e)) > 0.01 then
+			grounded = false
+		end
+	end
+	t.check("every guardian stands on the ground", grounded)
+
 	local ana = world.addPlayer("Ana", 21)
 	world.spawnCharacter(ana)
 	world.advance(0.6)
@@ -57,6 +69,7 @@ return function(t)
 	world.advance(4)
 	t.equal("the guardian caught the thief", ana:GetAttribute("Carrying"), "")
 	t.check("the egg is back in the nest", entry.prompt.Enabled and entry.nest.tier == tierAtSteal)
+	t.check("a guardian is still on the ground after chasing", math.abs(feetY(entry)) < 0.01, tostring(feetY(entry)))
 	t.check("the thief was sent home", math.abs(root.Position.X - plot.spawn.Position.X) < 30)
 	t.equal("speed is normal again", world.humanoid(ana).WalkSpeed, Progression.BASE_SPEED)
 	t.equal("the guardian walks home", entry.guardian.state == "Return" or entry.guardian.state == "Idle", true)

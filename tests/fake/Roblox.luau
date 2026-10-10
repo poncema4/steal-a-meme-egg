@@ -492,7 +492,24 @@ function Fake.world()
 		return data[self].props.CFrame or CFrame.identity
 	end
 	function Methods.PivotTo(self, target)
-		data[self].props.CFrame = target
+		-- like Roblox: a model moves as one piece so its pivot (PrimaryPart, else the root part) lands on `target`
+		local d = data[self]
+		local pivot = d.props.PrimaryPart
+		if not pivot and d.class == "Model" then
+			pivot = self:FindFirstChild("HumanoidRootPart")
+		end
+		if d.class == "Model" and pivot then
+			local delta = target.p - pivot.CFrame.p
+			for _, inst in self:GetDescendants() do
+				if data[inst].props.Position and data[inst].props.CFrame then
+					inst.Position = inst.Position + delta
+				end
+			end
+		end
+		d.props.CFrame = target
+		if d.class ~= "Model" then
+			d.props.Position = target.p
+		end
 	end
 	function Methods.GetServerTimeNow(_)
 		return world.now
