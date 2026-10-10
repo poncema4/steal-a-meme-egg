@@ -27,6 +27,9 @@ local specs = {
 	require("./specs/Economy"),
 	require("./specs/Events"),
 	require("./specs/Admin"),
+	require("./specs/Zones"),
+	require("./specs/Progression"),
+	require("./specs/Guardian"),
 	require("./specs/Game"),
 }
 
