@@ -1,7 +1,8 @@
-"""Store art for Raid a Meme Egg, modelled on trending Roblox thumbnails (bright, saturated, one clear moment, two big
-avatars fighting over one huge egg, room for huge text). Renders art/renders/thumb_wide.png (1920x1080) and
-art/renders/thumb_icon.png (1024x1024). Text is added afterwards by brand/make_thumb.py.
-Usage: scripts/blender.sh art/blender/thumb.py   (Blender 4.5 portable in ~/tools, see docs/WORKFLOW.md)"""
+"""Store art for Steal a Meme Egg, modelled on the top Steal-an-Egg thumbnails: a tiny avatar lifting a huge jewelled egg, an
+angry guardian beside it, bright saturated desert, room for the rainbow title. The egg and the guardian are built from
+merged voxel cubes (like the in-game parts) with a small colour jitter per cube. Renders art/renders/thumb_wide.png
+(1920x1080) and art/renders/thumb_icon.png (1024x1024); brand/make_thumb.py adds the text layer afterwards.
+Usage: ~/tools/blender-4.5.14-linux-x64/blender -b -P art/blender/thumb.py"""
 import sys, os, math, random
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *
@@ -85,27 +86,6 @@ def avatar(ox, oy, oz, shirt, pants, skin, yaw, arms=(2.4, 2.4), stride=0.5, lea
     return root
 
 
-def egg(loc, scale, color, emit=None, rough=0.25):
-    m = mat("egg", color, rough, emit=emit)
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=1, location=loc, segments=48, ring_count=32)
-    o = bpy.context.object
-    o.scale = (scale, scale, scale * 1.28)
-    o.data.materials.append(m)
-    bpy.ops.object.shade_smooth()
-    return o
-
-
-def spots(center, scale, color, n=9, seed=3):
-    random.seed(seed)
-    m = mat("spot", color, 0.4)
-    for _ in range(n):
-        a, b = random.uniform(0, math.tau), random.uniform(-0.6, 0.7)
-        r = scale
-        p = (center[0] + r * math.cos(a) * math.cos(b) * 0.98, center[1] + r * math.sin(a) * math.cos(b) * 0.98 - 0.1, center[2] + r * 1.28 * math.sin(b))
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=random.uniform(0.12, 0.3) * scale, location=p, segments=16, ring_count=10)
-        bpy.context.object.data.materials.append(m)
-
-
 def sparkles(center, spread, n, seed):
     random.seed(seed)
     m = mat("spark", (1, 0.85, 0.2), 0.2, emit=(1.0, 0.75, 0.1))
@@ -114,32 +94,6 @@ def sparkles(center, spread, n, seed):
         p = [center[i] + random.uniform(-spread[i], spread[i]) for i in range(3)]
         bpy.ops.mesh.primitive_ico_sphere_add(radius=random.uniform(0.06, 0.2), location=p, subdivisions=1)
         bpy.context.object.data.materials.append(m)
-
-
-def rays(center, length, n, color, y):
-    """A flat sunburst behind the hero egg: wedge-shaped emissive planes."""
-    m = mat("ray", color, 0.5, emit=color)
-    m.node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value = 2.2
-    for k in range(n):
-        a = k * math.tau / n
-        bpy.ops.mesh.primitive_cone_add(vertices=3, radius1=length * 0.09, depth=length, location=(center[0] + math.cos(a) * length / 2, y, center[2] + math.sin(a) * length / 2))
-        o = bpy.context.object
-        o.rotation_euler = (math.pi / 2, 0, 0)
-        o.rotation_euler = (0, 0, 0)
-        o.rotation_mode = "XYZ"
-        o.rotation_euler = (math.pi / 2, math.atan2(math.sin(a), math.cos(a)) - math.pi / 2 + math.pi / 2 * 0, 0)
-        o.scale = (1, 0.02, 1)
-        o.data.materials.append(m)
-
-
-def world_ground(y_back=40):
-    grass = mat("grass", (0.25, 0.8, 0.2), 0.8)
-    box("lawn", (200, 120, 1), (0, 0, -0.5), grass, 0, 0)
-    belt = mat("belt", (0.12, 0.12, 0.16), 0.7)
-    box("belt", (200, 9, 0.6), (0, -2, 0.3), belt, 0.02, 0)
-    stripe = mat("stripe", (1.0, 0.85, 0.0), 0.5)
-    for k in range(-9, 10):
-        box("stripe", (1.4, 9, 0.05), (k * 8, -2, 0.62), stripe, 0, 0)
 
 
 def gradient_sky(top=(0.10, 0.42, 1.0), bottom=(0.62, 0.9, 1.0)):
@@ -164,59 +118,6 @@ def gradient_sky(top=(0.10, 0.42, 1.0), bottom=(0.62, 0.9, 1.0)):
     nt.links.new(bg.outputs[0], out.inputs[0])
 
 
-def hexes(center, scale, n, color, seed=4):
-    """Gold hexagonal plates studding the egg shell (the 'jewelled egg' look the popular thumbnails use)."""
-    random.seed(seed)
-    m = mat("plate", color, 0.25, 0.25)
-    for _ in range(n):
-        a = random.uniform(-2.6, -0.5)  # facing the camera (-y side)
-        b = random.uniform(-0.55, 1.1)
-        nx, ny, nz = math.cos(b) * math.cos(a), math.cos(b) * math.sin(a), math.sin(b)
-        p = (center[0] + nx * scale * 1.0, center[1] + ny * scale * 1.0, center[2] + nz * scale * 1.28)
-        bpy.ops.mesh.primitive_cylinder_add(vertices=6, radius=random.uniform(0.35, 0.7), depth=0.3, location=p)
-        o = bpy.context.object
-        d = Vector((nx, ny, nz * 0.8))
-        o.rotation_euler = d.to_track_quat("Z", "Y").to_euler()
-        o.data.materials.append(m)
-        bpy.ops.object.shade_smooth()
-
-
-def goose(ox, oy, yaw, s=1.0):
-    """A chunky voxel-style angry goose: the pet the thief is stealing from. Front is -y at yaw 0."""
-    root = bpy.data.objects.new("goose", None)
-    bpy.context.scene.collection.objects.link(root)
-    root.location = (ox, oy, 0)
-    root.rotation_euler = (0, 0, yaw)
-    root.scale = (s, s, s)
-    white = mat("goose", (0.97, 0.97, 0.98), 0.5)
-    shade = mat("gooseshade", (0.75, 0.82, 0.95), 0.5)
-    orange = mat("orange", (1.0, 0.45, 0.02), 0.35)
-    black = mat("gblack", (0.01, 0.01, 0.015), 0.3)
-    red = mat("gred", (1.0, 0.05, 0.05), 0.3, emit=(1.0, 0.0, 0.0))
-
-    def put(o, loc):
-        o.parent = root
-        o.location = loc
-        return o
-
-    put(box("body", (7, 9, 5.5), (0, 0, 0), white, 0.5, 1), (0, 0.5, 4.6))
-    put(box("belly", (6, 7, 3), (0, 0, 0), shade, 0.5, 1), (0, 0.2, 3.1))
-    put(box("neck", (2.4, 2.4, 5), (0, 0, 0), white, 0.4, 1), (0, -3.2, 8.4))
-    put(box("head", (3.8, 4.2, 3.4), (0, 0, 0), white, 0.5, 1), (0, -3.8, 11.2))
-    put(box("beak", (2.6, 3.4, 1.2), (0, 0, 0), orange, 0.2, 1), (0, -6.2, 10.6))
-    put(box("beaklow", (2.3, 2.6, 0.6), (0, 0, 0), orange, 0.1, 1), (0, -5.9, 9.8))
-    for sx in (-1, 1):
-        put(box("eye", (0.9, 0.5, 1.1), (0, 0, 0), black, 0.1, 0), (sx * 1.35, -5.85, 11.9))
-        put(box("pupil", (0.35, 0.3, 0.45), (0, 0, 0), red, 0.05, 0), (sx * 1.35, -6.15, 11.9))
-        brow = put(box("brow", (1.5, 0.4, 0.45), (0, 0, 0), black, 0.05, 0), (sx * 1.35, -6.0, 12.75))
-        brow.rotation_euler = (0, sx * 0.55, 0)
-        put(box("wing", (1.2, 6, 3.6), (0, 0, 0), shade, 0.3, 1), (sx * 3.9, 0.8, 5.0))
-        put(box("leg", (0.9, 0.9, 2.6), (0, 0, 0), orange, 0.1, 0), (sx * 1.6, -0.2, 1.3))
-        put(box("foot", (2.2, 3, 0.45), (0, 0, 0), orange, 0.1, 0), (sx * 1.6, -1.1, 0.25))
-    put(box("tail", (3, 2.4, 2.4), (0, 0, 0), white, 0.3, 1), (0, 5.4, 5.6))
-    return root
-
-
 def desert(seed=2):
     """The Dune terrain: sand floor, orange mesas on the horizon, voxel cacti. Each Wild in the game has its own look."""
     sand = mat("sand", (0.95, 0.62, 0.18), 0.9)
@@ -236,19 +137,162 @@ def desert(seed=2):
         box("armup", (1.4, 1.4, 3), (x + 1.7, y, h * 0.6 + 1.5), cactus, 0.3, 0)
 
 
+
+
+# ---------------------------------------------------------------- voxel building
+CUBE = 0.5
+
+
+def voxel_object(name, cubes, bevel=0.07, glow=0.0):
+    """One merged mesh per colour: cubes is {(r, g, b): [(x, y, z), ...]} in world units. Each cube gets a rounded edge,
+    which is what makes it read as a Roblox part rather than a Minecraft block."""
+    import bmesh
+    objs = []
+    for i, (rgb, centers) in enumerate(cubes.items()):
+        mesh = bpy.data.meshes.new(f"{name}{i}")
+        bm = bmesh.new()
+        for (x, y, z) in centers:
+            bmesh.ops.create_cube(bm, size=CUBE * 0.98, matrix=__import__("mathutils").Matrix.Translation((x, y, z)))
+        bm.to_mesh(mesh)
+        bm.free()
+        o = bpy.data.objects.new(f"{name}{i}", mesh)
+        bpy.context.scene.collection.objects.link(o)
+        o.data.materials.append(mat(f"{name}m{i}", rgb, 0.35, emit=rgb if glow else None))
+        if glow:
+            o.data.materials[0].node_tree.nodes["Principled BSDF"].inputs["Emission Strength"].default_value = glow
+        mod = o.modifiers.new("bevel", "BEVEL")
+        mod.width = CUBE * bevel
+        mod.segments = 2
+        for p in mesh.polygons:
+            p.use_smooth = True
+        objs.append(o)
+    return objs
+
+
+def jitter(rgb, rnd, amount=0.045):
+    k = 1 + rnd.uniform(-amount, amount)
+    return tuple(min(1.0, max(0.0, c * k)) for c in rgb)
+
+
+def quantise(rgb):
+    return tuple(round(c * 24) / 24 for c in rgb)
+
+
+def add(groups, rgb, p):
+    groups.setdefault(quantise(rgb), []).append(p)
+
+
+def voxel_egg(center, rx, rz, seed=11):
+    """A jewelled egg: a hollow ellipsoid shell, pointier at the top, magenta with darker speckles, studded with gold crystal
+    clusters that stick out of the shell."""
+    rnd = random.Random(seed)
+    groups = {}
+    nx, nz = int(rx / CUBE) + 2, int(rz / CUBE) + 2
+    surface = []
+    for i in range(-nx, nx + 1):
+        for j in range(-nx, nx + 1):
+            for k in range(-nz, nz + 1):
+                x, y, z = i * CUBE, j * CUBE, k * CUBE
+                taper = 1 - 0.20 * max(0.0, z / rz)  # narrower toward the top
+                d = math.sqrt((x / (rx * taper)) ** 2 + (y / (rx * taper)) ** 2 + (z / rz) ** 2)
+                if d <= 1.0 and d > 1.0 - (CUBE * 2.2) / rx:
+                    surface.append((x, y, z, d))
+    # crystal clusters on the camera side
+    spots = []
+    for _ in range(30):
+        a = rnd.uniform(-2.7, -0.45)
+        b = rnd.uniform(-0.7, 1.15)
+        spots.append((a, b, rnd.uniform(0.9, 1.6)))
+    for (x, y, z, d) in surface:
+        base = (0.93, 0.12, 0.72) if (z / rz) > -0.2 else (0.62, 0.08, 0.86)
+        near = None
+        for (a, b, r) in spots:
+            px = rx * math.cos(b) * math.cos(a)
+            py = rx * math.cos(b) * math.sin(a)
+            pz = rz * math.sin(b)
+            dist = math.sqrt((x - px) ** 2 + (y - py) ** 2 + (z - pz) ** 2)
+            if dist < r:
+                near = (dist, r)
+        if near:
+            gold = (1.0, 0.72, 0.1) if near[0] < near[1] * 0.6 else (1.0, 0.55, 0.05)
+            add(groups, jitter(gold, rnd, 0.06), (center[0] + x, center[1] + y, center[2] + z))
+        else:
+            if rnd.random() < 0.10:
+                base = (0.45, 0.04, 0.55)  # dark speckle
+            add(groups, jitter(base, rnd), (center[0] + x, center[1] + y, center[2] + z))
+    # crystals standing on the shell at the cluster centres
+    for (a, b, r) in spots:
+        taper = 1 - 0.20 * max(0.0, math.sin(b))
+        p = (rx * taper * math.cos(b) * math.cos(a), rx * taper * math.cos(b) * math.sin(a), rz * math.sin(b))
+        n = Vector((p[0] / rx, p[1] / rx, p[2] / rz)).normalized()
+        for h in range(1, int(r * 2.2) + 1):
+            q = (center[0] + p[0] + n.x * h * CUBE, center[1] + p[1] + n.y * h * CUBE, center[2] + p[2] + n.z * h * CUBE)
+            add(groups, jitter((1.0, 0.82 - 0.05 * h, 0.2), rnd, 0.04), q)
+    return voxel_object("egg", groups, glow=0.55)
+
+
+def vox_fill(groups, rgb, rnd, region, center, kind="box", amount=0.04):
+    """Fill a region of voxels. region = half sizes (hx, hy, hz); kind box or ellipsoid; center in world units."""
+    hx, hy, hz = region
+    for i in range(-int(hx / CUBE) - 1, int(hx / CUBE) + 2):
+        for j in range(-int(hy / CUBE) - 1, int(hy / CUBE) + 2):
+            for k in range(-int(hz / CUBE) - 1, int(hz / CUBE) + 2):
+                x, y, z = i * CUBE, j * CUBE, k * CUBE
+                if kind == "box":
+                    ok = abs(x) <= hx and abs(y) <= hy and abs(z) <= hz
+                else:
+                    ok = (x / hx) ** 2 + (y / hy) ** 2 + (z / hz) ** 2 <= 1.0
+                if ok:
+                    add(groups, jitter(rgb, rnd, amount), (center[0] + x, center[1] + y, center[2] + z))
+
+
+def voxel_duck(origin, yaw, s=1.0, seed=7):
+    """The angry guardian: a big voxel duck with a feathered wing, orange beak and feet, red-eyed scowl. Front is -y. The cubes
+    are built axis-aligned and the whole object is then turned (turning each cube's position without the cube leaves gaps)."""
+    rnd = random.Random(seed)
+    local = {}
+    white, shade = (0.92, 0.94, 0.98), (0.70, 0.80, 0.95)
+    vox_fill(local, white, rnd, (4.2, 5.4, 3.0), (0, 0.6, 5.0), "ellipsoid")
+    vox_fill(local, shade, rnd, (3.4, 4.2, 1.6), (0, 0.4, 3.0), "ellipsoid")
+    vox_fill(local, white, rnd, (1.3, 1.3, 2.6), (0, -3.6, 8.6), "box")
+    vox_fill(local, white, rnd, (2.3, 2.5, 2.0), (0, -4.2, 11.4), "ellipsoid")
+    vox_fill(local, white, rnd, (1.6, 1.4, 1.6), (0, 6.0, 6.0), "ellipsoid")
+    orange = (1.0, 0.45, 0.03)
+    for sx in (-1, 1):
+        vox_fill(local, shade, rnd, (0.7, 3.4, 2.0), (sx * 4.4, 1.0, 5.4), "ellipsoid", 0.06)
+        vox_fill(local, orange, rnd, (0.45, 0.45, 1.3), (sx * 1.7, 0.0, 1.3), "box", 0.03)
+        vox_fill(local, orange, rnd, (1.2, 1.7, 0.3), (sx * 1.7, -1.0, 0.3), "box", 0.03)
+        vox_fill(local, (0.02, 0.02, 0.03), rnd, (0.55, 0.3, 0.7), (sx * 1.25, -6.1, 12.0), "box", 0.0)
+        vox_fill(local, (1.0, 0.05, 0.05), rnd, (0.3, 0.2, 0.35), (sx * 1.25, -6.45, 12.0), "box", 0.0)
+        brow = {}
+        vox_fill(brow, (0.02, 0.02, 0.03), rnd, (1.0, 0.25, 0.28), (sx * 1.25, -6.2, 13.2 + (0.35 if sx > 0 else -0.0)), "box", 0.0)
+        for rgb, pts in brow.items():
+            local.setdefault(rgb, []).extend(pts)
+    vox_fill(local, orange, rnd, (1.4, 1.8, 0.6), (0, -6.7, 11.0), "box", 0.03)
+    vox_fill(local, (1.0, 0.38, 0.03), rnd, (1.2, 1.4, 0.3), (0, -6.4, 10.1), "box", 0.03)
+    objs = voxel_object("duck", local)
+    root = bpy.data.objects.new("duck", None)
+    bpy.context.scene.collection.objects.link(root)
+    root.location = origin
+    root.rotation_euler = (0, 0, yaw)
+    root.scale = (s, s, s)
+    for o in objs:
+        o.parent = root
+    return root
+
+
 def shot_wide():
     setup((1920, 1080))
     gradient_sky()
     desert()
-    # the hero egg, lifted overhead by the thief
-    hero = (7.5, 0, 13.2)
-    egg(hero, 5.4, (0.45, 0.05, 0.9), emit=(0.18, 0.0, 0.4), rough=0.08)
-    hexes(hero, 5.4, 26, (1.0, 0.62, 0.05))
-    avatar(7.5, -1, 0, (0.1, 0.45, 1.0), (0.05, 0.12, 0.35), (1.0, 0.78, 0.1), yaw=0, arms=(0.1, 0.1), stride=0.5, lean=0.0, scale=1.35)
-    goose(-13, -6, math.pi / 2 - 0.55, 1.45)
+    hero = (7.5, 0, 14.5)
+    voxel_egg(hero, 5.2, 6.6, seed=3)
+    avatar(7.5, -1, 0, (0.1, 0.45, 1.0), (0.2, 0.7, 0.2), (1.0, 0.55, 0.04), yaw=0, arms=(0.1, 0.1), stride=0.5, lean=0.0, scale=1.25)
+    voxel_duck((-12, -3, 0), 1.05, 1.2)
     sparkles((3, -4, 12), (14, 2, 8), 18, 5)
     light("SUN", (20, -30, 50), 2.6, (1.0, 0.95, 0.85))
     light("AREA", (-10, -30, 14), 1800, (1.0, 0.95, 0.85), size=12, target=(0, 0, 8))
+    light("AREA", (8, -45, 6), 2600, (1.0, 0.97, 0.9), size=14, target=(7.5, 0, 4))  # fills the avatar's face
     camera((0, -50, 11.5), (0.0, 0, 11.0), lens=30)
     render(os.path.join(ROOT, "thumb_wide.png"))
 
@@ -257,14 +301,13 @@ def shot_icon():
     setup((1024, 1024))
     gradient_sky()
     desert()
-    hero = (0, 0, 13.8)
-    egg(hero, 5.6, (0.45, 0.05, 0.9), emit=(0.18, 0.0, 0.4), rough=0.08)
-    hexes(hero, 5.6, 28, (1.0, 0.62, 0.05))
-    avatar(0, -1, 0, (0.1, 0.45, 1.0), (0.05, 0.12, 0.35), (1.0, 0.78, 0.1), yaw=0, arms=(0.1, 0.1), stride=0.5, scale=1.35)
+    hero = (0, 0, 15.0)
+    voxel_egg(hero, 5.4, 6.8, seed=3)
+    avatar(0, -1, 0, (0.1, 0.45, 1.0), (0.2, 0.7, 0.2), (1.0, 0.55, 0.04), yaw=0, arms=(0.1, 0.1), stride=0.5, scale=1.25)
     sparkles((0, -4, 12), (10, 2, 8), 14, 9)
     light("SUN", (20, -30, 50), 2.6, (1.0, 0.95, 0.85))
     light("AREA", (-10, -30, 14), 1800, (1.0, 0.95, 0.85), size=12, target=(0, 0, 8))
-    camera((0, -36, 9.5), (0, 0, 9.6), lens=38)
+    camera((0, -36, 7.0), (0, 0, 7.3), lens=38)
     render(os.path.join(ROOT, "thumb_icon.png"))
 
 
