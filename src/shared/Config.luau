@@ -85,18 +85,20 @@ return table.freeze({
 			}),
 		}),
 	}),
-	-- Our own synthesised sounds (scripts/audio/make_game_sfx.py), uploaded to the Nexus Hollow Studios audio library.
+	-- Licensed audio from the Roblox Creator Store (free for any experience): Distrokid loops for the music, short community
+	-- effects picked from the trending lists. `music` plays in the Safe Zone, `musicWilds` out in the terrains.
 	Sounds = table.freeze({
-		hatch = "rbxassetid://79876660142856",
-		steal = "rbxassetid://102219946348103",
-		roar = "rbxassetid://124311047029123",
-		caught = "rbxassetid://115820906972723",
-		deliver = "rbxassetid://109009369699894",
-		coin = "rbxassetid://121693957394972",
-		horn = "rbxassetid://83883870627410",
-		limited = "rbxassetid://125238903514063",
-		click = "rbxassetid://117766235870284",
-		music = "rbxassetid://77664441261326",
+		hatch = "rbxassetid://126409451844008", -- egg crack 2
+		steal = "rbxassetid://138890894929151", -- Whoosh2
+		roar = "rbxassetid://131916027000817", -- Boing
+		caught = "rbxassetid://108601872025792", -- Fail
+		deliver = "rbxassetid://136993031050456", -- SuccessSfx
+		coin = "rbxassetid://135483737426662", -- Coin Collect
+		horn = "rbxassetid://112485797063762", -- UI Level Up
+		limited = "rbxassetid://134821092416328", -- Rewards Level Up Next Tier
+		click = "rbxassetid://88442833509532", -- ui simple button click
+		music = "rbxassetid://139242395374944", -- Playground Adventure (Distrokid)
+		musicWilds = "rbxassetid://135549334341493", -- Obby Rush BGM (Distrokid)
 	}),
 	-- HUD icons (art/blender/icons.py, uploaded as decals to the studio group). A missing icon falls back to an emoji.
 	Icons = table.freeze({

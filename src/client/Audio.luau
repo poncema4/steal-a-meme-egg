@@ -2,7 +2,9 @@
 -- Sound on the client: a quiet looping tune, and the effects the server asks for by NAME (the server never sends an asset id;
 -- the ids live in Config.Sounds). One remote, "Sfx", carries every effect.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 
@@ -33,14 +35,32 @@ function Audio.play(name: string)
 	play(name)
 end
 
+-- The tune follows where you are: a calm loop in the Safe Zone, a driving one out in the Wilds; they cross-fade.
 function Audio.start()
-	local music = Instance.new("Sound")
-	music.Name = "Music"
-	music.SoundId = sounds.music
-	music.Volume = MUSIC_VOLUME
-	music.Looped = true
-	music.Parent = SoundService
-	music:Play()
+	local function loop(name: string, id: string, volume: number): Sound
+		local music = Instance.new("Sound")
+		music.Name = name
+		music.SoundId = id
+		music.Volume = volume
+		music.Looped = true
+		music.Parent = SoundService
+		return music
+	end
+	local safe = loop("Music", sounds.music, MUSIC_VOLUME)
+	local wilds = loop("MusicWilds", sounds.musicWilds or sounds.music, 0)
+	safe:Play()
+	wilds:Play()
+	local player = Players.LocalPlayer
+	local function follow()
+		local inWilds = player ~= nil
+			and player:GetAttribute("Zone") ~= nil
+			and player:GetAttribute("Zone") ~= "Safe Zone"
+		TweenService:Create(safe, TweenInfo.new(1.5), { Volume = if inWilds then 0 else MUSIC_VOLUME }):Play()
+		TweenService:Create(wilds, TweenInfo.new(1.5), { Volume = if inWilds then MUSIC_VOLUME else 0 }):Play()
+	end
+	if player then
+		player:GetAttributeChangedSignal("Zone"):Connect(follow)
+	end
 
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local sfx = remotes:WaitForChild("Sfx") :: RemoteEvent
