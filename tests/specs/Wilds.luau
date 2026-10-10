@@ -85,6 +85,26 @@ return function(t)
 	t.check("being caught plays the sad sound", table.find(heardNames(ana), "caught") ~= nil)
 	t.check("the egg is back in the nest", entry.prompt.Enabled and entry.nest.tier == tierAtSteal)
 	t.check("a guardian is still on the ground after chasing", math.abs(feetY(entry)) < 0.01, tostring(feetY(entry)))
+	-- after the guardian is back at its nest its model must still be a real position (no NaN from looking at itself)
+	world.advance(8)
+	local look = entry.model:GetPivot().LookVector
+	t.check(
+		"and still faces somewhere real",
+		look.X == look.X and look.Y == look.Y and look.Z == look.Z,
+		tostring(look)
+	)
+	local bodyAfter = entry.model:FindFirstChild("Body") :: Part
+	local pos = bodyAfter.Position
+	t.check(
+		"a guardian back at its nest still has a valid position",
+		pos.X == pos.X and pos.Y == pos.Y and pos.Z == pos.Z,
+		tostring(pos)
+	)
+	t.check(
+		"and is standing at its nest",
+		math.abs(pos.X - entry.guardian.homeX) < 0.1 and math.abs(pos.Z - entry.guardian.homeZ) < 0.1,
+		tostring(pos)
+	)
 	t.check("the thief was sent home", math.abs(root.Position.X - plot.spawn.Position.X) < 30)
 	t.equal("speed is normal again", world.humanoid(ana).WalkSpeed, Progression.BASE_SPEED)
 	t.equal("the guardian walks home", entry.guardian.state == "Return" or entry.guardian.state == "Idle", true)

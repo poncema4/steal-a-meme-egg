@@ -121,6 +121,8 @@ CF.__index = function(t, k)
 		return t.p.Y
 	elseif k == "Z" then
 		return t.p.Z
+	elseif k == "Rotation" then
+		return cf(v3(0, 0, 0), t.r)
 	elseif k == "Inverse" then
 		return function(self)
 			local rt = transpose(self.r)
@@ -158,6 +160,12 @@ function CFrame.Angles(rx, ry, rz)
 	return cf(v3(0, 0, 0), matmul(matmul(rotZ(rz), rotY(ry)), rotX(rx)))
 end
 function CFrame.lookAt(from, to)
+	local gap = to - from
+	if gap.X == 0 and gap.Y == 0 and gap.Z == 0 then
+		-- looking at where you already stand has no direction: Roblox gives an invalid (NaN) rotation, so the fake does too
+		local nan = 0 / 0
+		return cf(from, { { nan, nan, nan }, { nan, nan, nan }, { nan, nan, nan } })
+	end
 	local look = (to - from).Unit
 	local yaw = math.atan2(-look.X, -look.Z)
 	return cf(from, rotY(yaw))
