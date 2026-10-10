@@ -5,7 +5,7 @@ local Progression = {}
 
 Progression.BASE_SPEED = 16
 Progression.MAX_LEVEL = 30
-Progression.SPEED_PER_LEVEL = 0.9 -- level 30 = 43 studs/s, just above the last terrain's guardians (27)
+Progression.SPEED_PER_LEVEL = 2.4 -- level 30 = 88 studs/s (5.5x the start), well above the last terrain's boss (56)
 
 -- Training XP needed to go from `level` to `level + 1`.
 function Progression.xpForNext(level: number): number
@@ -42,7 +42,7 @@ function Progression.walkSpeed(level: number): number
 end
 
 -- The "Speed" number shown on the HUD and the leaderboard: always 100 times your real run speed, so a bigger number means a
--- quicker you (16 studs/s shows 1,600, the top level shows 4,300).
+-- quicker you (16 studs/s shows 1,600, the top level shows 8,800).
 Progression.SPEED_STAT_PER_STUD = 100
 Progression.SPEED_STAT_BASE = Progression.BASE_SPEED * Progression.SPEED_STAT_PER_STUD
 

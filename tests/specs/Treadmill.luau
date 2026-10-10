@@ -104,7 +104,8 @@ return function(t)
 		"stepping on publishes the belt speed with no input at all",
 		(plot.treadmill:GetAttribute("BeltSpeed") :: number) > 5
 	)
-	for _ = 1, 15 do
+	-- a short while, so even a fast belt has not carried a ridge more than half way round (which would look like moving forward)
+	for _ = 1, 6 do
 		world.render(1 / 30)
 	end
 	local moved = positions()
