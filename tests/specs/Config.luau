@@ -23,6 +23,25 @@ return function(t)
 	end
 	t.check("no two sounds share an asset id", unique)
 
+	-- every HUD icon is a real asset id, and no icon reuses a sound's id or another icon's
+	local icons = Config.Icons :: { [string]: string }
+	local iconKeys = { "egg", "paw", "trophy", "shoe", "cash", "cart", "book", "potion" }
+	local used: { [string]: string } = {}
+	for _, id in sounds do
+		used[id] = "a sound"
+	end
+	local iconsOk = true
+	for _, name in iconKeys do
+		local id = icons[name]
+		if id == nil or string.match(id, "^rbxassetid://%d+$") == nil or used[id] then
+			iconsOk = false
+			print(`  bad icon {name}: {tostring(id)} ({tostring(used[id])})`)
+		else
+			used[id] = name
+		end
+	end
+	t.check("every HUD icon has its own asset id", iconsOk)
+
 	-- the studio group and save settings are what Creator Hub shows
 	t.equal("the studio group id", Config.GroupId, 749648777)
 	t.check("the save store has a name", #Config.Save.StoreName > 0)
