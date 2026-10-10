@@ -1,4 +1,4 @@
-# AGENTS.md - Raid a Meme Egg (Roblox, Rojo)
+# AGENTS.md - Steal a Meme Egg (Roblox, Rojo)
 
 A Roblox game by Nexus Hollow Studios (Swag_Boy435 / V1RTU4L). Claude Code works on Linux (no Roblox Studio there); the owner playtests on a Windows PC through Rojo. The studio makes many games: keep group-level text game-agnostic.
 

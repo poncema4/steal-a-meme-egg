@@ -28,9 +28,9 @@ jobs:
       - name: Build the place file (Rojo)
         run: |
           mkdir -p build
-          rojo build -o build/RaidAMemeEgg.rbxl
+          rojo build -o build/StealAMemeEgg.rbxl
       - uses: actions/upload-artifact@v7
         with:
-          name: RaidAMemeEgg-place
-          path: build/RaidAMemeEgg.rbxl
+          name: StealAMemeEgg-place
+          path: build/StealAMemeEgg.rbxl
           retention-days: 7

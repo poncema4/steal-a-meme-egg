@@ -8,5 +8,5 @@ selene src tests; if ($LASTEXITCODE) { exit 1 }
 stylua --check src tests; if ($LASTEXITCODE) { exit 1 }
 lune run tests/run; if ($LASTEXITCODE) { exit 1 }
 & "$PSScriptRoot\typecheck.ps1"; if ($LASTEXITCODE) { exit 1 }
-rojo build -o build/RaidAMemeEgg.rbxl; if ($LASTEXITCODE) { exit 1 }
+rojo build -o build/StealAMemeEgg.rbxl; if ($LASTEXITCODE) { exit 1 }
 Write-Host "ALL CHECKS PASSED"

@@ -1,4 +1,4 @@
-# Design: Raid a Meme Egg
+# Design: Steal a Meme Egg
 
 ## One sentence
 Grab eggs off a conveyor, hatch them into meme characters that earn coins, and raid your friends' bases before they lock up.
