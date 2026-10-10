@@ -125,7 +125,7 @@ local function publish(state: State)
 		"TreadmillCost",
 		if state.treadmill >= Progression.MAX_TREADMILL then 0 else Progression.treadmillCost(state.treadmill)
 	)
-	state.player:SetAttribute("SpeedStat", Progression.speedStat(level))
+	state.player:SetAttribute("SpeedStat", Progression.speedStat(Progression.levelFloat(state.speedXp)))
 	state.player:SetAttribute("SlowMode", state.slow)
 	state.player:SetAttribute(
 		"SpeedProgress",
@@ -169,7 +169,7 @@ function Session.applySpeed(player: Player)
 	local character = player.Character
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if state and humanoid then
-		local level = Progression.levelFor(state.speedXp)
+		local level = Progression.levelFloat(state.speedXp)
 		humanoid.WalkSpeed =
 			Progression.slowed(Progression.carrySpeed(Progression.walkSpeed(level), state.carry ~= nil), state.slow)
 	end
@@ -203,13 +203,10 @@ function Session.addSpeedXp(player: Player, xp: number): number
 	if not state then
 		return 0
 	end
-	local before = Progression.levelFor(state.speedXp)
 	state.speedXp += xp
 	local after = Progression.levelFor(state.speedXp)
 	publish(state)
-	if after ~= before then
-		Session.applySpeed(player)
-	end
+	Session.applySpeed(player) -- speed rises continuously, not only at each new level
 	return after
 end
 

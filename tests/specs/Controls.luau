@@ -6,10 +6,10 @@ local Progression = require("../../src/shared/Game/Progression")
 
 return function(t)
 	-- the rules on their own
-	t.equal("the speed number starts at 10", Progression.speedStat(0), 10)
+	t.equal("the speed number starts at 100", Progression.speedStat(0), 100)
 	t.check("and doubles each level", Progression.speedStat(6) == 2 * Progression.speedStat(5))
 	t.equal("it stops at the cap", Progression.speedStat(999), Progression.speedStat(Progression.MAX_LEVEL))
-	t.equal("a negative level is the start", Progression.speedStat(-4), 10)
+	t.equal("a negative level is the start", Progression.speedStat(-4), 100)
 	t.equal("slow mode caps a fast walker", Progression.slowed(30, true), Progression.SLOW_SPEED)
 	t.equal("and does not speed up a slow one", Progression.slowed(10, true), 10)
 	t.equal("off changes nothing", Progression.slowed(30, false), 30)
@@ -114,6 +114,6 @@ return function(t)
 	t.equal(
 		"the speed stat is published",
 		ana:GetAttribute("SpeedStat"),
-		Progression.speedStat(session.speedLevel(ana))
+		Progression.speedStat(Progression.levelFloat(session.get(ana).speedXp))
 	)
 end

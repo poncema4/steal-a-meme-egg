@@ -340,6 +340,7 @@ function Fake.world()
 		PlayerAdded = true,
 		PlayerRemoving = true,
 		CharacterAdded = true,
+		CharacterRemoving = true,
 		Changed = true,
 		Activated = true,
 		PromptGamePassPurchaseFinished = true,
@@ -366,6 +367,7 @@ function Fake.world()
 			props.CFrame = CFrame.identity
 			props.Position = v3(0, 0, 0)
 			props.Anchored = false
+			props.AssemblyLinearVelocity = v3(0, 0, 0)
 			props.CanCollide = true
 			props.Transparency = 0
 			props.Color = Color3.new(0.63, 0.63, 0.63)
@@ -458,6 +460,12 @@ function Fake.world()
 			reparent(clone(child), copy)
 		end
 		return copy
+	end
+
+	-- Humanoid:Move(direction, relativeToCamera): remembers the last direction it was told to walk
+	function Methods.Move(self, direction, relative)
+		data[self].props.LastMove = direction
+		data[self].props.LastMoveRelative = relative
 	end
 
 	function Methods.IsA(self, class)
@@ -702,6 +710,9 @@ function Fake.world()
 			end
 		elseif name == "ContextActionService" then
 			s.BindAction = function(_, actionName, fn)
+				world.actions[actionName] = fn
+			end
+			s.BindActionAtPriority = function(_, actionName, fn)
 				world.actions[actionName] = fn
 			end
 			s.UnbindAction = function(_, actionName)

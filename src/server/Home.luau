@@ -90,6 +90,50 @@ local function refreshLabels(player: Player)
 	end
 end
 
+-- The treadmill lock: while you are on your belt the game runs for you (no keys to hold) until you jump off.
+local locked: { [Player]: boolean } = {}
+local freeUntil: { [Player]: number } = {}
+local JUMP_OFF_SPEED = 12 -- upward studs per second that count as a jump
+local GROUNDED_SPEED = 8 -- you cannot be locked while flying through the air
+local RELOCK_SECONDS = 1.6 -- after jumping off you can walk over the belt without being caught again at once
+
+local function lock(player: Player, plot: World.Plot, root: BasePart)
+	locked[player] = true
+	-- put the runner on the middle of the belt, facing the front, so the belt carries them straight
+	local belt = plot.treadmill
+	local d = root.Position - belt.Position
+	local along = d.X * plot.front.X + d.Z * plot.front.Z
+	local spot = belt.Position
+		+ Vector3.new(plot.front.X * along, root.Position.Y - belt.Position.Y, plot.front.Z * along)
+	root.CFrame = CFrame.lookAt(spot, spot + plot.front)
+	player:SetAttribute("TreadmillFront", plot.front)
+	player:SetAttribute("TreadmillLocked", true)
+end
+
+function Home.unlock(player: Player)
+	locked[player] = nil
+	freeUntil[player] = os.clock() + RELOCK_SECONDS
+	player:SetAttribute("TreadmillLocked", false)
+end
+
+function Home.isLocked(player: Player): boolean
+	return locked[player] == true
+end
+
+-- The client asked to jump off (a jump key or the Jump off button): only counts if they really are on the belt.
+function Home.leave(player: Player)
+	if not locked[player] then
+		return
+	end
+	Home.unlock(player)
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	local plot = Plots.of(player)
+	if root and plot then
+		root.AssemblyLinearVelocity = Vector3.new(plot.front.X * 12, 55, plot.front.Z * 12)
+	end
+end
+
 function Home.start(plots: { World.Plot })
 	for _, plot in plots do
 		local speed = addPrompt(plot.treadmill, "Upgrade treadmill", "", 0.4)
@@ -128,7 +172,7 @@ function Home.start(plots: { World.Plot })
 	local carry = 0
 	RunService.Heartbeat:Connect(function(dt)
 		carry += dt
-		if carry < 0.25 then
+		if carry < 0.1 then
 			return
 		end
 		local step = carry
@@ -139,18 +183,37 @@ function Home.start(plots: { World.Plot })
 			local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 			if plot and root then
 				local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-				local running = humanoid ~= nil and humanoid.MoveDirection.Magnitude > 0.1
-				if onTreadmill(root, plot) then
-					-- the belt carries you backward at about your own walking pace, so you have to keep running to stay on it
-					local pace = if humanoid then humanoid.WalkSpeed * 0.9 else 0
-					plot.treadmill.AssemblyLinearVelocity = Vector3.new(-plot.front.X * pace, 0, -plot.front.Z * pace)
-					plot.treadmill:SetAttribute("BeltSpeed", if running then pace else 0)
-					if running then
-						Session.addSpeedXp(
-							player,
-							Progression.trainRate(Session.treadmillLevel(player), trainMultiplier(player)) * step
-						)
+				local now = os.clock()
+				-- stepping onto your belt locks you on it; carrying an egg, dying or a jump takes you off
+				if locked[player] then
+					local alive = humanoid ~= nil and humanoid.Health > 0
+					if
+						not alive
+						or not onTreadmill(root, plot)
+						or Session.carrying(player) ~= nil
+						or root.AssemblyLinearVelocity.Y > JUMP_OFF_SPEED
+					then
+						Home.unlock(player)
 					end
+				elseif
+					onTreadmill(root, plot)
+					and humanoid ~= nil
+					and humanoid.Health > 0
+					and now >= (freeUntil[player] or 0)
+					and Session.carrying(player) == nil
+					and root.AssemblyLinearVelocity.Y < GROUNDED_SPEED
+				then
+					lock(player, plot, root)
+				end
+				if locked[player] then
+					-- the belt carries you backward at your own pace and the game runs for you, so you stay put and train
+					local pace = if humanoid then humanoid.WalkSpeed * 0.95 else 0
+					plot.treadmill.AssemblyLinearVelocity = Vector3.new(-plot.front.X * pace, 0, -plot.front.Z * pace)
+					plot.treadmill:SetAttribute("BeltSpeed", pace)
+					Session.addSpeedXp(
+						player,
+						Progression.trainRate(Session.treadmillLevel(player), trainMultiplier(player)) * step
+					)
 				else
 					plot.treadmill.AssemblyLinearVelocity = Vector3.zero
 					plot.treadmill:SetAttribute("BeltSpeed", 0)
@@ -165,6 +228,10 @@ function Home.start(plots: { World.Plot })
 				end
 			end
 		end
+	end)
+	Players.PlayerRemoving:Connect(function(player)
+		locked[player] = nil
+		freeUntil[player] = nil
 	end)
 end
 

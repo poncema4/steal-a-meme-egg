@@ -20,7 +20,7 @@ One long walled corridor: the Safe Zone at the west end (eight fenced pens in a 
 
 Gates: each terrain needs Meme Points (0 / 25 / 250 / 2,500 / 20,000). The server pushes you back from a terrain you have not unlocked. Rarer terrains hold rarer eggs and faster guardians (12 / 17 / 21 / 25 / 29 studs per second).
 
-Speed cannot be bought: run on the treadmill in front of your pen (the belt carries you backward, standing still trains nothing). It gives 2 XP per second at level 0 and 1.6x more per treadmill level (12 levels, 100 coins for the first upgrade, x3.2 each). Speed levels 0 to 30 raise walk speed from 16 to 43. The level you need to outrun a terrain while carrying: Meadow 0, Dune 4, Lava 9, Frost 14, Cosmic 18 (tested in `tests/specs/Zones`).
+Speed cannot be bought: step onto the treadmill in front of your pen and you are LOCKED on it: the game runs for you (no keys to hold) and the belt carries you backward at your pace while you train. Jump (Space / gamepad A / the Jump off button) to get off; you cannot be locked again for about 1.6 s, carrying an egg or dying also takes you off. Your speed number and walking speed rise continuously while you train (not in steps at each level). It gives 2 XP per second at level 0 and 1.6x more per treadmill level (12 levels, 100 coins for the first upgrade, x3.2 each). Speed levels 0 to 30 raise walk speed from 16 to 43. The level you need to outrun a terrain while carrying: Meadow 0, Dune 4, Lava 9, Frost 14, Cosmic 18 (tested in `tests/specs/Zones`).
 
 Meme Points per delivered egg: Soggy 1, Disco 5, Spicy 25, Golden 150, Cosmic 1,000, Divine 10,000.
 

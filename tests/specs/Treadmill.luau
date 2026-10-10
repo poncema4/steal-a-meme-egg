@@ -85,9 +85,7 @@ return function(t)
 		return out
 	end
 	local before = positions()
-	world.root(ana).Position = V3.new(plot.treadmill.Position.X, 3, plot.treadmill.Position.Z)
-	world.advance(0.6)
-	t.equal("standing on the belt does not move it", plot.treadmill:GetAttribute("BeltSpeed"), 0)
+	t.equal("nobody on the belt: it is still", plot.treadmill:GetAttribute("BeltSpeed"), 0)
 	for _ = 1, 30 do
 		world.render(1 / 30)
 	end
@@ -99,9 +97,13 @@ return function(t)
 		end
 	end
 	t.check("so the ridges stay where they were", same)
-	world.humanoid(ana).MoveDirection = V3.new(1, 0, 0)
+	-- stepping on locks you on (no keys held) and the belt starts
+	world.root(ana).Position = V3.new(plot.treadmill.Position.X, 3, plot.treadmill.Position.Z)
 	world.advance(0.6)
-	t.check("running publishes the belt speed", (plot.treadmill:GetAttribute("BeltSpeed") :: number) > 5)
+	t.check(
+		"stepping on publishes the belt speed with no input at all",
+		(plot.treadmill:GetAttribute("BeltSpeed") :: number) > 5
+	)
 	for _ = 1, 15 do
 		world.render(1 / 30)
 	end
@@ -138,5 +140,4 @@ return function(t)
 	t.equal("ridge placement: slot 0 starts near the back end", animation.ridgeOffset(0, 10, 20, 0), -9)
 	t.equal("a full lap puts it back", animation.ridgeOffset(3, 10, 20, 20), animation.ridgeOffset(3, 10, 20, 0))
 	t.check("any phase stays on the belt", math.abs(animation.ridgeOffset(7, 10, 20, 13.7)) <= 10)
-	world.humanoid(ana).MoveDirection = V3.new(0, 0, 0)
 end

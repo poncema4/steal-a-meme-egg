@@ -6,11 +6,13 @@
 local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Events = require(ReplicatedStorage.Shared.Game.Events)
 local Objective = require(ReplicatedStorage.Shared.Game.Objective)
+local Progression = require(ReplicatedStorage.Shared.Game.Progression)
 local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
 local UiScale = require(ReplicatedStorage.Shared.Game.UiScale)
 local Ui = require(script.Parent.Ui)
@@ -264,6 +266,17 @@ function Hud.start(player: Player, actions: Actions?)
 		return Enum.ContextActionResult.Pass
 	end, false, Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.ButtonX)
 
+	-- while you are locked on the treadmill: a big way off (jumping works too)
+	local leaveRemote = remotes:WaitForChild("LeaveTreadmill") :: RemoteEvent
+	local leave = Ui.button(gui, "LeaveButton", "Jump off", Ui.Palettes.Green, UDim2.fromOffset(190, Ui.tap(gui, 56)))
+	leave.AnchorPoint = Vector2.new(0.5, 1)
+	leave.Position = UDim2.new(0.5, 0, 1, -96)
+	leave.Visible = false
+	leave.TextSize = 26
+	leave.Activated:Connect(function()
+		leaveRemote:FireServer()
+	end)
+
 	-- top right: who is fastest and richest
 	local board = Instance.new("Frame")
 	board.Name = "Leaderboard"
@@ -344,20 +357,28 @@ function Hud.start(player: Player, actions: Actions?)
 				`Row_{p.Name}`,
 				i,
 				p.DisplayName,
-				Economy.format(number(p, "SpeedStat", 10)),
+				Economy.format(number(p, "SpeedStat", Progression.SPEED_STAT_BASE)),
 				Economy.format(number(p, "Income", 0)),
 				if p == player then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1)
 			)
 		end
 	end
 
+	-- the numbers you watch: updated every frame, so your speed climbs in real time while you train
+	local function liveStats()
+		local rebirths = number(player, "Rebirths", 0)
+		money.Text = "$" .. Economy.format(number(player, "Coins", 0))
+		speed.Text = (if hasShoe then "" else "👟 ")
+			.. Economy.format(number(player, "SpeedStat", Progression.SPEED_STAT_BASE))
+			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")
+		leave.Visible = player:GetAttribute("TreadmillLocked") == true
+	end
+	RunService.RenderStepped:Connect(liveStats)
+
 	local function refresh()
 		local coins = number(player, "Coins", 0)
 		local rebirths = number(player, "Rebirths", 0)
-		money.Text = "$" .. Economy.format(coins)
-		speed.Text = (if hasShoe then "" else "👟 ")
-			.. Economy.format(number(player, "SpeedStat", 10))
-			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")
+		liveStats()
 		local isSlow = player:GetAttribute("SlowMode") == true
 		slow.Text = if isSlow then "Slow Mode: ON" else "Slow Mode"
 		slowKnob.Position = if isSlow then UDim2.fromOffset(25, 3) else UDim2.fromOffset(3, 3)
