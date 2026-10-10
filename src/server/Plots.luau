@@ -106,7 +106,7 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 	body.Anchored = true
 	body.CanCollide = false
 	if item.kind == "egg" and item.tier then
-		body.Shape = Enum.PartType.Ball
+		World.roundify(body)
 		body.Size = Vector3.new(4, 5, 4)
 		body.Color = TIER_COLORS[item.tier] or Color3.new(1, 1, 1)
 		body.Material = Enum.Material.SmoothPlastic
@@ -164,7 +164,7 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		body.Parent = model
 		local head = Instance.new("Part")
 		head.Name = "Head"
-		head.Shape = Enum.PartType.Ball
+		World.roundify(head)
 		head.Size = Vector3.new(3, 3, 3)
 		head.Anchored = true
 		head.CanCollide = false

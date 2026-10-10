@@ -12,6 +12,7 @@ local Guardian = require(ReplicatedStorage.Shared.Game.Guardian)
 local Nest = require(ReplicatedStorage.Shared.Game.Nest)
 local Plots = require(script.Parent.Plots)
 local Session = require(script.Parent.Session)
+local World = require(script.Parent.World)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 
 local Wilds = {}
@@ -123,7 +124,7 @@ local function decorate(zone: Zones.Zone, parent: Instance)
 				Color3.fromRGB(40, 150, 60),
 				parent
 			)
-			leaves.Shape = Enum.PartType.Ball
+			World.roundify(leaves)
 		elseif zone.id == "Dune" then
 			box(
 				"Cactus",
@@ -176,7 +177,7 @@ local function buildGuardian(entry: Entry, parent: Instance, c: Eggs.Character)
 	local body = box("Body", Vector3.new(6, 7, 8), CFrame.new(0, BODY_Y, 0), tint, model)
 	model.PrimaryPart = body
 	local head = box("Head", Vector3.new(5, 5, 5), CFrame.new(0, 9, -2.5), tint, model)
-	head.Shape = Enum.PartType.Ball
+	World.roundify(head)
 	for _, sx in { -1, 1 } do
 		box("Eye", Vector3.new(1.2, 1.6, 0.6), CFrame.new(sx * 1.3, 9.6, -4.8), Color3.new(0, 0, 0), model)
 		box("Pupil", Vector3.new(0.6, 0.8, 0.3), CFrame.new(sx * 1.3, 9.6, -5.2), Color3.fromRGB(255, 20, 20), model)
@@ -210,11 +211,12 @@ local function buildNests(zone: Zones.Zone, parent: Instance)
 		end)
 		local model = Instance.new("Model")
 		model.Name = `Nest_{zone.id}_{i}`
-		local ring = box("Ring", Vector3.new(9, 0.6, 9), CFrame.new(x, 0.3, z), Color3.fromRGB(120, 85, 50), model)
+		-- a Roblox cylinder runs along its X size, so the thin height is X and the disc is Y by Z; the turn stands it up
+		local ring = box("Ring", Vector3.new(0.6, 9, 9), CFrame.new(x, 0.3, z), Color3.fromRGB(120, 85, 50), model)
 		ring.Shape = Enum.PartType.Cylinder
 		ring.CFrame = CFrame.new(x, 0.3, z) * CFrame.Angles(0, 0, math.pi / 2)
 		local egg = box("Egg", Vector3.new(4, 5, 4), CFrame.new(x, 3.1, z), Color3.new(1, 1, 1), model)
-		egg.Shape = Enum.PartType.Ball
+		World.roundify(egg)
 		egg.CanCollide = false
 		local prompt = Instance.new("ProximityPrompt")
 		prompt.ActionText = "Steal egg"

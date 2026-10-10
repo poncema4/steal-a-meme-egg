@@ -69,7 +69,7 @@ function Conveyor.spawn(tierId: string?)
 	end
 	local part = Instance.new("Part")
 	part.Name = "BeltEgg"
-	part.Shape = Enum.PartType.Ball
+	World.roundify(part)
 	part.Size = Vector3.new(4, 5, 4)
 	part.Color = COLORS[id] or Color3.new(1, 1, 1)
 	part.Anchored = true

@@ -380,6 +380,14 @@ function Fake.world()
 		return self
 	end
 
+	local function descendantsOf(self, out)
+		for _, child in data[self].children do
+			table.insert(out, child)
+			descendantsOf(child, out)
+		end
+		return out
+	end
+
 	local function reparent(self, newParent)
 		local d = data[self]
 		if d.parent then
@@ -392,6 +400,26 @@ function Fake.world()
 		d.parent = newParent
 		if newParent then
 			table.insert(data[newParent].children, self)
+			-- like Roblox: the new parent gets ChildAdded, and every ancestor gets DescendantAdded for the instance AND each
+			-- instance inside it (a whole model being parented in announces all its parts)
+			local added = { self }
+			for _, inner in descendantsOf(self, {}) do
+				table.insert(added, inner)
+			end
+			local child = data[newParent].signals.ChildAdded
+			if child then
+				child:Fire(self)
+			end
+			local node = newParent
+			while node do
+				local sig = data[node].signals.DescendantAdded
+				if sig then
+					for _, inst in added do
+						sig:Fire(inst)
+					end
+				end
+				node = data[node].parent
+			end
 		end
 	end
 
