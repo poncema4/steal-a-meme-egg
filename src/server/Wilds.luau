@@ -12,6 +12,7 @@ local Guardian = require(ReplicatedStorage.Shared.Game.Guardian)
 local Layout = require(ReplicatedStorage.Shared.Game.Layout)
 local Nest = require(ReplicatedStorage.Shared.Game.Nest)
 local Look = require(script.Parent.Look)
+local Models = require(script.Parent.Models)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
@@ -232,6 +233,12 @@ local function setEgg(entry: Entry, tier: string?, mutation: string?)
 			text.Text = `* {string.upper(mutation)} *`
 			text.TextColor3 = tint or Color3.new(1, 1, 1)
 		end
+	end
+	if tier and Models.has("Eggs", tier) then
+		entry.egg.Transparency = 1
+		Models.show(entry.egg, "Eggs", tier, mutation)
+	else
+		Models.hide(entry.egg)
 	end
 	if tier then
 		entry.egg.Color = Look.eggColor(tier, mutation)
