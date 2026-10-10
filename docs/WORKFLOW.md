@@ -21,3 +21,7 @@ After `lune run scripts/preview/dump /tmp/map.json`: `~/tools/blender-4.5.14-lin
 preview data to `art/renders/models`. `python3 art/brick/sheet.py out.json 7 5 Name...` lays models side by side; render it with
 `scripts/preview/blender_view.py`. The server (`src/server/Models.luau`) stands a clone on each pen pedestal and nest, tinting Gold
 and Rainbow; with no template it keeps the plain look. Models face -Z, with `Root` at the feet.
+
+## Seeing the whole map with the real models
+
+`lune run scripts/preview/dump /tmp/map.json` now also writes `/tmp/map.models.json` (where scenery, nests, eggs and bosses stand). `python3 scripts/preview/compose.py /tmp/map.json /tmp/scene.json` stamps the brick models from `art/renders/models` in (dropping the plain stand-ins the fake world builds) and `blender -b -P scripts/preview/blender_view.py -- /tmp/scene.json out.png camX camY camZ targetX targetY targetZ [lens] [x0 x1]` renders it. The viewer builds one mesh per colour, so a 20,000-part scene renders in seconds. E.g. the Meadow from the gate: `30 40 60 130 6 0 34 12 260`.
