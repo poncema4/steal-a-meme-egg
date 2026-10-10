@@ -16,7 +16,7 @@ export type Zone = {
 	sky: { number },
 }
 
-Zones.WIDTH = 220 -- every terrain is this wide (z from -WIDTH/2 to WIDTH/2)
+Zones.WIDTH = 320 -- every terrain is this wide (z from -WIDTH/2 to WIDTH/2)
 Zones.GATE_DEPTH = 6
 
 Zones.List = {

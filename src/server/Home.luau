@@ -29,16 +29,21 @@ end
 
 -- Is this player standing on this plot's treadmill?
 local function onTreadmill(root: BasePart, plot: World.Plot): boolean
-	local p = plot.treadmill.Position
 	local s = plot.treadmill.Size
-	local d = root.Position - p
-	return math.abs(d.X) <= s.X / 2 and math.abs(d.Z) <= s.Z / 2 and d.Y >= 0 and d.Y <= 6
+	local d = root.Position - plot.treadmill.Position
+	-- the treadmill is turned with its pen: measure along the pen's own right and front directions
+	local across = d.X * plot.right.X + d.Z * plot.right.Z
+	local along = d.X * plot.front.X + d.Z * plot.front.Z
+	return math.abs(across) <= s.X / 2 and math.abs(along) <= s.Z / 2 and d.Y >= 0 and d.Y <= 6
 end
 
 -- Is this player inside the walls of their own base?
 local function insidePlot(root: BasePart, plot: World.Plot): boolean
 	local d = root.Position - plot.center
-	return math.abs(d.X) <= 23 and math.abs(d.Z) <= 23
+	local across = d.X * plot.right.X + d.Z * plot.right.Z
+	local along = d.X * plot.front.X + d.Z * plot.front.Z
+	local half = World.PEN / 2 + 2
+	return math.abs(across) <= half and math.abs(along) <= half
 end
 
 local function addPrompt(parent: BasePart, action: string, object: string, hold: number): ProximityPrompt
