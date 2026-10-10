@@ -27,6 +27,7 @@ local specs = {
 	require("./specs/Economy"),
 	require("./specs/Events"),
 	require("./specs/Admin"),
+	require("./specs/Game"),
 }
 
 for _, spec in specs do
