@@ -137,6 +137,22 @@ return function(t)
 		end)()
 	)
 
+	-- 3b) a nest does not grow a new egg while the thief is still out with the old one (or a second thief would overwrite the
+	-- first one's record and the first guardian could never catch them or recover the egg)
+	root.Position = V3.new(entry.guardian.homeX - 16, 3, entry.guardian.homeZ)
+	entry.prompt.Triggered:Fire(ana)
+	t.check("a thief is out with the egg", ana:GetAttribute("Carrying") ~= "")
+	root.Position = V3.new(entry.guardian.homeX - 200, 3, entry.guardian.homeZ) -- far from the guardian, not home yet
+	world.advance(40)
+	t.check("the thief still has the egg after 40 seconds", ana:GetAttribute("Carrying") ~= "")
+	t.check("so the nest has not grown a new one", not entry.prompt.Enabled)
+	t.equal("and still names them as the thief", entry.thief, ana)
+	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
+	world.advance(0.6)
+	t.equal("once they deliver it", ana:GetAttribute("Carrying"), "")
+	world.advance(30)
+	t.check("the nest grows a new egg a little later", entry.prompt.Enabled)
+
 	-- 4) dying while carrying puts the egg back
 	local third = entries[3]
 	root.Position = V3.new(third.guardian.homeX - 14, 3, third.guardian.homeZ)
@@ -156,16 +172,17 @@ return function(t)
 			full.base.slots[n] = { kind = "char", id = "SoggyToast", mutation = "Normal" }
 		end
 	end
+	mp = ana:GetAttribute("MemePoints") :: number
+	local coinsBeforeFull = ana:GetAttribute("Coins") :: number
 	local fourth = entries[4]
 	root.Position = V3.new(fourth.guardian.homeX - 14, 3, fourth.guardian.homeZ)
 	fourth.prompt.Triggered:Fire(ana)
 	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
-	t.check("a full base keeps you carrying", ana:GetAttribute("Carrying") ~= "")
-	t.equal("and the points did not change", ana:GetAttribute("MemePoints"), mp)
-	full.base.slots[1] = nil
-	world.advance(0.6)
-	t.equal("with room, the egg goes in", ana:GetAttribute("Carrying"), "")
+	t.equal("a full base never traps you carrying an egg", ana:GetAttribute("Carrying"), "")
+	t.check("the points still count", (ana:GetAttribute("MemePoints") :: number) > mp)
+	t.check("and the egg is sold for coins instead", (ana:GetAttribute("Coins") :: number) > coinsBeforeFull)
+	t.equal("nothing was added to the full base", full.base.slots[1].kind, "char")
 
 	-- 6) the gates
 	root.Position = V3.new(500, 3, 0)

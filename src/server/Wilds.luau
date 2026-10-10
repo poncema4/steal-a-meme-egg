@@ -399,9 +399,14 @@ function Wilds.start()
 					entry.model:PivotTo(CFrame.new(here) * entry.model:GetPivot().Rotation)
 				end
 			end
-			if Nest.tick(entry.nest, dt, function()
-				return Zones.eggFor(entry.zone, math.random)
-			end) then
+			-- a nest grows a new egg only once the old one is resolved (delivered, or back after a catch): otherwise a second
+			-- thief could take the regrown egg and overwrite the first one's record
+			if
+				entry.thief == nil
+				and Nest.tick(entry.nest, dt, function()
+					return Zones.eggFor(entry.zone, math.random)
+				end)
+			then
 				setEgg(entry, entry.nest.tier)
 			end
 		end

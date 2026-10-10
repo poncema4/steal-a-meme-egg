@@ -42,6 +42,7 @@ local specs = {
 	require("./specs/ShopUi"),
 	require("./specs/Retention"),
 	require("./specs/Prompts"),
+	require("./specs/Soak"),
 }
 
 for _, spec in specs do
