@@ -97,6 +97,14 @@ return function(t)
 	)
 	t.check("every treadmill wears its topper", plot.model:FindFirstChild("TreadmillTopper") ~= nil)
 
+	-- a hatch pops with confetti over its pedestal, which then goes away
+	base.slots[4] = { kind = "egg", tier = "Soggy", hatchLeft = 0 }
+	session.hatchNow(ana)
+	world.advance(0.1)
+	t.check("a hatch pops with confetti", plot.slots[4]:FindFirstChild("HatchBurst") ~= nil)
+	world.advance(3)
+	t.check("and the confetti is cleaned up", plot.slots[4]:FindFirstChild("HatchBurst") == nil)
+
 	-- a stolen egg rides on your head as its model
 	world.spawnCharacter(ana)
 	world.advance(0.6)
