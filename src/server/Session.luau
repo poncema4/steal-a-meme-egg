@@ -154,6 +154,8 @@ function Session.applySpeed(player: Player)
 	if state and humanoid then
 		local level = Progression.levelFor(state.speedXp)
 		humanoid.WalkSpeed = Progression.carrySpeed(Progression.walkSpeed(level), state.carry ~= nil)
+		humanoid.UseJumpPower = true
+		humanoid.JumpPower = Progression.jumpPower(level)
 	end
 end
 
