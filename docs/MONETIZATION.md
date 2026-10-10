@@ -19,3 +19,11 @@ Coins buy the same limited eggs (1,000,000,000 coins) and skip hatches (60% of t
 - Receipt ids are kept in the save (the newest 300). Passes are re-checked on every join.
 - A paid limited egg is always delivered: if the base is full it waits and is placed the moment a slot frees up.
 - Tested: `tests/specs/Store` (rules) and `tests/specs/Purchases` (real services).
+
+## Creator Hub status (2026-10-10)
+Created in Creator Hub (experience 10770101743), all OFF-SALE with icons from `brand/make_pass_icons.py`:
+- 2x Coins pass: 2026694498 (planned R$399)
+- 2x Luck pass: 2026622537 (planned R$299)
+- 2x Training pass: 2025116507 (planned R$199)
+
+NOT yet done, needs the owner: Roblox shows a one-time "Managed Pricing" terms agreement (Roblox may adjust regional prices) when you set a price or save a developer product. That is a binding agreement, so it is the owner's click, not Claude's. After that: set each pass's price and turn "Item for sale" on, create the five developer products (Instant Hatch R$25, 5 Instant Hatches R$99, and the three limited eggs R$199 each; icons are in `brand/passes/`), then paste every id into `Config.Monetization` (a PR; the shop lists an item only once its id is set).
