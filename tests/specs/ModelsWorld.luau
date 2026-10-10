@@ -34,6 +34,9 @@ return function(t)
 	local world = Fake.world()
 	template(world, "Pets", "BonkBean")
 	template(world, "Eggs", "Soggy")
+	template(world, "Props", "Tree")
+	template(world, "Props", "Nest")
+	template(world, "Bosses", "BossMeadow")
 	local ok, err = pcall(world.load, "src/server/main.server")
 	t.check("the server starts with models", ok, tostring(err))
 	if not ok then
@@ -66,4 +69,29 @@ return function(t)
 
 	local missing = plot.slots[3]:FindFirstChild("Item", true) :: Instance
 	t.check("a pet without a model keeps the old look", missing:FindFirstChild("Visual") == nil)
+
+	-- the Wilds use the real models too: trees, twig nests and the terrain boss
+	local wilds = world.workspace:FindFirstChild("Wilds") :: Instance
+	local trees, nests = 0, 0
+	for _, d in wilds:GetDescendants() do
+		if d.Name == "Visual" then
+			continue
+		end
+		if d:IsA("Model") and d.Name == "Tree" then
+			trees += 1
+		end
+	end
+	for _, d in wilds:GetDescendants() do
+		if d:IsA("Model") and d.Name == "Nest" then
+			nests += 1
+		end
+	end
+	t.check("the Meadow has real tree models", trees > 5, tostring(trees))
+	t.check("every nest sits in a twig nest model", nests == 25, tostring(nests))
+	local boss = wilds:FindFirstChild("Boss_Meadow") :: Instance
+	t.check("the Meadow boss is its brick model", boss:FindFirstChild("Visual") ~= nil)
+	t.check(
+		"a terrain without a boss model keeps the plain look",
+		(wilds:FindFirstChild("Boss_Dune") :: Instance):FindFirstChild("Visual") == nil
+	)
 end

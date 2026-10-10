@@ -66,6 +66,22 @@ function Models.show(host: BasePart, kind: string, id: string, mutation: string?
 	return true
 end
 
+-- Puts a scenery model down at `at`, scaled (nothing is cloned if the template is missing).
+function Models.place(parent: Instance, kind: string, id: string, at: CFrame, scale: number): boolean
+	local source = template(kind, id)
+	if not source then
+		return false
+	end
+	local clone = source:Clone()
+	-- Model:ScaleTo shrinks or grows every part around the pivot (the fake test world has no such method)
+	pcall(function()
+		(clone :: any):ScaleTo(scale)
+	end)
+	clone:PivotTo(at)
+	clone.Parent = parent
+	return true
+end
+
 function Models.hide(host: BasePart)
 	local old = host.Parent and host.Parent:FindFirstChild("Visual")
 	if old then

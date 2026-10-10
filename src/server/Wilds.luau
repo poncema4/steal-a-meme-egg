@@ -124,11 +124,27 @@ local function label(parent: BasePart, lines: { string }, offset: number, width:
 	end
 end
 
+local SCENERY = { Meadow = "Tree", Dune = "Cactus", Volcano = "LavaRock", Frost = "IcePine", Cosmic = "Crystal" }
+
 -- Scenery per terrain: simple parts only (no meshes), seeded so every server builds the same map.
 local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instance)
 	local lavaPools: { { x: number, z: number, r: number } } = {}
 	for _, prop in Layout.scenery(zone, nests) do
 		local x, z, s = prop.x, prop.z, prop.size
+		-- the real brick model when there is one (a lava pool still goes beside a rock)
+		local name = SCENERY[zone.id]
+		local placed = name ~= nil
+			and Models.place(
+				parent,
+				"Props",
+				name,
+				CFrame.new(x, 0, z) * CFrame.Angles(0, prop.extra * math.pi * 2, 0),
+				s / 5.5
+			)
+		local keepsPools = zone.id == "Volcano"
+		if placed and not keepsPools then
+			continue
+		end
 		if zone.id == "Meadow" then
 			box("Trunk", Vector3.new(1.6, s * 1.6, 1.6), CFrame.new(x, s * 0.8, z), Color3.fromRGB(110, 70, 40), parent)
 			local leaves = box(
@@ -149,7 +165,15 @@ local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instan
 			)
 			box("CactusArm", Vector3.new(3.4, 1.4, 1.4), CFrame.new(x, s * 0.9, z), Color3.fromRGB(30, 150, 60), parent)
 		elseif zone.id == "Volcano" then
-			box("Rock", Vector3.new(s * 1.4, s, s * 1.2), CFrame.new(x, s * 0.5, z), Color3.fromRGB(50, 40, 45), parent)
+			if not placed then
+				box(
+					"Rock",
+					Vector3.new(s * 1.4, s, s * 1.2),
+					CFrame.new(x, s * 0.5, z),
+					Color3.fromRGB(50, 40, 45),
+					parent
+				)
+			end
 			-- two pools at the same height would flicker where they overlap, so a pool is skipped if it would touch another
 			local overlaps = false
 			for _, pool in lavaPools do
@@ -277,6 +301,10 @@ local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, boss: Boss, 
 		local ring = box("Ring", Vector3.new(0.6, 9, 9), CFrame.new(x, 0.3, z), Color3.fromRGB(120, 85, 50), model)
 		ring.Shape = Enum.PartType.Cylinder
 		ring.CFrame = CFrame.new(x, 0.3, z) * CFrame.Angles(0, 0, math.pi / 2)
+		if Models.place(model, "Props", "Nest", CFrame.new(x, 0, z), 1) then
+			ring.Transparency = 1 -- the twig nest stands on it; the ring stays as the invisible floor
+			ring.CanCollide = false
+		end
 		local egg = box("Egg", Vector3.new(4, 5, 4), CFrame.new(x, 3.1, z), Color3.new(1, 1, 1), model)
 		World.roundify(egg)
 		egg.CanCollide = false

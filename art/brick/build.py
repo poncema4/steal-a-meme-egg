@@ -35,6 +35,11 @@ def main(only):
         if only and name not in only:
             continue
         emit("Pets", name, grid_parts(pets.build(name), "Brick"), report)
+    import props
+    for name in props.RECIPES:
+        if only and name not in only:
+            continue
+        emit("Props", name, grid_parts(props.build(name), "Brick"), report)
     # one big meme boss per terrain: the same recipes grown 2.6x (about 14 studs tall); no geese
     for zone, recipe in BOSSES.items():
         if only and "Boss" + zone not in only:
