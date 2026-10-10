@@ -112,13 +112,24 @@ return function(t)
 	t.equal("income is boosted by 50%", late:GetAttribute("Income"), income * Rebirth.multiplier(1))
 	t.equal("the next rebirth costs more", late:GetAttribute("RebirthCost"), Rebirth.cost(1))
 
-	-- a rebirth and a treadmill upgrade survive leaving and coming back
+	-- a rebirth, a treadmill upgrade and the Index survive leaving and coming back
 	session.get(late).treadmill = 3
+	session.get(late).base.slots[2] = { kind = "char", id = "SleepySock", mutation = "Rainbow" }
+	session.changed(late)
+	session.get(late).base.slots[2] = nil -- seen once, then gone: the Index must still remember it
+	session.changed(late)
 	session.changed(late)
 	world.removePlayer(late)
 	local back = world.addPlayer("Ana", 81)
 	world.advance(0.6)
 	t.equal("rebirths are saved", back:GetAttribute("Rebirths"), 1)
 	t.equal("the treadmill upgrade is saved", back:GetAttribute("TreadmillLevel"), 3)
+	local savedIndex = tostring(back:GetAttribute("Index"))
+	t.check(
+		"the Index remembers a character that is gone from the base",
+		string.find(savedIndex, "SleepySock:Rainbow", 1, true) ~= nil,
+		savedIndex
+	)
+	t.check("even after a rebirth wiped the base", string.find(savedIndex, "BonkBean", 1, true) ~= nil)
 	t.equal("and so is the income bonus", back:GetAttribute("Income"), income * Rebirth.multiplier(1))
 end

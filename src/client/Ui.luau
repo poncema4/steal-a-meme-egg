@@ -232,7 +232,11 @@ function Ui.panel(screen: ScreenGui, title: string, width: number, height: numbe
 	frame.Name = "Panel"
 	frame.AnchorPoint = Vector2.new(0.5, 0.5)
 	frame.Position = UDim2.fromScale(0.5, 0.5)
-	frame.Size = UDim2.fromOffset(width, height)
+	-- never bigger than the screen (a phone's design screen is only 460 tall), never bigger than asked for
+	frame.Size = UDim2.fromScale(0.94, 0.88)
+	local limit = Instance.new("UISizeConstraint")
+	limit.MaxSize = Vector2.new(width, height)
+	limit.Parent = frame
 	frame.BackgroundColor3 = Ui.PANEL
 	frame.BorderSizePixel = 0
 	frame.Visible = false

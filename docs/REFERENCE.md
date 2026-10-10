@@ -35,3 +35,9 @@ Sources: Marco's two screenshots (brand/reference1.png, brand/reference2.png, fr
 
 ## How ours maps (src/client/Ui.luau, Hud.luau)
 Ui.screen scales to the real screen (UiScale: touch uses a smaller design screen so everything is bigger, 44 px minimum tap target, device safe area, rescales on resize). Ui.panel = the dark panel with title bar and red X; B on a gamepad closes it and a gamepad cursor starts on its first button. Preview without Studio: `lune run scripts/preview/dump_ui out.json 844 390 touch` then `python3 scripts/preview/render_ui.py out.json out.png`.
+
+## Panels (src/client/Panels.luau)
+- Index: a card per character (silhouette "???" until you have had it in your base, then name, colour, income and which mutations you have seen). Saved with the player (Collection).
+- Eggs: a row per hatching egg with its time left, Skip (coins) and Instant (token / Robux) buttons; the buttons go through the BaseAction remote, which re-checks everything.
+- Pets: a row per character in the base with its mutation and income per second.
+- One panel is open at a time; every panel is capped to 94% x 88% of the screen so it fits a phone.
