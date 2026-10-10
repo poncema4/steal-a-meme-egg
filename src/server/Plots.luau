@@ -8,6 +8,7 @@ local Config = require(ReplicatedStorage.Shared.Config)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Look = require(script.Parent.Look)
+local Models = require(script.Parent.Models)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
 
@@ -99,6 +100,11 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		body.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
 		body.CFrame = pedestal.CFrame + Vector3.new(0, 3.2, 0)
 		body.Parent = model
+		if Models.has("Eggs", item.tier) then
+			body.CFrame = pedestal.CFrame + Vector3.new(0, 3, 0) -- the model stands right on the pedestal
+			Models.show(body, "Eggs", item.tier, item.eggMutation, plot.front)
+			body.Transparency = 1
+		end
 		local tier = Eggs.tier(item.tier)
 		tag(body, {
 			(if mutated then `{item.eggMutation} ` else "") .. (if tier then tier.name else "Egg"),
@@ -146,6 +152,17 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		local mutation = item.mutation or "Normal"
 		local label = (if mutation ~= "Normal" then `{mutation} ` else "") .. (if c then c.name else "?")
 		local per = if c then c.income * (Eggs.Mutations[mutation] or 1) else 0
+		body.Size = Vector3.new(3.5, 4.5, 2.5)
+		body.CFrame = pedestal.CFrame + Vector3.new(0, 3.2, 0)
+		body.Parent = model
+		if item.id and Models.has("Pets", item.id) then
+			body.CFrame = pedestal.CFrame + Vector3.new(0, 2.75, 0)
+			Models.show(body, "Pets", item.id, mutation, plot.front)
+			body.Transparency = 1
+			tag(body, { label, `+{Economy.format(per)}/s` }, 7)
+			model.Parent = pedestal
+			return
+		end
 		if art then
 			-- the pet stands over its pedestal as its portrait, always facing the camera; a Gold or Rainbow pet gets a glow
 			body.Transparency = 1

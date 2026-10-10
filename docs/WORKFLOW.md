@@ -14,3 +14,10 @@ After `lune run scripts/preview/dump /tmp/map.json`: `~/tools/blender-4.5.14-lin
 
 ## UI preview that looks like the game
 `lune run scripts/preview/dump_ui /tmp/ui.json 1280 720 desktop none` then `python3 scripts/preview/render_ui.py /tmp/ui.json out.png [background.png]` draws the real HUD (rounded corners, gradients, outlines, heavy text, the real icon art). Pass a reference screenshot as the background to compare placement with the game we are copying; the reference's own HUD shows through, so judge position and style, not overlaps. Last argument of dump_ui is a panel to open: `index`, `eggs`, `pets` or `shop`.
+
+## Brick models (art/brick)
+
+`python3 art/brick/build.py` writes the eggs and pets to `src/models/**.rbxmx` (Rojo maps them to `ServerStorage.Models`) and
+preview data to `art/renders/models`. `python3 art/brick/sheet.py out.json 7 5 Name...` lays models side by side; render it with
+`scripts/preview/blender_view.py`. The server (`src/server/Models.luau`) stands a clone on each pen pedestal and nest, tinting Gold
+and Rainbow; with no template it keeps the plain look. Models face -Z, with `Root` at the feet.
