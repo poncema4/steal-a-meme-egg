@@ -138,6 +138,10 @@ CF.__index = function(t, k)
 		end
 	elseif k == "LookVector" then
 		return apply(t.r, v3(0, 0, -1))
+	elseif k == "RightVector" then
+		return apply(t.r, v3(1, 0, 0))
+	elseif k == "UpVector" then
+		return apply(t.r, v3(0, 1, 0))
 	end
 	return nil
 end
