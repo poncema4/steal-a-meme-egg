@@ -383,17 +383,24 @@ function Session.deliver(player: Player): (boolean, string)
 	if not state or not state.carry then
 		return false, "nothing to deliver"
 	end
-	if Base.firstFree(state.base) == nil then
-		return false, "your base is full!"
-	end
 	local tier = state.carry
-	Base.placeEgg(state.base, tier)
 	local points = Progression.pointsForEgg(tier)
 	state.mp += points
 	state.carry, state.carryFrom = nil, nil
+	local message = `+{points} Meme Points!`
+	if Base.firstFree(state.base) == nil then
+		-- a full base must never trap you carrying an egg you cannot drop: it is sold for half its price instead
+		local def = Eggs.tier(tier)
+		local coins = if def then math.floor(def.price * 0.5) else 0
+		state.coins += coins
+		message =
+			`Base full! Sold the egg for {Economy.format(coins)} coins (+{points} Meme Points). Buy a slot to keep eggs!`
+	else
+		Base.placeEgg(state.base, tier)
+	end
 	Session.applySpeed(player)
 	Session.changed(player)
-	return true, `+{points} Meme Points!`
+	return true, message
 end
 
 function Session.changed(player: Player)
