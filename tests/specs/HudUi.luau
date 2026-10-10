@@ -86,6 +86,30 @@ return function(t)
 	t.check("B closes it", not shopPanel.Visible)
 	t.check("and stops listening", world.actions["ClosePanel_SHOP"] == nil)
 
+	-- the hotbar: three trap slots, keys 1-3, at most 3 traps out
+	local world_ = world
+	for i = 1, 3 do
+		t.check(`the hotbar has slot {i}`, find(gui, `TrapSlot_{i}`) ~= nil)
+	end
+	t.check("the trap art is on the slots", find(find(gui, "TrapSlot_1") :: Instance, "Icon") ~= nil)
+	t.check("keys 1-3 and the gamepad X are bound to placing a trap", world_.actions["PlaceTrap"] ~= nil)
+	local slotOne = find(gui, "TrapSlot_1") :: TextButton
+	local slotTwo = find(gui, "TrapSlot_2") :: TextButton
+	slotOne.Activated:Fire()
+	world.advance(0.3)
+	t.equal("a trap cannot be set in the Safe Zone", ana:GetAttribute("TrapsPlaced"), 0)
+	local meadowX = require("../../src/shared/Game/Zones").List[1].startX + 60
+	world.root(ana).Position = V3.new(meadowX, 3, 0)
+	slotTwo.Activated:Fire()
+	world.advance(0.3)
+	t.equal("tapping a slot out in the Wilds sets a trap", ana:GetAttribute("TrapsPlaced"), 1)
+	world.advance(3)
+	world.root(ana).Position = V3.new(meadowX + 20, 3, 0)
+	world.actions["PlaceTrap"]("PlaceTrap", world.enum.UserInputState.Begin)
+	world.advance(0.3)
+	t.equal("pressing a key sets another", ana:GetAttribute("TrapsPlaced"), 2)
+	world.root(ana).Position = V3.new(world.root(ana).Position.X, 3, 0)
+
 	-- Slow Mode
 	session.addSpeedXp(ana, 5000)
 	world.advance(0.6)

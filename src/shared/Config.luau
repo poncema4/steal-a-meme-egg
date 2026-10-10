@@ -108,6 +108,7 @@ return table.freeze({
 		cart = "rbxassetid://89391297052756",
 		book = "rbxassetid://137262363418536",
 		potion = "rbxassetid://77914679765922",
+		trap = "rbxassetid://119912792349429",
 	}),
 	Save = table.freeze({
 		StoreName = "StealAMemeEgg_v1",

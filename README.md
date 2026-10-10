@@ -23,6 +23,7 @@ Eight players share a walled corridor. Each has a fenced pen on a semicircle aro
 | Steal a guardian's egg | hold E on the egg in a nest (Meadow, then Dune, Lava, Frost, Cosmic) |
 | Skip a hatch | hold E on the hatching egg (coins), or F for an instant hatch (token/Robux) |
 | Train speed / upgrade the treadmill | run on the treadmill in front of your pen (standing still trains nothing); hold E on it to upgrade it with coins |
+| Set a trap (max 3 at once) | out in the Wilds, press 1, 2 or 3 (gamepad X, or tap a slot on the hotbar); a guardian that runs over one is held for 3.5 s |
 | Buy a slot / rebirth | the green and purple pads at the front corners of your pen |
 | Admin (group rank 250+, anyone in Studio) | chat: `/event luckyhour`, `/give 1000`, `/giveall 500`, `/announce hi`, `/clear`, `/help` |
 

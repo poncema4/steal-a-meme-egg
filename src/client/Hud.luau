@@ -3,6 +3,7 @@
 -- round icon buttons down the right, speed and money bottom-left, the terrain name on top, a People list (speed and money
 -- per second) top-right, and while you carry an egg a big RUN banner with a Drop button. Everything it shows is an
 -- attribute the server publishes. Sizes are design pixels: Ui.screen scales them to the real screen.
+local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -185,11 +186,48 @@ function Hud.start(player: Player, actions: Actions?)
 	local dropRemote = remotes:WaitForChild("Drop") :: RemoteEvent
 	local drop = Ui.button(gui, "DropButton", "🗑 Drop", Ui.Palettes.Red, UDim2.fromOffset(170, Ui.tap(gui, 52)))
 	drop.AnchorPoint = Vector2.new(0.5, 1)
-	drop.Position = UDim2.new(0.5, 0, 1, -24)
+	drop.Position = UDim2.new(0.5, 0, 1, -96)
 	drop.Visible = false
 	drop.Activated:Connect(function()
 		dropRemote:FireServer()
 	end)
+
+	-- the hotbar: three trap slots (keys 1-3, or tap). At most 3 traps are out at once, so a slot lights up for each one left.
+	local trapRemote = remotes:WaitForChild("PlaceTrap") :: RemoteEvent
+	local slotSide = Ui.tap(gui, 64)
+	local hotbar = box(
+		gui,
+		"Hotbar",
+		UDim2.fromOffset(slotSide * 3 + 20, slotSide),
+		UDim2.new(0.5, 0, 1, -14),
+		Vector2.new(0.5, 1)
+	)
+	local hotbarList = Instance.new("UIListLayout")
+	hotbarList.FillDirection = Enum.FillDirection.Horizontal
+	hotbarList.Padding = UDim.new(0, 10)
+	hotbarList.SortOrder = Enum.SortOrder.LayoutOrder
+	hotbarList.Parent = hotbar
+	local trapSlots: { TextButton } = {}
+	for i = 1, 3 do
+		local slot = Ui.button(hotbar, `TrapSlot_{i}`, "", Ui.Palettes.Orange, UDim2.fromOffset(slotSide, slotSide))
+		slot.LayoutOrder = i
+		Ui.addIcon(slot, "trap", "center", "TRAP")
+		slot.TextSize = 16
+		local key = Ui.label(slot, "Key", 16)
+		key.Position = UDim2.fromOffset(4, 0)
+		key.Size = UDim2.fromOffset(20, 20)
+		key.Text = tostring(i)
+		slot.Activated:Connect(function()
+			trapRemote:FireServer()
+		end)
+		trapSlots[i] = slot
+	end
+	ContextActionService:BindAction("PlaceTrap", function(_, state)
+		if state == Enum.UserInputState.Begin then
+			trapRemote:FireServer()
+		end
+		return Enum.ContextActionResult.Pass
+	end, false, Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.ButtonX)
 
 	-- top right: who is fastest and richest
 	local board = Instance.new("Frame")
@@ -308,6 +346,12 @@ function Hud.start(player: Player, actions: Actions?)
 		run.Visible = def ~= nil
 		drop.Visible = def ~= nil
 		runText.Text = "RUN!!"
+		local placed = number(player, "TrapsPlaced", 0)
+		local cooling = number(player, "TrapReadyAt", 0) > workspace:GetServerTimeNow()
+		for i, slot in trapSlots do
+			local ready = i <= 3 - placed and not cooling
+			Ui.setPalette(slot, if ready then Ui.Palettes.Orange else Ui.Palettes.Grey)
+		end
 		local eggBadge = badges.EggsButton
 		if eggBadge then
 			eggBadge.Visible = eggs > 0
