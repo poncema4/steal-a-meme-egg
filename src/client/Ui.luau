@@ -121,7 +121,8 @@ function Ui.button(parent: Instance, name: string, text: string, palette: Palett
 	b.Text = text
 	b.Parent = parent
 	corner(b, 10)
-	stroke(b, 3)
+	-- the border is a dark shade of the button's own colour (dark green on Shop, navy on Index), not black, like the reference
+	stroke(b, 4, Color3.new(palette.bottom.R * 0.4, palette.bottom.G * 0.4, palette.bottom.B * 0.4))
 	gradient(b, palette)
 	stroke(b, 2, nil, Enum.ApplyStrokeMode.Contextual)
 	local press = Instance.new("UIScale")
