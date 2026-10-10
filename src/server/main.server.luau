@@ -24,6 +24,14 @@ local announceRemote = Instance.new("RemoteEvent")
 announceRemote.Name = "Announce"
 announceRemote.Parent = remotes
 
+-- the client asks to drop its egg or switch Slow Mode; the server checks both
+local dropRemote = Instance.new("RemoteEvent")
+dropRemote.Name = "Drop"
+dropRemote.Parent = remotes
+local slowRemote = Instance.new("RemoteEvent")
+slowRemote.Name = "SlowMode"
+slowRemote.Parent = remotes
+
 local sfxRemote = Instance.new("RemoteEvent")
 sfxRemote.Name = "Sfx"
 sfxRemote.Parent = remotes
@@ -58,6 +66,14 @@ end)
 Home.start(world.plots)
 Plots.setNotify(notify)
 Wilds.setNestRate(LiveOps.nestRate)
+dropRemote.OnServerEvent:Connect(function(player: Player)
+	Wilds.drop(player)
+end)
+slowRemote.OnServerEvent:Connect(function(player: Player, on: any)
+	if typeof(on) == "boolean" then
+		Session.setSlow(player, on)
+	end
+end)
 LiveOps.start(remotes, notify, sfxAll)
 LimitedService.start(remotes, notify, sfxAll)
 Session.onHatched(function(player)
