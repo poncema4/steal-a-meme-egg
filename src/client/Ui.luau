@@ -193,6 +193,60 @@ function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string,
 	return true
 end
 
+-- A 3D view of a brick model (the pet or egg itself, not a flat picture) filling `parent`, or nil when the client has no such model.
+-- Models face -Z, so the camera stands in front and a little to the side.
+function Ui.modelView(parent: GuiObject, kind: string, id: string): ViewportFrame?
+	local models = ReplicatedStorage:FindFirstChild("Models")
+	local folder = models and models:FindFirstChild(kind)
+	local template = folder and folder:FindFirstChild(id)
+	if not template or not template:IsA("Model") then
+		return nil
+	end
+	local view = Instance.new("ViewportFrame")
+	view.Name = "Model3D"
+	view.BackgroundTransparency = 1
+	view.Size = UDim2.fromScale(1, 1)
+	view.Ambient = Color3.fromRGB(165, 165, 180)
+	view.LightColor = Color3.new(1, 1, 1)
+	view.LightDirection = Vector3.new(-0.35, -0.8, -0.5)
+	local clone = template:Clone()
+	clone.Parent = view
+	clone:PivotTo(CFrame.new(0, 0, 0))
+	local height = 6
+	pcall(function()
+		local size = clone:GetExtentsSize()
+		height = math.max(size.X, size.Y, size.Z)
+	end)
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = 30
+	local target = Vector3.new(0, height * 0.48, 0)
+	local distance = height * 2.5 + 2
+	camera.CFrame = CFrame.lookAt(target + Vector3.new(distance * 0.28, height * 0.12, -distance), target)
+	camera.Parent = view
+	view.CurrentCamera = camera
+	view.Parent = parent
+	return view
+end
+
+-- Paints a model view solid black (an undiscovered character) or gives it back its own colours.
+function Ui.silhouette(view: ViewportFrame, on: boolean)
+	for _, part in view:GetDescendants() do
+		if part:IsA("BasePart") then
+			if on then
+				if part:GetAttribute("Own") == nil then
+					part:SetAttribute("Own", part.Color)
+				end
+				part.Color = Color3.new(0, 0, 0)
+			else
+				local own = part:GetAttribute("Own")
+				if typeof(own) == "Color3" then
+					part.Color = own
+				end
+			end
+		end
+	end
+end
+
 -- A square icon button (an emoji glyph for now) with an optional count badge in the corner.
 function Ui.iconButton(
 	parent: Instance,

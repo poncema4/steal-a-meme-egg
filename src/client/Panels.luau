@@ -99,6 +99,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		portrait: Frame,
 		letter: TextLabel,
 		picture: ImageLabel?,
+		view: ViewportFrame?,
 		name: TextLabel,
 		income: TextLabel,
 		chips: { [string]: TextLabel },
@@ -118,8 +119,12 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		letter.Size = UDim2.fromScale(1, 1)
 		-- the portrait: a rendered picture where we have one (a black silhouette until discovered), else the letter tile
 		local picture: ImageLabel? = nil
+		local view = Ui.modelView(portrait, "Pets", c.id)
+		if view then
+			letter.Visible = false
+		end
 		local artId = Ui.petIconId(c.id)
-		if artId then
+		if artId and not view then
 			local image = Instance.new("ImageLabel")
 			image.Name = "Picture"
 			image.BackgroundTransparency = 1
@@ -150,6 +155,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			portrait = portrait,
 			letter = letter,
 			picture = picture,
+			view = view,
 			name = name,
 			income = income,
 			chips = chips,
@@ -165,6 +171,9 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			local seen = Collection.has(found, card.char.id)
 			card.name.Text = if seen then card.char.name else "???"
 			card.letter.Text = if seen then string.sub(card.char.name, 1, 1) else "?"
+			if card.view then
+				Ui.silhouette(card.view, not seen)
+			end
 			if card.picture then
 				card.picture.ImageColor3 = if seen then Color3.new(1, 1, 1) else Color3.new(0, 0, 0) -- undiscovered: a silhouette
 			end
@@ -275,7 +284,8 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	petLayout.Padding = UDim.new(0, 8)
 	petLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	petLayout.Parent = petList
-	local petRows: { [number]: { root: Frame, title: TextLabel, income: TextLabel, picture: ImageLabel } } = {}
+	local petRows: { [number]: { root: Frame, title: TextLabel, income: TextLabel, picture: ImageLabel, view: ViewportFrame? } } =
+		{}
 
 	local function refreshPets()
 		local rows = BaseView.decode(attr(player, "BaseItems"))
@@ -297,6 +307,13 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 					picture.Position = UDim2.new(0, 8, 0.5, -24)
 					picture.ScaleType = Enum.ScaleType.Fit
 					picture.Parent = root
+					local holder = frame(root, "ModelHolder", UDim2.fromOffset(52, 52))
+					holder.BackgroundTransparency = 1
+					holder.Position = UDim2.new(0, 6, 0.5, -26)
+					local view = Ui.modelView(holder, "Pets", row.id)
+					if view then
+						picture.Visible = false
+					end
 					local title = Ui.label(root, "Title", 22)
 					title.Position = UDim2.fromOffset(64, 0)
 					title.Size = UDim2.fromScale(0.55, 1)
@@ -306,7 +323,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 					income.Position = UDim2.new(1, -12, 0, 0)
 					income.Size = UDim2.fromScale(0.34, 1)
 					income.TextXAlignment = Enum.TextXAlignment.Right
-					entry = { root = root, title = title, income = income, picture = picture }
+					entry = { root = root, title = title, income = income, picture = picture, view = view }
 					petRows[row.slot] = entry
 				end
 				local c = Eggs.character(row.id)
