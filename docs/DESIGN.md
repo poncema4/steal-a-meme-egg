@@ -16,7 +16,7 @@ Steal eggs from meme guardians, run them home, hatch them into meme characters t
 5. Coins buy better eggs and more slots (up to 12).
 
 ## The Wilds (built)
-One long walled corridor: the Safe Zone at the west end (eight fenced pens in a semicircle around a plaza (one per player; a server holds 8), a red line, a gateway sign over it reading SAFE ZONE), then a strip of themed terrains going east (x 10 to 1210): Meme Meadow, Dune Desert, Lava Lands, Frozen Peaks, Cosmic Void. Each has 5 nests; on every nest a meme guardian sits on an egg. Hold E on the egg to steal it. The guardian chases you (it gives up after 12 s or 150 studs, and takes the egg back if it touches you; you wake up at home). Carry the egg into your own base to start it hatching and earn Meme Points. If your base is full when you get home the egg is sold for half its price instead (you still get the Meme Points), so a full base never traps you. You carry one egg at a time and run 10% slower while carrying.
+One long walled corridor: the Safe Zone at the west end (eight fenced pens in a semicircle around a plaza (one per player; a server holds 8), a red line, a gateway sign over it reading SAFE ZONE), then a strip of themed terrains going east (x 10 to 1210): Meme Meadow, Dune Desert, Lava Lands, Frozen Peaks, Cosmic Void. Each has 5 nests; on every nest a meme guardian sits on an egg. Hold E on the egg to steal it. The guardian chases you (it gives up after 12 s or 150 studs, and takes the egg back if it touches you and flings you back toward the Safe Zone like a rag doll). Carry the egg into your own base to start it hatching and earn Meme Points. If your base is full when you get home the egg is sold for half its price instead (you still get the Meme Points), so a full base never traps you. You carry one egg at a time and run 10% slower while carrying.
 
 Gates: each terrain needs Meme Points (0 / 25 / 250 / 2,500 / 20,000). The server pushes you back from a terrain you have not unlocked. Rarer terrains hold rarer eggs and faster guardians (12 / 17 / 21 / 25 / 29 studs per second).
 
@@ -55,3 +55,6 @@ Press 1, 2 or 3 (gamepad X, tap a hotbar slot) out in a terrain to put a trap do
 
 ## Mutated eggs
 A nest can grow a Gold or Rainbow egg (`Eggs.nestMutation`: Meadow about 8% Gold and 2% Rainbow, more in each deeper terrain, capped at 40% and 12%). The egg is Gold or Rainbow-coloured with a tag in the nest, keeps its mutation when stolen, carried, dropped and returned, and when delivered: Gold is worth double Meme Points (and sale price), Rainbow five times. In your base it hatches into a pet with that mutation (a Normal egg still rolls the usual chance at hatching). Saved with the base.
+
+## Carrying
+While you carry an egg it floats above your head (Gold and Rainbow ones are coloured and shine), a blue speed trail follows you, the HUD shows a RUN!! banner and a Drop button, and you run 10% slower. It follows the `Carrying` attribute (`src/server/Carry.luau`) so it also survives a respawn. Being caught flings you (`Wilds.fling`, tumbling 1.4 s); dropping the egg on purpose does not.

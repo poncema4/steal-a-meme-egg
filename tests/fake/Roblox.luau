@@ -1044,6 +1044,7 @@ function Fake.world()
 	world.enum = makeEnum()
 	world.Vector3 = Vector3
 	world.CFrame = CFrame
+	world.Color3 = Color3
 	world.game = game
 	world.workspace = workspaceInstance
 	world.service = service
