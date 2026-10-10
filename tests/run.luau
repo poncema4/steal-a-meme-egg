@@ -43,6 +43,7 @@ local specs = {
 	require("./specs/Retention"),
 	require("./specs/Prompts"),
 	require("./specs/Soak"),
+	require("./specs/Fuzz"),
 }
 
 for _, spec in specs do

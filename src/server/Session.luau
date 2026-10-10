@@ -488,16 +488,27 @@ local function serialise(state: State): { [string]: any }
 	}
 end
 
+-- A number read from a save, made safe: NaN, infinity or a non-number become the default, then it is held inside [lo, hi]. A
+-- corrupt or tampered save must never be able to poison the economy.
+local function sane(value: any, default: number, lo: number, hi: number): number
+	local n = tonumber(value)
+	if n == nil or n ~= n or n == math.huge or n == -math.huge then
+		return default
+	end
+	return math.clamp(n, lo, hi)
+end
+
 local function restore(state: State, saved: { [string]: any })
-	state.coins = tonumber(saved.coins) or Config.Economy.StartCoins
-	state.mp = math.max(tonumber(saved.mp) or 0, 0)
-	state.speedXp = math.max(tonumber(saved.speedXp) or 0, 0)
-	state.rebirths = math.clamp(math.floor(tonumber(saved.rebirths) or 0), 0, Rebirth.MAX)
-	state.dailyLast = tonumber(saved.dailyLast)
-	state.dailyStreak = math.max(math.floor(tonumber(saved.dailyStreak) or 0), 0)
+	state.coins = sane(saved.coins, Config.Economy.StartCoins, 0, 1e18)
+	state.mp = sane(saved.mp, 0, 0, 1e15)
+	state.speedXp = sane(saved.speedXp, 0, 0, 1e12)
+	state.rebirths = math.floor(sane(saved.rebirths, 0, 0, Rebirth.MAX))
+	local last = tonumber(saved.dailyLast)
+	state.dailyLast = if last ~= nil and last == last and last ~= math.huge and last ~= -math.huge then last else nil
+	state.dailyStreak = math.floor(sane(saved.dailyStreak, 0, 0, 1e6))
 	local purchases = state.purchases
 	for key, owned in (if type(saved.passes) == "table" then saved.passes else {}) :: { [string]: any } do
-		purchases.passes[key] = owned == true
+		purchases.passes[tostring(key)] = owned == true
 	end
 	for _, receipt in (if type(saved.receipts) == "table" then saved.receipts else {}) :: { any } do
 		if type(receipt) == "string" and not purchases.receipts[receipt] then
@@ -505,30 +516,35 @@ local function restore(state: State, saved: { [string]: any })
 			table.insert(purchases.receiptOrder, receipt)
 		end
 	end
-	purchases.hatchTokens = math.max(tonumber(saved.hatchTokens) or 0, 0)
+	purchases.hatchTokens = math.floor(sane(saved.hatchTokens, 0, 0, 1e6))
 	for _, tier in (if type(saved.pendingLimited) == "table" then saved.pendingLimited else {}) :: { any } do
 		if type(tier) == "string" and Eggs.tier(tier) then
 			table.insert(purchases.pendingLimited, tier)
 		end
 	end
 	state.base = Base.new(
-		math.clamp(
-			tonumber(saved.size) or Config.Economy.StartSlots,
-			Config.Economy.StartSlots,
-			Config.Economy.MaxSlots
-		)
+		math.floor(sane(saved.size, Config.Economy.StartSlots, Config.Economy.StartSlots, Config.Economy.MaxSlots))
 	)
-	for key, item in (saved.slots or {}) :: { [string]: any } do
+	for key, item in (if type(saved.slots) == "table" then saved.slots else {}) :: { [string]: any } do
 		local i = tonumber(key)
-		if i and i >= 1 and i <= state.base.size and type(item) == "table" then
-			if item.kind == "egg" and Eggs.tier(item.tier) then
-				state.base.slots[i] = { kind = "egg", tier = item.tier, hatchLeft = tonumber(item.hatchLeft) or 1 }
-			elseif item.kind == "char" and Eggs.character(item.id) then
-				state.base.slots[i] = { kind = "char", id = item.id, mutation = item.mutation or "Normal" }
+		if i and i >= 1 and i <= state.base.size and i == math.floor(i) and type(item) == "table" then
+			if item.kind == "egg" and type(item.tier) == "string" and Eggs.tier(item.tier) then
+				local def = Eggs.tier(item.tier) :: Eggs.Tier
+				state.base.slots[i] = {
+					kind = "egg",
+					tier = item.tier,
+					hatchLeft = sane(item.hatchLeft, def.hatchSeconds, 0.1, def.hatchSeconds),
+				}
+			elseif item.kind == "char" and type(item.id) == "string" and Eggs.character(item.id) then
+				local mutation = if type(item.mutation) == "string" and Eggs.Mutations[item.mutation]
+					then item.mutation
+					else "Normal"
+				state.base.slots[i] = { kind = "char", id = item.id, mutation = mutation }
 			end
 		end
 	end
-	local away = clock() - (tonumber(saved.savedAt) or clock())
+	local savedAt = sane(saved.savedAt, clock(), 0, clock())
+	local away = clock() - savedAt
 	state.coins += Economy.offline(
 		Base.income(state.base, Rebirth.multiplier(state.rebirths)),
 		away,

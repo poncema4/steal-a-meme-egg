@@ -56,7 +56,8 @@ function Admin.run(text: string, isAdmin: boolean): Result
 			return { ok = false, message = "unknown event; try /help" }
 		end
 		local seconds = tonumber(w[3])
-		if seconds and (seconds <= 0 or seconds > Admin.MaxEventSeconds) then
+		-- written as "must be inside the range" so NaN (tonumber accepts "nan") fails every comparison and is refused
+		if seconds and not (seconds > 0 and seconds <= Admin.MaxEventSeconds) then
 			return { ok = false, message = `seconds must be 1 to {Admin.MaxEventSeconds}` }
 		end
 		return {
@@ -66,7 +67,7 @@ function Admin.run(text: string, isAdmin: boolean): Result
 		}
 	elseif name == "give" or name == "giveall" then
 		local coins = tonumber(w[2])
-		if not coins or coins <= 0 or coins > Admin.MaxGive then
+		if not coins or not (coins > 0 and coins <= Admin.MaxGive) then
 			return { ok = false, message = "usage: /" .. name .. " <coins>" }
 		end
 		coins = math.floor(coins)

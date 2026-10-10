@@ -27,6 +27,12 @@ return function(t)
 	t.check("a negative amount is refused", not Admin.run("/give -5", true).ok)
 	t.check("a huge amount is refused", not Admin.run("/give 1e15", true).ok)
 	t.check("a non-number is refused", not Admin.run("/give lots", true).ok)
+	-- tonumber accepts "nan" and "inf" in Luau; NaN slips past a "<= 0 or > max" range check because every comparison is false
+	t.check("/give nan is refused", not Admin.run("/give nan", true).ok)
+	t.check("/give inf is refused", not Admin.run("/give inf", true).ok)
+	t.check("/giveall nan is refused", not Admin.run("/giveall nan", true).ok)
+	t.check("/event with a nan length is refused", not Admin.run("/event luckyhour nan", true).ok)
+	t.check("/event with an inf length is refused", not Admin.run("/event luckyhour inf", true).ok)
 	t.equal("a fraction is floored", (Admin.run("/give 10.9", true).action :: any).coins, 10)
 
 	local say = Admin.run("/announce Egg Rain in 1 minute!", true)
