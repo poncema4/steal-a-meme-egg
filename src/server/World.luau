@@ -193,6 +193,30 @@ function World.build(): { plots: { Plot }, belt: BasePart }
 	wall("HomeWallWest", Vector3.new(2, 60, 262), Vector3.new(-211, 30, 0))
 	wall("HomeWallNorth", Vector3.new(394, 60, 2), Vector3.new(-14, 30, -131))
 	wall("HomeWallSouth", Vector3.new(394, 60, 2), Vector3.new(-14, 30, 131))
+	-- a big sign at the east end of the belt, so a new player knows where the Wilds are
+	for _, x in { 168, 166 } do
+		part(
+			"SignLeg",
+			Vector3.new(1.5, 14, 1.5),
+			CFrame.new(x, 7, x == 168 and -9 or 9),
+			Color3.fromRGB(90, 60, 40),
+			map
+		)
+	end
+	local board = part("WildsSign", Vector3.new(2, 12, 26), CFrame.new(167, 17, 0), Color3.fromRGB(255, 200, 40), map)
+	for _, face in { Enum.NormalId.Left, Enum.NormalId.Right } do
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = face
+		gui.Parent = board
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.fromScale(1, 1)
+		label.BackgroundTransparency = 1
+		label.TextScaled = true
+		label.Font = Enum.Font.FredokaOne
+		label.TextColor3 = Color3.fromRGB(40, 20, 10)
+		label.Text = if face == Enum.NormalId.Left then "THE WILDS >>>\nsteal eggs, run home!" else "<<< HOME BASES"
+		label.Parent = gui
+	end
 	local plots = {}
 	for i = 1, World.PLOTS do
 		plots[i] = buildPlot(i, map)

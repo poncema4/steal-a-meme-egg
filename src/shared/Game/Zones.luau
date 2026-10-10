@@ -35,7 +35,7 @@ Zones.List = {
 	{
 		id = "Dune",
 		name = "Dune Desert",
-		mp = 40,
+		mp = 25,
 		startX = 440,
 		length = 240,
 		nests = 6,

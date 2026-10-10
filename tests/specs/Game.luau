@@ -29,6 +29,15 @@ return function(t)
 		end
 	end
 	t.equal("the home lawn is walled on three sides", walls, 3)
+	local sign = (map :: Instance):FindFirstChild("WildsSign")
+	t.check("a sign points the way to the Wilds", sign ~= nil)
+	local signText = ""
+	for _, d in ((sign or map) :: Instance):GetDescendants() do
+		if d:IsA("TextLabel") then
+			signText ..= (d :: TextLabel).Text .. " "
+		end
+	end
+	t.check("and says so", string.find(signText, "WILDS", 1, true) ~= nil)
 
 	local ana = world.addPlayer("Ana", 11)
 	local ben = world.addPlayer("Ben", 12)

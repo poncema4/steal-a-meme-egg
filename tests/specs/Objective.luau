@@ -30,16 +30,16 @@ return function(t)
 	)
 	t.check(
 		"too slow for the terrain says to train",
-		string.find(Objective.hint(facts({ characters = 2, mp = 40, speedLevel = 0 })), "treadmill", 1, true) ~= nil
+		string.find(Objective.hint(facts({ characters = 2, mp = 25, speedLevel = 0 })), "treadmill", 1, true) ~= nil
 	)
-	local need = Objective.speedNeeded(40)
-	local next = Objective.hint(facts({ characters = 2, mp = 40, speedLevel = need }))
+	local need = Objective.speedNeeded(25)
+	local next = Objective.hint(facts({ characters = 2, mp = 25, speedLevel = need }))
 	t.check(
 		"fast enough and a terrain is locked: collect points for it",
 		string.find(next, "Meme Points", 1, true) ~= nil and string.find(next, "Lava Lands", 1, true) ~= nil,
 		next
 	)
-	t.check("the hint shows progress toward the next terrain", string.find(next, "40 of 250", 1, true) ~= nil, next)
+	t.check("the hint shows progress toward the next terrain", string.find(next, "25 of 250", 1, true) ~= nil, next)
 	t.check(
 		"a waiting egg with everything unlocked says hatching",
 		string.find(Objective.hint(facts({ eggs = 1, mp = 1e9, speedLevel = 30 })), "hatching", 1, true) ~= nil
