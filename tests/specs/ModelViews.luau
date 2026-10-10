@@ -38,6 +38,25 @@ return function(t)
 		blob.Parent = model
 		model.Parent = pets
 	end
+	local icons = Instance.new("Folder")
+	icons.Name = "Icons"
+	icons.Parent = models
+	for _, id in { "cart", "shoe" } do
+		local model = Instance.new("Model")
+		model.Name = id
+		local root = Instance.new("Part")
+		root.Name = "Root"
+		root.Size = Vector3.new(0.2, 0.2, 0.2)
+		root.CFrame = CFrame.new(0, 0, 0)
+		root.Parent = model
+		model.PrimaryPart = root
+		local blob = Instance.new("Part")
+		blob.Name = "Blob"
+		blob.Size = Vector3.new(2, 2, 2)
+		blob.CFrame = CFrame.new(0, 1, 0)
+		blob.Parent = model
+		model.Parent = icons
+	end
 	local ok, err = pcall(world.load, "src/server/main.server")
 	t.check("the server starts", ok, tostring(err))
 	if not ok then
@@ -76,4 +95,17 @@ return function(t)
 	api.pets()
 	world.advance(1)
 	t.check("and the pet row shows the model too", find(find(screen, "PetRow_1"), "Model3D") ~= nil)
+
+	-- the HUD icons are 3D models too (a decal-only icon would be blank while Roblox moderates it)
+	local hud = world.load("src/client/Hud")
+	hud.start(ana, { shop = function() end, index = function() end })
+	local hudGui = ana.PlayerGui:FindFirstChild("Hud")
+	local shopButton = find(hudGui, "ShopButton")
+	t.check("the Shop button's cart is a 3D model", find(shopButton, "Model3D") ~= nil)
+	local stats = find(hudGui, "Stats")
+	t.check("so is the speed shoe", find(find(stats, "Speed"), "Model3D") ~= nil)
+	t.check(
+		"an icon without a model keeps its picture or glyph",
+		find(find(hudGui, "Left"), "IndexButton") ~= nil and find(find(hudGui, "IndexButton"), "Model3D") == nil
+	)
 end

@@ -73,6 +73,11 @@ return function(t)
 	for id in Eggs.Characters do
 		check(t, "Pets", id, 3.0, 8.0)
 	end
+	for name, tall in
+		{ cart = 6.4, book = 6, shoe = 5.6, cash = 2.6, egg = 5.8, paw = 5.6, trophy = 5.8, potion = 6.2, trap = 6 }
+	do
+		check(t, "Icons", name, tall - 1.5, tall + 1.5)
+	end
 	for _, zone in Zones.List do
 		check(t, "Bosses", `Boss{zone.id}`, 9, 18)
 	end
