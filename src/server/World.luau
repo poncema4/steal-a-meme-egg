@@ -168,6 +168,7 @@ local function buildTreadmill(model: Model, f: Frame, accent: Color3): (Part, Tr
 	local belt =
 		part("Treadmill", Vector3.new(6.4, 0.5, length), cf(f, 0, 0.65, ahead), Color3.fromRGB(30, 30, 36), model)
 	belt.Material = Enum.Material.SmoothPlastic
+	belt:SetAttribute("Ridges", World.TREAD_RIDGES) -- the client waits until it has seen all of them (streaming)
 	for i = 0, World.TREAD_RIDGES - 1 do
 		local ridge = part(
 			"Ridge",

@@ -42,6 +42,7 @@ local specs = {
 	require("./specs/ModelsWorld"),
 	require("./specs/BossChase"),
 	require("./specs/ModelViews"),
+	require("./specs/Perf"),
 	require("./specs/Models"),
 	require("./specs/Base"),
 	require("./specs/Economy"),

@@ -180,7 +180,7 @@ class Part:
         self.material, self.shape, self.transparency, self.cls, self.yaw, self.collide = material, shape, transparency, cls, yaw, collide
 
 
-def write_rbxmx(path, name, parts, root_height=0.0):
+def write_rbxmx(path, name, parts, root_height=0.0, shadows=True):
     """A Model of anchored parts with an invisible tiny Root part at the base centre as PrimaryPart, so PivotTo puts the model's
     feet where you want it."""
     refs = {}
@@ -194,13 +194,14 @@ def write_rbxmx(path, name, parts, root_height=0.0):
     xml = ['<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
            'xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">',
            f'<Item class="Model" referent="{model_ref}"><Properties><string name="Name">{name}</string>'
-           f'<Ref name="PrimaryPart">{root_ref}</Ref></Properties>']
+           f'<Ref name="PrimaryPart">{root_ref}</Ref>'
+           '<token name="ModelStreamingMode">1</token></Properties>']  # atomic: a model streams in whole, never half a tree
 
     def item(p, r):
         shape = {"Block": 1, "Ball": 0, "Cylinder": 2}[p.shape]
         props = [f'<string name="Name">{p.name}</string>', '<bool name="Anchored">true</bool>',
                  f'<bool name="CanCollide">{"true" if p.collide else "false"}</bool>',
-                 '<bool name="CanTouch">false</bool>', '<bool name="CanQuery">false</bool>', '<bool name="CastShadow">true</bool>',
+                 '<bool name="CanTouch">false</bool>', '<bool name="CanQuery">false</bool>', f'<bool name="CastShadow">{"true" if shadows else "false"}</bool>',
                  f'<Color3uint8 name="Color3uint8">{_packed(p.color)}</Color3uint8>',
                  _cframe(p.pos[0], p.pos[1], p.pos[2], p.yaw),
                  f'<token name="Material">{MATERIAL[p.material]}</token>',

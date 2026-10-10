@@ -12,7 +12,7 @@ export type Prop = { x: number, z: number, size: number, extra: number }
 
 Layout.GUARDIAN_OFFSET = 9 -- a guardian sits this far east of its egg
 Layout.CLEAR = 16 -- scenery stays at least this far from a nest and its guardian
-Layout.PROPS = 28
+Layout.PROPS = 22
 Layout.BOSS_CLEAR = 20 -- scenery and nests stay this far from the terrain's boss
 
 -- Where the terrain's boss stands: the middle of the strip.

@@ -25,3 +25,11 @@ and Rainbow; with no template it keeps the plain look. Models face -Z, with `Roo
 ## Seeing the whole map with the real models
 
 `lune run scripts/preview/dump /tmp/map.json` now also writes `/tmp/map.models.json` (where scenery, nests, eggs and bosses stand). `python3 scripts/preview/compose.py /tmp/map.json /tmp/scene.json` stamps the brick models from `art/renders/models` in (dropping the plain stand-ins the fake world builds) and `blender -b -P scripts/preview/blender_view.py -- /tmp/scene.json out.png camX camY camZ targetX targetY targetZ [lens] [x0 x1]` renders it. The viewer builds one mesh per colour, so a 20,000-part scene renders in seconds. E.g. the Meadow from the gate: `30 40 60 130 6 0 34 12 260`.
+
+## Phone performance budget
+
+`tests/specs/Perf.luau` fails the build if the brick models add more than 13,500 parts to the Wilds (3,500 in any one terrain), if
+streaming is off, or if scenery and eggs cast shadows. How it is kept small: bigger bricks for round props and eggs
+(`art/brick/props.py` UNITS, `eggs.py` U), 22 props per terrain (`Layout.PROPS`), no shadows from scenery or eggs, models
+stream in whole (`ModelStreamingMode` Atomic), and `Workspace.StreamingEnabled` is set in `default.project.json` (radius 128 to 512,
+MinimizeDisruption). If Rojo's live sync does not apply the Workspace streaming properties in Studio, set them by hand once.
