@@ -872,6 +872,7 @@ function Fake.world()
 		local player = create("Player")
 		data[player].props.Name = name
 		data[player].props.UserId = userId
+		data[player].props.DisplayName = name
 		local gui = create("PlayerGui")
 		data[gui].props.Name = "PlayerGui"
 		reparent(gui, player)
