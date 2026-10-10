@@ -182,6 +182,28 @@ local function buildGuardian(entry: Entry, parent: Instance, c: Eggs.Character)
 	local tint = Color3.fromHSV((#c.id * 0.137) % 1, 0.55, 1)
 	local body = box("Body", Vector3.new(6, 7, 8), CFrame.new(0, BODY_Y, 0), tint, model)
 	model.PrimaryPart = body
+	local art = (Config.PetIcons :: { [string]: string })[c.id]
+	if art then
+		-- the guardian is its portrait, big, standing on the ground and facing the camera; the (invisible) body is what moves
+		body.Transparency = 1
+		body.CanCollide = false
+		local card = Instance.new("BillboardGui")
+		card.Name = "Portrait"
+		card.Size = UDim2.fromScale(16, 16)
+		card.StudsOffset = Vector3.new(0, 4.5, 0)
+		card.MaxDistance = 400
+		card.Parent = body
+		local picture = Instance.new("ImageLabel")
+		picture.Name = "Picture"
+		picture.BackgroundTransparency = 1
+		picture.Size = UDim2.fromScale(1, 1)
+		picture.Image = art
+		picture.Parent = card
+		label(body, { c.name, "GUARDIAN" }, 13.5, 220)
+		model.Parent = parent
+		entry.model = model
+		return
+	end
 	local head = box("Head", Vector3.new(5, 5, 5), CFrame.new(0, 9, -2.5), tint, model)
 	World.roundify(head)
 	for _, sx in { -1, 1 } do

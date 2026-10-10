@@ -74,6 +74,12 @@ return function(t)
 		tostring(ring.Size)
 	)
 	t.check("a nest egg wears a sphere mesh", nest.egg:FindFirstChildOfClass("SpecialMesh") ~= nil)
-	local head = find(world.workspace:FindFirstChild("Wilds") :: Instance, "Head") :: Instance
-	t.check("a guardian's head wears a sphere mesh", head:FindFirstChildOfClass("SpecialMesh") ~= nil)
+	-- a guardian is its portrait (a billboard on its invisible body), not a box and a ball
+	local portrait = find(world.workspace:FindFirstChild("Wilds") :: Instance, "Portrait") :: Instance
+	t.check("a guardian is shown as its portrait", portrait ~= nil and portrait:IsA("BillboardGui"))
+	local picture = find(portrait, "Picture") :: ImageLabel
+	t.check("a real image", string.find(picture.Image, "rbxassetid://", 1, true) == 1)
+	local guardianBody = portrait.Parent :: Part
+	t.equal("the body behind it is invisible (it only carries the picture)", guardianBody.Transparency, 1)
+	t.equal("and is the guardian's body", guardianBody.Name, "Body")
 end
