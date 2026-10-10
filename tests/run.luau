@@ -37,6 +37,7 @@ local specs = {
 	require("./specs/MutatedEggs"),
 	require("./specs/CarryFling"),
 	require("./specs/Treadmill"),
+	require("./specs/PetDisplay"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),

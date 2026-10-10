@@ -107,7 +107,10 @@ return function(t)
 	t.check("a hatch plays the pop", heard)
 	t.equal("the hatched egg counts as a character", ana:GetAttribute("Characters"), 1)
 	t.equal("and is no longer hatching", ana:GetAttribute("EggsHatching"), 0)
-	t.check("the egg hatched into a character with a head", anaPlot.Slot_1.Item:FindFirstChild("Head") ~= nil)
+	t.check(
+		"the egg hatched into a character shown as its portrait",
+		anaPlot.Slot_1.Item:FindFirstChild("Portrait", true) ~= nil
+	)
 	t.check("a character earns income", (ana:GetAttribute("Income") :: number) >= 1)
 	local before = ana:GetAttribute("Coins") :: number
 	world.advance(5)

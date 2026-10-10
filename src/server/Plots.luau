@@ -4,6 +4,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Look = require(script.Parent.Look)
@@ -141,6 +142,47 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		end
 	else
 		local c = Eggs.character(item.id or "")
+		local art = (Config.PetIcons :: { [string]: string })[item.id or ""]
+		local mutation = item.mutation or "Normal"
+		local label = (if mutation ~= "Normal" then `{mutation} ` else "") .. (if c then c.name else "?")
+		local per = if c then c.income * (Eggs.Mutations[mutation] or 1) else 0
+		if art then
+			-- the pet stands over its pedestal as its portrait, always facing the camera; a Gold or Rainbow pet gets a glow
+			body.Transparency = 1
+			body.Size = Vector3.new(1, 1, 1)
+			body.CFrame = pedestal.CFrame + Vector3.new(0, 3.2, 0)
+			body.Parent = model
+			local card = Instance.new("BillboardGui")
+			card.Name = "Portrait"
+			card.Size = UDim2.fromScale(8, 8)
+			card.StudsOffset = Vector3.new(0, 2.2, 0)
+			card.MaxDistance = 160
+			card.Parent = body
+			local glowColor = if mutation == "Gold"
+				then Color3.fromRGB(255, 205, 40)
+				elseif mutation == "Rainbow" then Color3.fromRGB(255, 90, 220)
+				else nil
+			if glowColor then
+				local glow = Instance.new("ImageLabel")
+				glow.Name = "Glow"
+				glow.BackgroundTransparency = 1
+				glow.Size = UDim2.fromScale(1.14, 1.14)
+				glow.Position = UDim2.fromScale(-0.07, -0.07)
+				glow.Image = art
+				glow.ImageColor3 = glowColor
+				glow.ImageTransparency = 0.35
+				glow.Parent = card
+			end
+			local picture = Instance.new("ImageLabel")
+			picture.Name = "Picture"
+			picture.BackgroundTransparency = 1
+			picture.Size = UDim2.fromScale(1, 1)
+			picture.Image = art
+			picture.Parent = card
+			tag(body, { label, `+{Economy.format(per)}/s` }, 7)
+			model.Parent = pedestal
+			return
+		end
 		body.Size = Vector3.new(3.5, 4.5, 2.5)
 		body.Color = RARITY_COLORS[c and c.rarity or "Common"] or Color3.new(1, 1, 1)
 		body.Material = if item.mutation == "Normal" then Enum.Material.SmoothPlastic else Enum.Material.Neon
@@ -161,10 +203,7 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		head.Material = body.Material
 		head.CFrame = body.CFrame + Vector3.new(0, 3.6, 0)
 		head.Parent = model
-		local name = if c then c.name else "?"
-		local suffix = if item.mutation ~= "Normal" and item.mutation then `{item.mutation} ` else ""
-		local per = if c then c.income * (Eggs.Mutations[item.mutation or "Normal"] or 1) else 0
-		tag(head, { suffix .. name, `+{Economy.format(per)}/s` }, 3)
+		tag(head, { label, `+{Economy.format(per)}/s` }, 3)
 	end
 	model.Parent = pedestal
 end
