@@ -12,6 +12,11 @@ MODELS = os.path.join(ROOT, "src", "models")
 PREVIEW = os.path.join(ROOT, "art", "renders", "models")
 
 
+BOSS_SCALE = 2.6
+BOSSES = {"Meadow": "SoggyToast", "Dune": "PharaohPancake", "Volcano": "VolcanoVicar", "Frost": "SleepySock",
+          "Cosmic": "FinalBossHamster"}
+
+
 def emit(folder, name, parts, report):
     n = write_rbxmx(os.path.join(MODELS, folder, name + ".rbxmx"), name, parts)
     preview_json(os.path.join(PREVIEW, name + ".json"), parts)
@@ -30,6 +35,15 @@ def main(only):
         if only and name not in only:
             continue
         emit("Pets", name, grid_parts(pets.build(name), "Brick"), report)
+    # one big meme boss per terrain: the same recipes grown 2.6x (about 14 studs tall); no geese
+    for zone, recipe in BOSSES.items():
+        if only and "Boss" + zone not in only:
+            continue
+        parts = grid_parts(pets.build(recipe), "Brick")
+        for q in parts:
+            q.pos = tuple(a * BOSS_SCALE for a in q.pos)
+            q.size = tuple(a * BOSS_SCALE for a in q.size)
+        emit("Bosses", "Boss" + zone, parts, report)
     for folder, name, n in report:
         print(f"{folder}/{name}: {n} parts")
 

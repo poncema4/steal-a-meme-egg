@@ -118,7 +118,7 @@ return function(t)
 						-- go and steal from a random nest this player has unlocked
 						local entry = entries[math.random(1, #entries)]
 						if Zones.unlocked(entry.zone, state.mp) and entry.prompt.Enabled then
-							root.Position = V3.new(entry.guardian.homeX - 16, 3, entry.guardian.homeZ)
+							root.Position = V3.new(entry.egg.Position.X - 7, 3, entry.egg.Position.Z)
 							entry.prompt.Triggered:Fire(p)
 						end
 					elseif roll < 0.2 then

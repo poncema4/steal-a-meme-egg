@@ -27,9 +27,9 @@ return function(t)
 	local function steal(mutation: string)
 		entry.nest.mutation = mutation
 		entry.nest.tier = "Soggy"
-		world.root(ana).Position = V3.new(entry.guardian.homeX - 14, 3, entry.guardian.homeZ)
+		world.root(ana).Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 		entry.prompt.Triggered:Fire(ana)
-		world.root(ana).Position = V3.new(entry.guardian.homeX - 150, 3, entry.guardian.homeZ)
+		world.root(ana).Position = V3.new(entry.egg.Position.X - 141, 3, entry.egg.Position.Z)
 		world.advance(0.2)
 	end
 
@@ -72,7 +72,7 @@ return function(t)
 	world.advance(1)
 	steal("Normal")
 	local root = world.root(ana)
-	entry.guardian.x, entry.guardian.z = root.Position.X, root.Position.Z
+	root.Position = V3.new(entry.guardian.x, 3, entry.guardian.z)
 	root.AssemblyLinearVelocity = V3.new(0, 0, 0)
 	world.advance(0.3)
 	t.equal("caught: you let go of the egg", ana:GetAttribute("Carrying"), "")

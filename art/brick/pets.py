@@ -150,15 +150,19 @@ def bonk_bean(g):
 
 
 def sleepy_sock(g):
-    c, stripe = rgb("f4f4ff"), rgb("8a5ae0")
+    c, stripe, patch = rgb("8fa0f4"), rgb("fff2c8"), rgb("ffd27a")
     g.cylinder((0, 3.0, 0), 1.0, 3.0, c)
     g.ellipsoid((0, 1.35, 0.1), (1.0, 1.1, 1.2), c)
     g.box((0, 0.6, -1.0), (2.0, 1.2, 2.0), c)
     g.ellipsoid((0, 0.8, -1.9), (1.0, 0.7, 0.5), c)
     for y in (4.3, 3.85):
         g.cylinder((0, y, 0), 1.03, 0.28, stripe)
-    eyes(g, 3.1, -1.0, 0.45, "sleepy", 0.4)
-    g.ellipsoid((0, 2.5, -1.02), (0.18, 0.12, 0.1), rgb("ff9ab0"))
+    g.ellipsoid((0, 0.8, -1.95), (0.8, 0.5, 0.4), patch)  # toe patch
+    g.ellipsoid((0, 1.2, 1.05), (0.7, 0.6, 0.3), patch)  # heel patch
+    eyes(g, 3.1, -1.0, 0.5, "sleepy", 0.34)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.75, 2.6, -1.0), (0.22, 0.14, 0.1), rgb("ff9ab0"))  # cheeks
+    g.ellipsoid((0, 2.45, -1.02), (0.18, 0.12, 0.1), rgb("ff5a82"))
     return 4.6
 
 

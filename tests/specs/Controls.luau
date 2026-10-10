@@ -2,14 +2,22 @@
 -- The two buttons the HUD adds: Drop (let go of the egg you are carrying) and Slow Mode (walk at the normal speed while
 -- building). The client only asks; the server checks.
 local Fake = require("../fake/Roblox")
+local Economy = require("../../src/shared/Game/Economy")
 local Progression = require("../../src/shared/Game/Progression")
 
 return function(t)
 	-- the rules on their own
-	t.equal("the speed number starts at 100", Progression.speedStat(0), 100)
-	t.check("and doubles each level", Progression.speedStat(6) == 2 * Progression.speedStat(5))
+	t.equal("the speed shows every digit", Economy.full(1634), "1,634")
+	t.equal("a small number has no comma", Economy.full(999), "999")
+	t.equal("a big one has several", Economy.full(1234567), "1,234,567")
+	t.equal("an exact thousand", Economy.full(1000), "1,000")
+	t.equal("the speed number starts at 1600 (16 studs a second)", Progression.speedStat(0), 1600)
+	t.check(
+		"and always matches your real run speed",
+		Progression.speedStat(7) == math.floor(Progression.walkSpeed(7) * 100)
+	)
 	t.equal("it stops at the cap", Progression.speedStat(999), Progression.speedStat(Progression.MAX_LEVEL))
-	t.equal("a negative level is the start", Progression.speedStat(-4), 100)
+	t.equal("a negative level is the start", Progression.speedStat(-4), 1600)
 	t.equal("slow mode caps a fast walker", Progression.slowed(30, true), Progression.SLOW_SPEED)
 	t.equal("and does not speed up a slow one", Progression.slowed(10, true), 10)
 	t.equal("off changes nothing", Progression.slowed(30, false), 30)
@@ -39,7 +47,7 @@ return function(t)
 	drop:FireServer()
 	t.equal("dropping with nothing in hand does nothing", ana:GetAttribute("Carrying"), "")
 	local entry = wilds.entries()[1]
-	root.Position = V3.new(entry.guardian.homeX - 14, 3, entry.guardian.homeZ)
+	root.Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
 	t.check("Ana carries the egg", ana:GetAttribute("Carrying") ~= "")
 	t.check("and the nest looks empty", not entry.prompt.Enabled)

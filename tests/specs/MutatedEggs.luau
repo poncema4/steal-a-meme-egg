@@ -109,9 +109,9 @@ return function(t)
 	local function steal(kind: string)
 		entry.nest.mutation = kind
 		entry.nest.tier = "Soggy"
-		world.root(ana).Position = V3.new(entry.guardian.homeX - 14, 3, entry.guardian.homeZ)
+		world.root(ana).Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 		entry.prompt.Triggered:Fire(ana)
-		world.root(ana).Position = V3.new(entry.guardian.homeX - 150, 3, entry.guardian.homeZ)
+		world.root(ana).Position = V3.new(entry.egg.Position.X - 141, 3, entry.egg.Position.Z)
 	end
 	steal("Gold")
 	t.equal("stealing a Gold egg: the HUD knows", ana:GetAttribute("CarryingMutation"), "Gold")
@@ -119,7 +119,7 @@ return function(t)
 	local carriedTier, _, carriedMutation = session.carrying(ana)
 	t.check("the server tracks tier and mutation", carriedTier == "Soggy" and carriedMutation == "Gold")
 	-- caught: the egg goes back with its mutation
-	entry.guardian.x, entry.guardian.z = world.root(ana).Position.X, world.root(ana).Position.Z
+	world.root(ana).Position = V3.new(entry.guardian.x, 3, entry.guardian.z)
 	world.advance(0.5)
 	t.equal("a caught thief drops nothing", ana:GetAttribute("Carrying"), "")
 	t.equal("the egg is back in its nest, still Gold", entry.nest.mutation, "Gold")

@@ -32,9 +32,19 @@ return function(t)
 		end
 	end
 	t.equal("every terrain has a gate", gates, #Zones.List)
+	local bosses = wilds.bosses()
+	t.equal("there is exactly one boss per terrain", #bosses, #Zones.List)
+	local shared = true
+	for _, e in entries do
+		if e.guardian ~= e.boss.guardian then
+			shared = false
+		end
+	end
+	t.check("every nest of a terrain shares its boss", shared)
+	t.check("the boss is a meme, never a goose", string.find(string.lower(bosses[1].name), "goose", 1, true) == nil)
 
 	local function feetY(entry: any): number
-		local body = entry.model:FindFirstChild("Body")
+		local body = entry.boss.model:FindFirstChild("Body")
 		return body.Position.Y - body.Size.Y / 2
 	end
 	local grounded = true
@@ -66,7 +76,7 @@ return function(t)
 	t.check("its egg can be stolen", entry.prompt.Enabled)
 
 	-- 1) stealing, and the chase that follows
-	root.Position = V3.new(entry.guardian.homeX - 14, 3, entry.guardian.homeZ)
+	root.Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
 	local carried = ana:GetAttribute("Carrying") :: string
 	t.check("stealing makes you carry the egg", carried ~= "" and carried ~= nil)
@@ -85,20 +95,20 @@ return function(t)
 	t.check("a second egg cannot be taken while carrying", second.prompt.Enabled)
 
 	-- 2) standing still gets you caught: the egg goes back and you go home
-	world.advance(4)
+	world.advance(10) -- the boss runs over from the middle of the terrain
 	t.equal("the guardian caught the thief", ana:GetAttribute("Carrying"), "")
 	t.check("being caught plays the sad sound", table.find(heardNames(ana), "caught") ~= nil)
 	t.check("the egg is back in the nest", entry.prompt.Enabled and entry.nest.tier == tierAtSteal)
 	t.check("a guardian is still on the ground after chasing", math.abs(feetY(entry)) < 0.01, tostring(feetY(entry)))
 	-- after the guardian is back at its nest its model must still be a real position (no NaN from looking at itself)
 	world.advance(8)
-	local look = entry.model:GetPivot().LookVector
+	local look = entry.boss.model:GetPivot().LookVector
 	t.check(
 		"and still faces somewhere real",
 		look.X == look.X and look.Y == look.Y and look.Z == look.Z,
 		tostring(look)
 	)
-	local bodyAfter = entry.model:FindFirstChild("Body") :: Part
+	local bodyAfter = entry.boss.model:FindFirstChild("Body") :: Part
 	local pos = bodyAfter.Position
 	t.check(
 		"a guardian back at its nest still has a valid position",
@@ -116,7 +126,7 @@ return function(t)
 
 	-- 3) escaping: run away faster than the guardian, then get home
 	world.advance(10)
-	root.Position = V3.new(entry.guardian.homeX - 14, 3, entry.guardian.homeZ)
+	root.Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
 	t.check("the nest egg can be stolen again after a catch", ana:GetAttribute("Carrying") ~= "")
 	local speed = world.humanoid(ana).WalkSpeed
@@ -144,10 +154,10 @@ return function(t)
 
 	-- 3b) a nest does not grow a new egg while the thief is still out with the old one (or a second thief would overwrite the
 	-- first one's record and the first guardian could never catch them or recover the egg)
-	root.Position = V3.new(entry.guardian.homeX - 16, 3, entry.guardian.homeZ)
+	root.Position = V3.new(entry.egg.Position.X - 7, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
 	t.check("a thief is out with the egg", ana:GetAttribute("Carrying") ~= "")
-	root.Position = V3.new(entry.guardian.homeX - 200, 3, entry.guardian.homeZ) -- far from the guardian, not home yet
+	root.Position = V3.new(entry.egg.Position.X - 191, 3, entry.egg.Position.Z) -- far from the guardian, not home yet
 	world.advance(40)
 	t.check("the thief still has the egg after 40 seconds", ana:GetAttribute("Carrying") ~= "")
 	t.check("so the nest has not grown a new one", not entry.prompt.Enabled)
@@ -160,7 +170,7 @@ return function(t)
 
 	-- 4) dying while carrying puts the egg back
 	local third = entries[3]
-	root.Position = V3.new(third.guardian.homeX - 14, 3, third.guardian.homeZ)
+	root.Position = V3.new(third.egg.Position.X - 5, 3, third.egg.Position.Z)
 	third.prompt.Triggered:Fire(ana)
 	t.check("a third egg is carried", ana:GetAttribute("Carrying") ~= "")
 	world.humanoid(ana).Health = 0
@@ -180,7 +190,7 @@ return function(t)
 	mp = ana:GetAttribute("MemePoints") :: number
 	local coinsBeforeFull = ana:GetAttribute("Coins") :: number
 	local fourth = entries[4]
-	root.Position = V3.new(fourth.guardian.homeX - 14, 3, fourth.guardian.homeZ)
+	root.Position = V3.new(fourth.egg.Position.X - 5, 3, fourth.egg.Position.Z)
 	fourth.prompt.Triggered:Fire(ana)
 	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
@@ -206,7 +216,7 @@ return function(t)
 	local lowbie = world.addPlayer("Ben", 22)
 	world.spawnCharacter(lowbie)
 	world.advance(0.6)
-	world.root(lowbie).Position = V3.new(dune.guardian.homeX - 14, 3, dune.guardian.homeZ)
+	world.root(lowbie).Position = V3.new(dune.egg.Position.X - 5, 3, dune.egg.Position.Z)
 	dune.prompt.Triggered:Fire(lowbie)
 	t.equal("a player who has not unlocked the terrain cannot steal there", lowbie:GetAttribute("Carrying"), "")
 	t.check("and the egg is still there", dune.prompt.Enabled)

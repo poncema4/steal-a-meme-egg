@@ -19,20 +19,31 @@ local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 
 local Wilds = {}
 
+-- One big meme boss guards each terrain; it chases whoever has stolen an egg from any of that terrain's nests.
+export type Boss = {
+	zone: Zones.Zone,
+	guardian: Guardian.Guardian,
+	model: Model,
+	name: string,
+}
+
 export type Entry = {
 	id: string,
 	zone: Zones.Zone,
 	nest: Nest.Nest,
-	guardian: Guardian.Guardian,
-	model: Model,
+	boss: Boss,
+	guardian: Guardian.Guardian, -- the zone boss's state, shared by every nest of the terrain
+	model: Model, -- the nest
 	egg: BasePart,
 	prompt: ProximityPrompt,
-	character: string, -- the meme character this guardian looks like
 	thief: Player?,
 }
 
--- the guardian model's pivot is its body centre (7 studs tall), so its feet touch the ground when the pivot is this high
-local BODY_Y = 3.5
+-- the boss model's pivot is its body centre (14 studs tall), so its feet touch the ground when the pivot is this high
+local BOSS_HEIGHT = 14
+local BODY_Y = BOSS_HEIGHT / 2
+
+local bosses: { Boss } = {}
 
 local entries: { Entry } = {}
 local notify: (Player, string) -> () = function(_player: Player, _text: string) end
@@ -57,6 +68,10 @@ end
 
 function Wilds.entries(): { Entry }
 	return entries
+end
+
+function Wilds.bosses(): { Boss }
+	return bosses
 end
 
 local function box(
@@ -177,46 +192,51 @@ local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instan
 	end
 end
 
-local function buildGuardian(entry: Entry, parent: Instance, c: Eggs.Character)
+local function buildBoss(zone: Zones.Zone, parent: Instance): Boss
+	local c = Eggs.character(zone.boss) or Eggs.Characters.SoggyToast
 	local model = Instance.new("Model")
-	model.Name = "Guardian"
+	model.Name = `Boss_{zone.id}`
 	local tint = Color3.fromHSV((#c.id * 0.137) % 1, 0.55, 1)
-	local body = box("Body", Vector3.new(6, 7, 8), CFrame.new(0, BODY_Y, 0), tint, model)
+	local body = box("Body", Vector3.new(9, BOSS_HEIGHT, 9), CFrame.new(0, BODY_Y, 0), tint, model)
 	model.PrimaryPart = body
-	local art = (Config.PetIcons :: { [string]: string })[c.id]
-	if art then
-		-- the guardian is its portrait, big, standing on the ground and facing the camera; the (invisible) body is what moves
+	local name = `{c.name} BOSS`
+	local home = Layout.bossSpot(zone)
+	local boss: Boss = {
+		zone = zone,
+		guardian = Guardian.new(home.x, home.z, zone.guardianSpeed),
+		model = model,
+		name = c.name,
+	}
+	if Models.has("Bosses", `Boss{zone.id}`) then
+		-- the boss is its real model; the (invisible) body is what moves, and carries the name
 		body.Transparency = 1
 		body.CanCollide = false
-		local card = Instance.new("BillboardGui")
-		card.Name = "Portrait"
-		card.Size = UDim2.fromScale(16, 16)
-		card.StudsOffset = Vector3.new(0, 4.5, 0)
-		card.MaxDistance = 400
-		card.Parent = body
-		local picture = Instance.new("ImageLabel")
-		picture.Name = "Picture"
-		picture.BackgroundTransparency = 1
-		picture.Size = UDim2.fromScale(1, 1)
-		picture.Image = art
-		picture.Parent = card
-		label(body, { c.name, "GUARDIAN" }, 13.5, 220)
-		model.Parent = parent
-		entry.model = model
-		return
+		Models.show(body, "Bosses", `Boss{zone.id}`, nil, Vector3.new(0, 0, -1))
+		label(body, { name }, BOSS_HEIGHT / 2 + 4, 260)
+	else
+		local art = (Config.PetIcons :: { [string]: string })[c.id]
+		if art then
+			body.Transparency = 1
+			body.CanCollide = false
+			local card = Instance.new("BillboardGui")
+			card.Name = "Portrait"
+			card.Size = UDim2.fromScale(26, 26)
+			card.StudsOffset = Vector3.new(0, 6, 0)
+			card.MaxDistance = 500
+			card.Parent = body
+			local picture = Instance.new("ImageLabel")
+			picture.Name = "Picture"
+			picture.BackgroundTransparency = 1
+			picture.Size = UDim2.fromScale(1, 1)
+			picture.Image = art
+			picture.Parent = card
+		end
+		label(body, { name }, BOSS_HEIGHT / 2 + 4, 260)
 	end
-	local head = box("Head", Vector3.new(5, 5, 5), CFrame.new(0, 9, -2.5), tint, model)
-	World.roundify(head)
-	for _, sx in { -1, 1 } do
-		box("Eye", Vector3.new(1.2, 1.6, 0.6), CFrame.new(sx * 1.3, 9.6, -4.8), Color3.new(0, 0, 0), model)
-		box("Pupil", Vector3.new(0.6, 0.8, 0.3), CFrame.new(sx * 1.3, 9.6, -5.2), Color3.fromRGB(255, 20, 20), model)
-		local brow = box("Brow", Vector3.new(2, 0.5, 0.5), CFrame.new(sx * 1.3, 10.8, -4.9), Color3.new(0, 0, 0), model)
-		brow.CFrame = brow.CFrame * CFrame.Angles(0, 0, -sx * 0.45)
-	end
-	box("Beak", Vector3.new(3, 1.2, 3), CFrame.new(0, 8.2, -5.2), Color3.fromRGB(255, 140, 20), model)
-	label(head, { c.name, "GUARDIAN" }, 4.2, 200)
+	model:PivotTo(CFrame.new(boss.guardian.x, BODY_Y, boss.guardian.z))
 	model.Parent = parent
-	entry.model = model
+	table.insert(bosses, boss)
+	return boss
 end
 
 local function setEgg(entry: Entry, tier: string?, mutation: string?)
@@ -248,7 +268,7 @@ local function setEgg(entry: Entry, tier: string?, mutation: string?)
 	end
 end
 
-local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instance)
+local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, boss: Boss, parent: Instance)
 	for i, place in nests do
 		local x, z, tier = place.x, place.z, place.tier
 		local model = Instance.new("Model")
@@ -271,23 +291,18 @@ local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, parent: Inst
 		if mutationTag then
 			mutationTag.Name = "MutationTag"
 		end
-		local pool = Eggs.tier(tier)
-		local pick = pool and pool.pool[1].id or "SoggyToast"
-		local c = Eggs.character(pick) or Eggs.Characters.SoggyToast
 		local entry: Entry = {
 			id = model.Name,
 			zone = zone,
 			nest = Nest.new(tier, Eggs.nestMutation(table.find(Zones.List, zone) or 1, math.random)),
-			guardian = Guardian.new(x + Layout.GUARDIAN_OFFSET, z, zone.guardianSpeed),
+			boss = boss,
+			guardian = boss.guardian,
 			model = model,
 			egg = egg,
 			prompt = prompt,
-			character = c.id,
 			thief = nil,
 		}
 		model.Parent = parent
-		buildGuardian(entry, parent, c)
-		entry.model:PivotTo(CFrame.new(entry.guardian.x, BODY_Y, entry.guardian.z))
 		setEgg(entry, tier, entry.nest.mutation)
 		prompt.Triggered:Connect(function(who)
 			Wilds.steal(who, entry)
@@ -311,7 +326,7 @@ function Wilds.build(): Folder
 		floor:SetAttribute("Zone", zone.id)
 		local nests = Layout.nests(zone)
 		decorate(zone, nests, folder)
-		buildNests(zone, nests, folder)
+		buildNests(zone, nests, buildBoss(zone, folder), folder)
 		-- the gate: a see-through frame with the price on it (the server, not the frame, keeps people out)
 		local gate = box(
 			`Gate_{zone.id}`,
@@ -381,8 +396,7 @@ function Wilds.steal(player: Player, entry: Entry)
 	Guardian.alert(entry.guardian, Config.Wilds.ChaseSeconds)
 	sfx(player, "steal")
 	sfx(player, "roar")
-	local c = Eggs.character(entry.character)
-	notify(player, `You stole the egg! {if c then c.name else "The guardian"} is chasing you. RUN HOME!`)
+	notify(player, `You stole the egg! {entry.boss.name} is chasing you. RUN HOME!`)
 end
 
 -- The egg goes back to its nest and the thief (if any) is sent home.
@@ -423,41 +437,16 @@ end
 function Wilds.start()
 	local sinceGate = 0
 	local lastWarn: { [Player]: number } = {}
-	RunService.Heartbeat:Connect(function(dt)
+	RunService.Heartbeat:Connect(function(dt: number)
 		-- guardians and nests
 		for _, entry in entries do
-			local target: { x: number, z: number }? = nil
 			local thief = entry.thief
 			if thief then
 				local carried, from = Session.carrying(thief)
-				local root = rootOf(thief)
-				if table.find(Players:GetPlayers(), thief) == nil or not root then
+				if table.find(Players:GetPlayers(), thief) == nil or not rootOf(thief) then
 					recover(entry, nil) -- they left or died carrying it: it goes back
 				elseif carried == nil or from ~= entry.id then
 					entry.thief = nil -- delivered it home
-				else
-					target = { x = root.Position.X, z = root.Position.Z }
-				end
-			end
-			local before = entry.guardian.state
-			local caught = Guardian.step(entry.guardian, dt, target, Config.Wilds.CatchRadius, Config.Wilds.Leash)
-			if caught then
-				local c = Eggs.character(entry.character)
-				recover(entry, `{if c then c.name else "The guardian"} caught you! The egg went back.`)
-			elseif before == "Chase" and entry.guardian.state == "Return" and thief then
-				notify(thief, "The guardian lost you! Get the egg home.")
-			end
-			local g = entry.guardian
-			if g.state ~= "Idle" or before ~= "Idle" then
-				local here = Vector3.new(g.x, BODY_Y, g.z)
-				local look = if target
-					then Vector3.new(target.x, BODY_Y, target.z)
-					else Vector3.new(g.homeX, BODY_Y, g.homeZ)
-				if (look - here).Magnitude > 0.05 then
-					entry.model:PivotTo(CFrame.lookAt(here, look))
-				else
-					-- already there: looking at where you stand has no direction (an invalid rotation in Roblox), so keep facing
-					entry.model:PivotTo(CFrame.new(here) * entry.model:GetPivot().Rotation)
 				end
 			end
 			-- a nest grows a new egg only once the old one is resolved (delivered, or back after a catch): otherwise a second
@@ -474,6 +463,51 @@ function Wilds.start()
 			-- a Rainbow egg slowly cycles through every colour
 			if entry.egg:GetAttribute("Mutation") == "Rainbow" and entry.nest.tier ~= nil then
 				entry.egg.Color = Color3.fromHSV((os.clock() * 0.25) % 1, 0.6, 1)
+			end
+		end
+		-- each terrain's boss chases the nearest thief who stole from it
+		for _, boss in bosses do
+			local nearest: Entry? = nil
+			local nearestDistance = math.huge
+			local g = boss.guardian
+			for _, entry in entries do
+				local root = if entry.boss == boss and entry.thief then rootOf(entry.thief) else nil
+				if root then
+					local d = (Vector3.new(g.x, 0, g.z) - Vector3.new(root.Position.X, 0, root.Position.Z)).Magnitude
+					if d < nearestDistance then
+						nearest, nearestDistance = entry, d
+					end
+				end
+			end
+			local target: { x: number, z: number }? = nil
+			if nearest and nearest.thief then
+				local root = rootOf(nearest.thief)
+				if root then
+					target = { x = root.Position.X, z = root.Position.Z }
+				end
+			end
+			local before = g.state
+			local caught = Guardian.step(g, dt, target, Config.Wilds.CatchRadius, Config.Wilds.Leash)
+			if caught and nearest then
+				recover(nearest, `{boss.name} caught you! The egg went back.`)
+			elseif before == "Chase" and g.state == "Return" then
+				for _, entry in entries do
+					if entry.boss == boss and entry.thief then
+						notify(entry.thief, "The boss lost you! Get the egg home.")
+					end
+				end
+			end
+			if g.state ~= "Idle" or before ~= "Idle" then
+				local here = Vector3.new(g.x, BODY_Y, g.z)
+				local look = if target
+					then Vector3.new(target.x, BODY_Y, target.z)
+					else Vector3.new(g.homeX, BODY_Y, g.homeZ)
+				if (look - here).Magnitude > 0.05 then
+					boss.model:PivotTo(CFrame.lookAt(here, look))
+				else
+					-- already there: looking at where you stand has no direction (an invalid rotation in Roblox), so keep facing
+					boss.model:PivotTo(CFrame.new(here) * boss.model:GetPivot().Rotation)
+				end
 			end
 		end
 		-- the gates, and the "Zone" label the HUD shows

@@ -57,7 +57,7 @@ return function(t)
 		(find(gui, "Money") :: TextLabel).Text,
 		"$" .. Economy.format(ana:GetAttribute("Coins") :: number)
 	)
-	t.check("speed shows the stat", string.find((find(gui, "Speed") :: TextLabel).Text, "10", 1, true) ~= nil)
+	t.check("speed shows the stat", string.find((find(gui, "Speed") :: TextLabel).Text, "1,6", 1, true) ~= nil)
 	t.check("the RUN banner is hidden", not (find(gui, "RunBanner") :: Frame).Visible)
 	t.check("and so is Drop", not (find(gui, "DropButton") :: TextButton).Visible)
 	t.check(
@@ -125,9 +125,9 @@ return function(t)
 
 	-- carrying: the RUN banner and Drop
 	local entry = wilds.entries()[1]
-	world.root(ana).Position = V3.new(entry.guardian.homeX - 14, 3, entry.guardian.homeZ)
+	world.root(ana).Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
-	world.root(ana).Position = V3.new(entry.guardian.homeX - 120, 3, entry.guardian.homeZ) -- out of the guardian's reach
+	world.root(ana).Position = V3.new(entry.egg.Position.X - 111, 3, entry.egg.Position.Z) -- out of the guardian's reach
 	world.advance(1)
 	t.check("carrying shows the RUN banner", (find(gui, "RunBanner") :: Frame).Visible)
 	t.check("and the Drop button", (find(gui, "DropButton") :: TextButton).Visible);

@@ -357,7 +357,7 @@ function Hud.start(player: Player, actions: Actions?)
 				`Row_{p.Name}`,
 				i,
 				p.DisplayName,
-				Economy.format(number(p, "SpeedStat", Progression.SPEED_STAT_BASE)),
+				Economy.full(number(p, "SpeedStat", Progression.SPEED_STAT_BASE)),
 				Economy.format(number(p, "Income", 0)),
 				if p == player then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1)
 			)
@@ -369,7 +369,7 @@ function Hud.start(player: Player, actions: Actions?)
 		local rebirths = number(player, "Rebirths", 0)
 		money.Text = "$" .. Economy.format(number(player, "Coins", 0))
 		speed.Text = (if hasShoe then "" else "👟 ")
-			.. Economy.format(number(player, "SpeedStat", Progression.SPEED_STAT_BASE))
+			.. Economy.full(number(player, "SpeedStat", Progression.SPEED_STAT_BASE))
 			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")
 		leave.Visible = player:GetAttribute("TreadmillLocked") == true
 	end
