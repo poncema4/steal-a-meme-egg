@@ -82,11 +82,11 @@ for r in sorted(data["rects"], key=lambda q: q["depth"]):
         f = font(r["textSize"])
         tw = d.textlength(r["text"], font=f)
         if r["align"] == "Left":
-            tx = x0 + 6 * SS
+            tx = x0 + (6 + r.get("padLeft", 0)) * SS
         elif r["align"] == "Right":
             tx = x0 + w - tw - 6 * SS
         else:
-            tx = x0 + (w - tw) / 2
+            tx = x0 + (w - tw) / 2 + r.get("padLeft", 0) * SS / 2
         ty = y0 + (h - r["textSize"] * SS * 1.1) / 2
         sw = int(max(r["textStroke"], 2 if r["kind"] == "TextButton" else 0) * SS)
         d.text((tx, ty), r["text"], font=f, fill=tuple(r["textColor"]) + (255,), stroke_width=sw, stroke_fill=(0, 0, 0, 255))
