@@ -8,6 +8,7 @@ local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Events = require(ReplicatedStorage.Shared.Game.Events)
 local Objective = require(ReplicatedStorage.Shared.Game.Objective)
+local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 
 local Hud = {}
@@ -92,7 +93,9 @@ function Hud.start(player: Player)
 		local level = (player:GetAttribute("SpeedLevel") :: number?) or 0
 		local zoneName = (player:GetAttribute("Zone") :: string?) or "Home Base"
 		local locked = Zones.nextLocked(mp)
+		local rebirths = (player:GetAttribute("Rebirths") :: number?) or 0
 		stats.Text = `{zoneName}\nMeme Points: {Economy.format(mp)}\nSpeed level {level}`
+			.. (if rebirths > 0 then `\nRebirths: {rebirths} (x{Rebirth.multiplier(rebirths)} coins)` else "")
 			.. (if locked then `\nNext: {locked.name} at {Economy.format(locked.mp)}` else "\nEvery terrain open!")
 		local carrying = (player:GetAttribute("Carrying") :: string?) or ""
 		local slots = (player:GetAttribute("Slots") :: number?) or 6
@@ -106,6 +109,7 @@ function Hud.start(player: Player)
 			coins = (player:GetAttribute("Coins") :: number?) or 0,
 			mp = mp,
 			speedLevel = level,
+			canRebirth = Rebirth.can(rebirths, (player:GetAttribute("Coins") :: number?) or 0),
 		})
 		local def = if carrying ~= "" then Eggs.tier(carrying) else nil
 		carry.Text = if def then `CARRYING {string.upper(def.name)}: RUN HOME!` else ""

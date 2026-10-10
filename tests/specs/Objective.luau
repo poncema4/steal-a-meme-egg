@@ -25,6 +25,14 @@ return function(t)
 		string.find(Objective.hint(facts({ carrying = true, eggs = 3, freeSlots = 0 })), "RUN HOME", 1, true) ~= nil
 	)
 	t.check(
+		"when you can afford a rebirth you are told",
+		string.find(Objective.hint(facts({ characters = 3, canRebirth = true })), "REBIRTH", 1, true) ~= nil
+	)
+	t.check(
+		"but carrying an egg still comes first",
+		string.find(Objective.hint(facts({ carrying = true, canRebirth = true })), "RUN HOME", 1, true) ~= nil
+	)
+	t.check(
 		"a full base says to buy a slot",
 		string.find(Objective.hint(facts({ eggs = 2, characters = 4, freeSlots = 0 })), "slot", 1, true) ~= nil
 	)

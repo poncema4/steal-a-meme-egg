@@ -30,6 +30,7 @@ local specs = {
 	require("./specs/Admin"),
 	require("./specs/Limited"),
 	require("./specs/Objective"),
+	require("./specs/Rebirth"),
 	require("./specs/Store"),
 	require("./specs/Zones"),
 	require("./specs/Progression"),
@@ -39,6 +40,7 @@ local specs = {
 	require("./specs/Shop"),
 	require("./specs/Purchases"),
 	require("./specs/ShopUi"),
+	require("./specs/Retention"),
 }
 
 for _, spec in specs do
