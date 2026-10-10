@@ -12,6 +12,7 @@ local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
+local Store = require(ReplicatedStorage.Shared.Game.Store)
 
 local Session = {}
 
@@ -24,6 +25,7 @@ export type State = {
 	speedXp: number, -- total treadmill/bought speed XP
 	carry: string?, -- the egg tier being carried back from the Wilds
 	carryFrom: string?, -- which nest it came from (so a catch can put it back)
+	purchases: Store.Purchases, -- passes owned, receipts seen, hatch tokens, paid limited eggs waiting for room
 }
 
 local states: { [Player]: State } = {}
@@ -34,6 +36,21 @@ local multipliers: () -> (number, number) = function()
 	return 1, 1
 end
 local clock: () -> number = os.time
+local catalog: Store.Catalog = Config.Monetization :: any
+local loadedListeners: { (Player) -> () } = {}
+
+-- Tests (and nothing else) swap the catalogue so they can sell things with real-looking ids.
+function Session.setCatalog(c: Store.Catalog)
+	catalog = c
+end
+
+function Session.catalog(): Store.Catalog
+	return catalog
+end
+
+function Session.onLoaded(fn: (Player) -> ())
+	table.insert(loadedListeners, fn)
+end
 
 -- The live-event multipliers (luck, income) come from LiveOps; Session never reads events itself.
 function Session.setMultipliers(fn: () -> (number, number))
@@ -62,6 +79,8 @@ end
 
 local function publish(state: State)
 	local _, income = multipliers()
+	local _, passIncome = Store.multipliers(catalog, state.purchases)
+	income *= passIncome
 	state.player:SetAttribute("Coins", math.floor(state.coins))
 	state.player:SetAttribute("Income", Base.income(state.base, income))
 	state.player:SetAttribute("Slots", state.base.size)
@@ -169,13 +188,47 @@ function Session.skipHatch(player: Player, slot: number): (boolean, string)
 	return true, "hatched!"
 end
 
+function Session.hatchTokens(player: Player): number
+	local state = states[player]
+	return if state then state.purchases.hatchTokens else 0
+end
+
+function Session.purchases(player: Player): Store.Purchases?
+	local state = states[player]
+	return if state then state.purchases else nil
+end
+
+-- The player's pass multipliers: (luck, income, training).
+function Session.passMultipliers(player: Player): (number, number, number)
+	local state = states[player]
+	if not state then
+		return 1, 1, 1
+	end
+	return Store.multipliers(catalog, state.purchases)
+end
+
+-- Spends an instant-hatch token on the egg in this slot. Returns (ok, message).
+function Session.useHatchToken(player: Player, slot: number): (boolean, string)
+	local state = states[player]
+	local item = state and state.base.slots[slot]
+	if not state or not item or item.kind ~= "egg" then
+		return false, "nothing to hatch"
+	end
+	if not Store.useToken(state.purchases) then
+		return false, "no instant hatches left"
+	end
+	item.hatchLeft = 0
+	Session.hatchNow(player)
+	return true, "Instant hatch!"
+end
+
 -- Hatches every egg whose timer has reached zero (used right after a skip).
 function Session.hatchNow(player: Player)
 	local state = states[player]
 	if not state then
 		return
 	end
-	local luck = select(1, multipliers())
+	local luck = select(1, multipliers()) * select(1, Store.multipliers(catalog, state.purchases))
 	local hatched = Base.tick(state.base, 0, function(tier)
 		return Eggs.roll(tier, luck, math.random)
 	end, function()
@@ -231,6 +284,13 @@ end
 function Session.changed(player: Player)
 	local state = states[player]
 	if state then
+		-- a paid limited egg that was waiting for room goes in as soon as there is a free slot
+		while #state.purchases.pendingLimited > 0 and Base.firstFree(state.base) ~= nil do
+			local tier = Store.popLimited(state.purchases)
+			if tier then
+				Base.placeEgg(state.base, tier)
+			end
+		end
 		publish(state)
 	end
 	for _, fn in listeners do
@@ -296,6 +356,10 @@ local function serialise(state: State): { [string]: any }
 		savedAt = clock(),
 		mp = state.mp,
 		speedXp = state.speedXp,
+		passes = state.purchases.passes,
+		receipts = state.purchases.receiptOrder,
+		hatchTokens = state.purchases.hatchTokens,
+		pendingLimited = state.purchases.pendingLimited,
 	}
 end
 
@@ -303,6 +367,22 @@ local function restore(state: State, saved: { [string]: any })
 	state.coins = tonumber(saved.coins) or Config.Economy.StartCoins
 	state.mp = math.max(tonumber(saved.mp) or 0, 0)
 	state.speedXp = math.max(tonumber(saved.speedXp) or 0, 0)
+	local purchases = state.purchases
+	for key, owned in (if type(saved.passes) == "table" then saved.passes else {}) :: { [string]: any } do
+		purchases.passes[key] = owned == true
+	end
+	for _, receipt in (if type(saved.receipts) == "table" then saved.receipts else {}) :: { any } do
+		if type(receipt) == "string" and not purchases.receipts[receipt] then
+			purchases.receipts[receipt] = true
+			table.insert(purchases.receiptOrder, receipt)
+		end
+	end
+	purchases.hatchTokens = math.max(tonumber(saved.hatchTokens) or 0, 0)
+	for _, tier in (if type(saved.pendingLimited) == "table" then saved.pendingLimited else {}) :: { any } do
+		if type(tier) == "string" and Eggs.tier(tier) then
+			table.insert(purchases.pendingLimited, tier)
+		end
+	end
 	state.base = Base.new(
 		math.clamp(
 			tonumber(saved.size) or Config.Economy.StartSlots,
@@ -339,11 +419,15 @@ local function load(state: State)
 	state.loaded = true
 end
 
-function Session.save(player: Player)
+-- Saves the player. Returns true if saved (or if there is no DataStore to save to, as in Studio), false if it failed.
+function Session.save(player: Player): boolean
 	local state = states[player]
 	local data = store
-	if not state or not data or not state.loaded then
-		return
+	if not state or not state.loaded then
+		return false
+	end
+	if not data then
+		return true
 	end
 	local ok, err = pcall(function()
 		data:UpdateAsync(`u{player.UserId}`, function()
@@ -353,6 +437,7 @@ function Session.save(player: Player)
 	if not ok then
 		warn(`[Session] save failed for {player.Name}: {err}`)
 	end
+	return ok
 end
 
 local function add(player: Player, onJoin: (Player) -> ())
@@ -363,10 +448,14 @@ local function add(player: Player, onJoin: (Player) -> ())
 		loaded = false,
 		mp = 0,
 		speedXp = 0,
+		purchases = Store.new(),
 	}
 	states[player] = state
 	load(state)
 	publish(state)
+	for _, fn in loadedListeners do
+		fn(player)
+	end
 	player.CharacterAdded:Connect(function()
 		task.defer(Session.applySpeed, player)
 	end)
@@ -413,12 +502,14 @@ function Session.start(onJoin: (Player) -> (), onLeave: (Player) -> ())
 			return math.random()
 		end
 		for player, state in states do
+			local passLuck, passIncome = Store.multipliers(catalog, state.purchases)
+			local myLuck = luck * passLuck
 			local hatched = Base.tick(state.base, step, function(tier)
-				return Eggs.roll(tier, luck, rng)
+				return Eggs.roll(tier, myLuck, rng)
 			end, function()
-				return Eggs.mutation(luck, rng)
+				return Eggs.mutation(myLuck, rng)
 			end)
-			state.coins += Base.income(state.base, income) * step
+			state.coins += Base.income(state.base, income * passIncome) * step
 			publish(state)
 			if #hatched > 0 then
 				for _, fn in hatchListeners do

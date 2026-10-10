@@ -330,6 +330,7 @@ function Fake.world()
 		Changed = true,
 		Activated = true,
 		PromptGamePassPurchaseFinished = true,
+		PromptProductPurchaseFinished = true,
 		Equipped = true,
 		Unequipped = true,
 		DescendantAdded = true,

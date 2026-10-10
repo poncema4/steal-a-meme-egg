@@ -33,10 +33,19 @@ local owned: { [Player]: World.Plot } = {}
 local onSteal: (Player, Player, number) -> () = function(_thief: Player, _owner: Player, _slot: number) end
 local onLock: (Player) -> () = function(_player: Player) end
 local onNotice: (Player, string) -> () = function(_player: Player, _text: string) end
+local onInstant: (Player, number) -> () = function(_player: Player, _slot: number) end
+local instantAvailable: (Player) -> boolean = function(_player: Player)
+	return false
+end
 
 function Plots.setHandlers(steal: (Player, Player, number) -> (), lock: (Player) -> ())
 	onSteal = steal
 	onLock = lock
+end
+
+function Plots.setInstant(handler: (Player, number) -> (), available: (Player) -> boolean)
+	onInstant = handler
+	instantAvailable = available
 end
 
 function Plots.setNotify(fn: (Player, string) -> ())
@@ -120,6 +129,25 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 					onNotice(owner, message)
 				end
 			end)
+			if instantAvailable(owner) then
+				local instant = Instance.new("ProximityPrompt")
+				instant.ActionText = "Instant hatch"
+				instant.ObjectText = if Session.hatchTokens(owner) > 0
+					then `{Session.hatchTokens(owner)} left`
+					else "Robux"
+				instant.KeyboardKeyCode = Enum.KeyCode.F
+				instant.GamepadKeyCode = Enum.KeyCode.ButtonY
+				instant.UIOffset = Vector2.new(0, 70)
+				instant.HoldDuration = 0.4
+				instant.MaxActivationDistance = 10
+				instant.RequiresLineOfSight = false
+				instant.Parent = body
+				instant.Triggered:Connect(function(who)
+					if who == owner then
+						onInstant(owner, n)
+					end
+				end)
+			end
 		end
 	else
 		local c = Eggs.character(item.id or "")
