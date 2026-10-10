@@ -12,7 +12,7 @@ return function(t)
 		end
 	end
 	t.check("terrains follow each other with no gaps", contiguous)
-	t.check("the first terrain starts past the home area", Zones.List[1].startX >= 200)
+	t.check("the first terrain starts east of the Safe Zone's back wall", Zones.List[1].startX > -190)
 
 	-- unlock costs, speeds and eggs only go up with distance
 	local rising = true
@@ -39,10 +39,10 @@ return function(t)
 	t.check("every egg a terrain grows exists", real)
 
 	-- lookups
-	t.equal("the home area is no terrain", Zones.at(0), nil)
-	t.equal("x inside the first terrain", (Zones.at(300) :: Zones.Zone).id, "Meadow")
-	t.equal("the start is inclusive", (Zones.at(200) :: Zones.Zone).id, "Meadow")
-	t.equal("the boundary belongs to the next terrain", (Zones.at(440) :: Zones.Zone).id, "Dune")
+	t.equal("the Safe Zone is no terrain", Zones.at(Zones.List[1].startX - 1), nil)
+	t.equal("x inside the first terrain", (Zones.at(Zones.List[1].startX + 100) :: Zones.Zone).id, "Meadow")
+	t.equal("the start is inclusive", (Zones.at(Zones.List[1].startX) :: Zones.Zone).id, "Meadow")
+	t.equal("the boundary belongs to the next terrain", (Zones.at(Zones.List[2].startX) :: Zones.Zone).id, "Dune")
 	t.equal("past the last terrain is nothing", Zones.at(1500), nil)
 	t.equal("zero points opens only the Meadow", Zones.furthest(0).id, "Meadow")
 	t.equal("25 points opens the Dune", Zones.furthest(25).id, "Dune")
@@ -52,10 +52,14 @@ return function(t)
 	t.equal("nothing is locked at the top", Zones.nextLocked(1e9), nil)
 
 	-- pushing back players who are somewhere they have not unlocked
-	t.equal("a player in an unlocked terrain stays", Zones.pushBack(300, 0), nil)
-	t.equal("a player in the home area stays", Zones.pushBack(50, 0), nil)
-	t.equal("a player in a locked terrain is pushed to its entrance", Zones.pushBack(500, 0), 436)
-	t.equal("with enough points they stay", Zones.pushBack(500, 25), nil)
+	t.equal("a player in an unlocked terrain stays", Zones.pushBack(Zones.List[1].startX + 100, 0), nil)
+	t.equal("a player in the home area stays", Zones.pushBack(Zones.List[1].startX - 5, 0), nil)
+	t.equal(
+		"a player in a locked terrain is pushed to its entrance",
+		Zones.pushBack(Zones.List[2].startX + 60, 0),
+		Zones.List[2].startX - 4
+	)
+	t.equal("with enough points they stay", Zones.pushBack(Zones.List[2].startX + 60, 25), nil)
 
 	-- which egg a nest grows
 	local meadow = Zones.List[1]
