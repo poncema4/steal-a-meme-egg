@@ -50,7 +50,7 @@
         "StreamingEnabled": true,
         "StreamingMinRadius": 128,
         "StreamingTargetRadius": 512,
-        "StreamingIntegrityMode": "MinimizeDisruption"
+        "StreamingIntegrityMode": "MinimumRadiusPause"
       }
     }
   }

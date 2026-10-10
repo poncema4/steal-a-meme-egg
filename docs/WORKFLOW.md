@@ -32,4 +32,4 @@ and Rainbow; with no template it keeps the plain look. Models face -Z, with `Roo
 streaming is off, or if scenery and eggs cast shadows. How it is kept small: bigger bricks for round props and eggs
 (`art/brick/props.py` UNITS, `eggs.py` U), 22 props per terrain (`Layout.PROPS`), no shadows from scenery or eggs, models
 stream in whole (`ModelStreamingMode` Atomic), and `Workspace.StreamingEnabled` is set in `default.project.json` (radius 128 to 512,
-MinimizeDisruption). If Rojo's live sync does not apply the Workspace streaming properties in Studio, set them by hand once.
+MinimumRadiusPause). If Rojo's live sync does not apply the Workspace streaming properties in Studio, set them by hand once.
