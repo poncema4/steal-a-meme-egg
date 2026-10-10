@@ -181,7 +181,7 @@ class Part:
 
 
 def write_rbxmx(path, name, parts, root_height=0.0):
-    """A Model of anchored parts with an invisible 1-stud Root part at the base centre as PrimaryPart, so PivotTo puts the model's
+    """A Model of anchored parts with an invisible tiny Root part at the base centre as PrimaryPart, so PivotTo puts the model's
     feet where you want it."""
     refs = {}
     n = [0]
@@ -211,7 +211,7 @@ def write_rbxmx(path, name, parts, root_height=0.0):
             props.append(f'<token name="shape">{shape}</token>')
         return f'<Item class="{p.cls}" referent="{r}"><Properties>' + "".join(props) + "</Properties></Item>"
 
-    root = Part("Root", (0, root_height, 0), (1, 1, 1), (255, 255, 255), transparency=1.0)
+    root = Part("Root", (0, root_height, 0), (0.2, 0.2, 0.2), (255, 255, 255), transparency=1.0)
     xml.append(item(root, root_ref))
     for p in parts:
         xml.append(item(p, ref()))

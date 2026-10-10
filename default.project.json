@@ -28,6 +28,12 @@
 			"$properties": {
 				"MaxPlayers": 8
 			}
+		},
+		"ServerStorage": {
+			"$className": "ServerStorage",
+			"Models": {
+				"$path": "src/models"
+			}
 		}
 	}
 }
