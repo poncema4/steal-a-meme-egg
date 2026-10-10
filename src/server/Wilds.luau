@@ -344,14 +344,26 @@ function Wilds.build(): Folder
 	folder.Name = "Wilds"
 	folder.Parent = workspace
 	for _, zone in Zones.List do
-		local floor = box(
-			zone.id,
-			Vector3.new(zone.length, 2, Zones.WIDTH),
-			CFrame.new(zone.startX + zone.length / 2, -1, 0),
-			rgb(zone.ground),
-			folder
-		)
-		floor:SetAttribute("Zone", zone.id)
+		-- a checkerboard of tiles like the reference's ground (touching, never overlapping, so nothing flickers)
+		local tile = 20
+		local base = rgb(zone.ground)
+		local light = Color3.new(math.min(base.R * 1.07, 1), math.min(base.G * 1.07, 1), math.min(base.B * 1.07, 1))
+		for i = 0, math.ceil(zone.length / tile) - 1 do
+			local x0 = zone.startX + i * tile
+			local w = math.min(tile, zone.startX + zone.length - x0)
+			for j = 0, math.ceil(Zones.WIDTH / tile) - 1 do
+				local z0 = -Zones.WIDTH / 2 + j * tile
+				local d = math.min(tile, Zones.WIDTH / 2 - z0)
+				local floor = box(
+					zone.id,
+					Vector3.new(w, 2, d),
+					CFrame.new(x0 + w / 2, -1, z0 + d / 2),
+					if (i + j) % 2 == 0 then base else light,
+					folder
+				)
+				floor:SetAttribute("Zone", zone.id)
+			end
+		end
 		local nests = Layout.nests(zone)
 		decorate(zone, nests, folder)
 		buildNests(zone, nests, buildBoss(zone, folder), folder)

@@ -31,6 +31,32 @@ for _, inst in world.workspace:GetDescendants() do
 		})
 	end
 end
+-- where the brick models stand (the fake world has none), for scripts/preview/compose.py to stamp into the picture
+local Layout = require("../../src/shared/Game/Layout")
+local Zones = require("../../src/shared/Game/Zones")
+local SCENERY = { Meadow = "Tree", Dune = "Cactus", Volcano = "LavaRock", Frost = "IcePine", Cosmic = "Crystal" }
+local models = {}
+for _, zone in Zones.List do
+	local nests = Layout.nests(zone)
+	for _, prop in Layout.scenery(zone, nests) do
+		table.insert(models, {
+			kind = "Props",
+			id = SCENERY[zone.id],
+			x = prop.x,
+			y = 0,
+			z = prop.z,
+			yaw = prop.extra * math.pi * 2,
+			scale = prop.size / 5.5,
+		})
+	end
+	for _, nest in nests do
+		table.insert(models, { kind = "Props", id = "Nest", x = nest.x, y = 0, z = nest.z, yaw = 0, scale = 1 })
+		table.insert(models, { kind = "Eggs", id = nest.tier, x = nest.x, y = 0.6, z = nest.z, yaw = 0, scale = 1 })
+	end
+	local boss = Layout.bossSpot(zone)
+	table.insert(models, { kind = "Bosses", id = `Boss{zone.id}`, x = boss.x, y = 0, z = boss.z, yaw = 0, scale = 1 })
+end
+fs.writeFile((process.args[1] or "/tmp/map.json"):gsub("%.json$", "") .. ".models.json", serde.encode("json", models))
 local out = process.args[1] or "/tmp/map.json"
 fs.writeFile(out, serde.encode("json", parts))
 print(`wrote {#parts} parts to {out}`)

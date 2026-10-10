@@ -33,24 +33,32 @@ world = bpy.data.worlds.new("w"); sc.world = world; world.use_nodes = True
 bg = world.node_tree.nodes["Background"]
 bg.inputs[0].default_value = (0.35, 0.62, 1.0, 1); bg.inputs[1].default_value = 1.1
 
-mats = {}
-cube = None
+import bmesh
+from mathutils import Matrix
+
+# one mesh per colour (thousands of separate cubes made Blender take minutes); every part is a cube scaled and turned in place
+buckets = {}
 for p in data:
     if not (x0 <= p["x"] <= x1) or p["sy"] <= 0:
         continue
-    key = (p["r"], p["g"], p["b"])
-    if key not in mats:
-        m = bpy.data.materials.new("m"); m.use_nodes = True
-        b = m.node_tree.nodes["Principled BSDF"]
-        b.inputs["Base Color"].default_value = (lin(p["r"]), lin(p["g"]), lin(p["b"]), 1)
-        b.inputs["Roughness"].default_value = 0.6
-        mats[key] = m
-    bpy.ops.mesh.primitive_cube_add(location=B(p["x"], p["y"], p["z"]))
-    o = bpy.context.object
-    sx, sy = (p["sy"], p["sx"]) if p.get("rolled") else (p["sx"], p["sy"])
-    o.scale = (sx / 2, p["sz"] / 2, sy / 2)
-    o.rotation_euler = (0, 0, p["yaw"])
-    o.data.materials.append(mats[key])
+    buckets.setdefault((p["r"], p["g"], p["b"]), []).append(p)
+for key, plist in buckets.items():
+    mesh = bpy.data.meshes.new("m")
+    bm = bmesh.new()
+    for p in plist:
+        sx, sy = (p["sy"], p["sx"]) if p.get("rolled") else (p["sx"], p["sy"])
+        m = (Matrix.Translation(B(p["x"], p["y"], p["z"])) @ Matrix.Rotation(p["yaw"], 4, "Z")
+             @ Matrix.Diagonal((sx / 2, p["sz"] / 2, sy / 2, 1)))
+        bmesh.ops.create_cube(bm, size=2.0, matrix=m)
+    bm.to_mesh(mesh)
+    bm.free()
+    mat = bpy.data.materials.new("m"); mat.use_nodes = True
+    bsdf = mat.node_tree.nodes["Principled BSDF"]
+    bsdf.inputs["Base Color"].default_value = (lin(key[0]), lin(key[1]), lin(key[2]), 1)
+    bsdf.inputs["Roughness"].default_value = 0.6
+    mesh.materials.append(mat)
+    obj = bpy.data.objects.new("o", mesh)
+    sc.collection.objects.link(obj)
 
 bpy.ops.object.light_add(type="SUN", location=(0, 0, 100))
 sun = bpy.context.object; sun.data.energy = 3.2; sun.rotation_euler = (math.radians(50), 0, math.radians(35))

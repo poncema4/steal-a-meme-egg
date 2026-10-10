@@ -324,13 +324,18 @@ local function buildCorridor(map: Instance)
 	for k = 0, math.ceil((World.SAFE_FRONT - World.SAFE_BACK) / band) - 1 do
 		local x0 = World.SAFE_BACK + k * band
 		local x1 = math.min(x0 + band, World.SAFE_FRONT)
-		part(
-			"SafeFloor",
-			Vector3.new(x1 - x0, 2, Zones.WIDTH),
-			CFrame.new((x0 + x1) / 2, -1, 0),
-			if k % 2 == 0 then Color3.fromRGB(104, 208, 72) else Color3.fromRGB(92, 192, 62),
-			map
-		)
+		-- a checkerboard of touching tiles, like the reference's ground
+		for j = 0, math.ceil(Zones.WIDTH / band) - 1 do
+			local z0 = -half + j * band
+			local z1 = math.min(z0 + band, half)
+			part(
+				"SafeFloor",
+				Vector3.new(x1 - x0, 2, z1 - z0),
+				CFrame.new((x0 + x1) / 2, -1, (z0 + z1) / 2),
+				if (k + j) % 2 == 0 then Color3.fromRGB(104, 208, 72) else Color3.fromRGB(92, 192, 62),
+				map
+			)
+		end
 	end
 	-- the round plaza in the middle of the semicircle (a flat disc; a Roblox cylinder runs along X, so it is turned upright)
 	local plaza = part(
