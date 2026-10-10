@@ -21,7 +21,7 @@ return function(t)
 		"all the owner actions follow the same rule",
 		Prompts.visible("Skip hatch", 5, 5)
 			and not Prompts.visible("Buy slot", 6, 5)
-			and not Prompts.visible("Buy speed", 6, 5)
+			and not Prompts.visible("Upgrade treadmill", 6, 5)
 	)
 
 	-- on the real world

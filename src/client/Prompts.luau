@@ -8,7 +8,7 @@ local Prompts = {}
 local OWNER_ONLY = {
 	["Skip hatch"] = true,
 	["Instant hatch"] = true,
-	["Buy speed"] = true,
+	["Upgrade treadmill"] = true,
 	["Buy slot"] = true,
 	["Rebirth"] = true,
 }

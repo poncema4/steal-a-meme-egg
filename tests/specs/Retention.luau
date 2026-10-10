@@ -112,10 +112,13 @@ return function(t)
 	t.equal("income is boosted by 50%", late:GetAttribute("Income"), income * Rebirth.multiplier(1))
 	t.equal("the next rebirth costs more", late:GetAttribute("RebirthCost"), Rebirth.cost(1))
 
-	-- a rebirth survives leaving and coming back
+	-- a rebirth and a treadmill upgrade survive leaving and coming back
+	session.get(late).treadmill = 3
+	session.changed(late)
 	world.removePlayer(late)
 	local back = world.addPlayer("Ana", 81)
 	world.advance(0.6)
 	t.equal("rebirths are saved", back:GetAttribute("Rebirths"), 1)
+	t.equal("the treadmill upgrade is saved", back:GetAttribute("TreadmillLevel"), 3)
 	t.equal("and so is the income bonus", back:GetAttribute("Income"), income * Rebirth.multiplier(1))
 end

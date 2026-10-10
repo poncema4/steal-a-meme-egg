@@ -7,7 +7,7 @@ Sources: Marco's two screenshots (brand/reference1.png, brand/reference2.png, fr
 - The Safe Zone is a wide strip at the start. A red line marks its edge, "SAFE ZONE" is written large on the ground, and the zone title ("Forest" + a face) shows at the top while you stand in a terrain.
 - Terrains follow each other down the corridor, each with its own floor colour and oversized props (bones/claws in the desert); the next terrain is visible at the far end.
 - Each player has a fenced pen (blue/purple/white fences) inside the safe zone where their eggs and pets sit. There is no conveyor.
-- Treadmill: in front of the player's base; standing on it trains speed.
+- Treadmill: in front of the player's base; you run on it to train speed, and it is upgraded so it gives more speed per second.
 - Each terrain has 5 egg nests, each watched by a guardian (here: a meme).
 
 ## Carry and chase

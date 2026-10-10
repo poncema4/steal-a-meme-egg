@@ -16,11 +16,34 @@ return function(t)
 		if Progression.xpForNext(n) <= Progression.xpForNext(n - 1) then
 			increasing = false
 		end
-		if Progression.speedCost(n) <= Progression.speedCost(n - 1) then
-			increasing = false
+	end
+	t.check("every speed level needs more XP than the last", increasing)
+	local costs = true
+	for n = 1, Progression.MAX_TREADMILL do
+		if Progression.treadmillCost(n) <= Progression.treadmillCost(n - 1) then
+			costs = false
 		end
 	end
-	t.check("every level costs more XP and more coins than the last", increasing)
+	t.check("every treadmill upgrade costs more than the last", costs)
+	t.equal("the first treadmill upgrade is cheap", Progression.treadmillCost(0), 100)
+	t.equal(
+		"the cost stops growing at the top level",
+		Progression.treadmillCost(99),
+		Progression.treadmillCost(Progression.MAX_TREADMILL)
+	)
+	local faster = true
+	for n = 1, Progression.MAX_TREADMILL do
+		if Progression.trainRate(n, 1) <= Progression.trainRate(n - 1, 1) then
+			faster = false
+		end
+	end
+	t.check("every treadmill level trains faster than the last", faster)
+	t.equal("a negative level trains like level 0", Progression.trainRate(-5, 1), Progression.trainRate(0, 1))
+	t.equal(
+		"the top level rate is capped",
+		Progression.trainRate(99, 1),
+		Progression.trainRate(Progression.MAX_TREADMILL, 1)
+	)
 
 	t.equal("level 0 walks at the base speed", Progression.walkSpeed(0), Progression.BASE_SPEED)
 	t.check("each level is faster", Progression.walkSpeed(5) > Progression.walkSpeed(4))
@@ -28,14 +51,14 @@ return function(t)
 	t.check("a negative level is just the base speed", Progression.walkSpeed(-3) == Progression.BASE_SPEED)
 
 	-- the treadmill should be slow but real: level 1 in well under a minute, level 10 not in a few minutes
-	local perSecond = Progression.trainRate(1)
+	local perSecond = Progression.trainRate(0, 1)
 	t.check("the first level takes under a minute on the treadmill", Progression.xpForNext(0) / perSecond < 60)
 	local to10 = 0
 	for n = 0, 9 do
 		to10 += Progression.xpForNext(n)
 	end
 	t.check("level 10 takes at least 10 minutes of treadmill", to10 / perSecond >= 600, tostring(to10 / perSecond))
-	t.equal("a training multiplier scales the rate", Progression.trainRate(2), perSecond * 2)
+	t.equal("a training multiplier scales the rate", Progression.trainRate(0, 2), perSecond * 2)
 
 	t.equal("carrying an egg is 10% slower", Progression.carrySpeed(20, true), 18)
 	t.equal("not carrying is full speed", Progression.carrySpeed(20, false), 20)

@@ -124,7 +124,7 @@ return function(t)
 					elseif roll < 0.2 then
 						session.grantEgg(p, "Soggy") -- eggs also arrive from the daily reward and the shop
 					elseif roll < 0.3 and home then
-						for _, action in { "Buy speed", "Buy slot", "Skip hatch" } do
+						for _, action in { "Upgrade treadmill", "Buy slot", "Skip hatch" } do
 							local found = world.prompts(home.model, action)
 							if #found > 0 and math.random() < 0.3 then
 								found[math.random(1, #found)].Triggered:Fire(p)
