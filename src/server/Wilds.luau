@@ -333,14 +333,14 @@ function Wilds.steal(player: Player, entry: Entry)
 end
 
 -- The egg goes back to its nest and the thief (if any) is sent home.
-local function recover(entry: Entry, message: string?)
+local function recover(entry: Entry, message: string?, sendHome: boolean?)
 	local thief = entry.thief
 	entry.thief = nil
 	local carried = if thief then Session.carrying(thief) else nil
 	if thief and carried then
 		Session.setCarry(thief, nil)
 		local root = rootOf(thief)
-		if root and message then
+		if root and message and sendHome ~= false then
 			root.CFrame = homePosition(thief)
 		end
 		if message then
@@ -351,6 +351,16 @@ local function recover(entry: Entry, message: string?)
 	if carried then
 		Nest.giveBack(entry.nest, carried)
 		setEgg(entry, carried)
+	end
+end
+
+-- The player lets go of the egg they are carrying: it goes back to its nest, and they stay where they are.
+function Wilds.drop(player: Player)
+	for _, entry in entries do
+		if entry.thief == player then
+			recover(entry, "You dropped the egg. It went back to its nest.", false)
+			return
+		end
 	end
 end
 

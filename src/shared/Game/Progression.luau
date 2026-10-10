@@ -31,6 +31,19 @@ function Progression.walkSpeed(level: number): number
 	return Progression.BASE_SPEED + math.clamp(level, 0, Progression.MAX_LEVEL) * Progression.SPEED_PER_LEVEL
 end
 
+-- The "Speed" number shown on the HUD and the leaderboard: it doubles every level, so it grows like the numbers players
+-- see in other games, while the real WalkSpeed above stays sensible.
+function Progression.speedStat(level: number): number
+	return math.floor(10 * 2 ^ math.clamp(level, 0, Progression.MAX_LEVEL))
+end
+
+-- Slow Mode caps your walking speed at the Roblox default, for placing things carefully on your base.
+Progression.SLOW_SPEED = 16
+
+function Progression.slowed(speed: number, slow: boolean): number
+	return if slow then math.min(speed, Progression.SLOW_SPEED) else speed
+end
+
 -- Carrying an egg slows you down a little, so a guardian can still catch a careless runner.
 Progression.CARRY_FACTOR = 0.9
 

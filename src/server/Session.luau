@@ -31,6 +31,7 @@ export type State = {
 	rebirths: number,
 	dailyLast: number?, -- the UTC day of the last daily reward
 	dailyStreak: number,
+	slow: boolean, -- Slow Mode is on (not saved)
 }
 
 local states: { [Player]: State } = {}
@@ -111,6 +112,8 @@ local function publish(state: State)
 	local level, left = Progression.levelFor(state.speedXp)
 	state.player:SetAttribute("MemePoints", state.mp)
 	state.player:SetAttribute("SpeedLevel", level)
+	state.player:SetAttribute("SpeedStat", Progression.speedStat(level))
+	state.player:SetAttribute("SlowMode", state.slow)
 	state.player:SetAttribute(
 		"SpeedProgress",
 		if level >= Progression.MAX_LEVEL then 1 else left / Progression.xpForNext(level)
@@ -153,7 +156,17 @@ function Session.applySpeed(player: Player)
 	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
 	if state and humanoid then
 		local level = Progression.levelFor(state.speedXp)
-		humanoid.WalkSpeed = Progression.carrySpeed(Progression.walkSpeed(level), state.carry ~= nil)
+		humanoid.WalkSpeed =
+			Progression.slowed(Progression.carrySpeed(Progression.walkSpeed(level), state.carry ~= nil), state.slow)
+	end
+end
+
+function Session.setSlow(player: Player, on: boolean)
+	local state = states[player]
+	if state then
+		state.slow = on
+		Session.applySpeed(player)
+		Session.changed(player)
 	end
 end
 
@@ -599,6 +612,7 @@ local function add(player: Player, onJoin: (Player) -> ())
 		purchases = Store.new(),
 		rebirths = 0,
 		dailyStreak = 0,
+		slow = false,
 	}
 	states[player] = state
 	load(state)
