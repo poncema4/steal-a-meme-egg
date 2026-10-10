@@ -22,6 +22,15 @@ return table.freeze({
 		LockCooldownSeconds = 90, -- ...and cannot be used again for this long after it started
 		Reach = 14, -- studs
 	}),
+	-- The Wilds: guarded eggs out in themed terrains (see Shared/Game/Zones, Guardian, Nest, Progression).
+	Wilds = table.freeze({
+		ChaseSeconds = 12, -- a guardian gives up after this long
+		CatchRadius = 4.5, -- studs: close enough to take the egg back
+		Leash = 150, -- studs from its nest before it gives up
+		NestRespawnSeconds = 25, -- a stolen nest grows a new egg after this
+		StealHoldSeconds = 1.5,
+		GatePushSeconds = 0.5, -- how often the server checks that nobody is somewhere they have not unlocked
+	}),
 	Admin = table.freeze({
 		MinGroupRank = 250, -- the owner is 255
 		UserIds = table.freeze({} :: { number }), -- extra admins by user id
