@@ -161,19 +161,30 @@ end
 -- Puts a picture on a button or label. `side` "center" fills the middle (icon-only buttons); "left" sits at the left edge and
 -- pads the text so it does not run under the picture. Returns false (and shows `glyph` as text instead) if there is no art.
 function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string, pad: number?, grow: number?): boolean
+	-- the icon is a brick model seen in 3D when the client has one, else the uploaded picture, else the glyph
+	local holder = Instance.new("Frame")
+	holder.Name = "Icon"
+	holder.BackgroundTransparency = 1
+	local solid = Ui.modelView(holder, "Icons", key) ~= nil
 	local id = Ui.iconId(key)
 	local text = target :: any
-	if not id then
+	if not solid and not id then
+		holder:Destroy()
 		if side == "center" then
 			text.Text = glyph
 		end
 		return false
 	end
-	local image = Instance.new("ImageLabel")
-	image.Name = "Icon"
-	image.BackgroundTransparency = 1
-	image.Image = id
-	image.ScaleType = Enum.ScaleType.Fit
+	local image: GuiObject = holder
+	if not solid then
+		holder:Destroy()
+		local picture = Instance.new("ImageLabel")
+		picture.Name = "Icon"
+		picture.BackgroundTransparency = 1
+		picture.Image = id :: string
+		picture.ScaleType = Enum.ScaleType.Fit
+		image = picture
+	end
 	image.AnchorPoint = Vector2.new(0.5, 0.5)
 	if side == "center" then
 		image.Position = UDim2.fromScale(0.5, 0.5)
