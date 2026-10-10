@@ -24,6 +24,7 @@ end
 local specs = {
 	require("./specs/Config"),
 	require("./specs/Eggs"),
+	require("./specs/Properties"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),
