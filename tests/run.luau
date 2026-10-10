@@ -36,6 +36,7 @@ local specs = {
 	require("./specs/TrapsWorld"),
 	require("./specs/MutatedEggs"),
 	require("./specs/CarryFling"),
+	require("./specs/Treadmill"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
 	require("./specs/Events"),

@@ -20,8 +20,9 @@ def corners(p):
     """The footprint as 4 (x, z) points, turned by the part's yaw."""
     c, s = math.cos(p["yaw"]), math.sin(p["yaw"])
     out = []
+    width = p["sy"] if p.get("rolled") else p["sx"]
     for sx, sz in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
-        lx, lz = sx * p["sx"] / 2, sz * p["sz"] / 2
+        lx, lz = sx * width / 2, sz * p["sz"] / 2
         out.append((p["x"] + lx * c + lz * s, p["z"] - lx * s + lz * c))
     return out
 

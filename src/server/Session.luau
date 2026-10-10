@@ -233,6 +233,7 @@ function Session.upgradeTreadmill(player: Player): (boolean, string)
 	end
 	state.treadmill += 1
 	publish(state)
+	Session.changed(player) -- so the prompt text and the console display show the new level
 	return true, `Treadmill level {state.treadmill}!`
 end
 
