@@ -116,6 +116,7 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		tag(body, { tier and tier.name or "Egg", `hatching {math.ceil(item.hatchLeft or 0)}s` }, 3.4)
 		if tier then
 			local skip = Instance.new("ProximityPrompt")
+			skip.Name = "SkipPrompt"
 			skip.ActionText = "Skip hatch"
 			skip.ObjectText =
 				`{Economy.format(Economy.skipCost(tier.price, item.hatchLeft or 0, tier.hatchSeconds))} coins`
@@ -216,6 +217,12 @@ function Plots.updateTimers(player: Player)
 			local label = tagGui and tagGui:FindFirstChild("L2")
 			if label and label:IsA("TextLabel") then
 				label.Text = `hatching {math.ceil(item.hatchLeft or 0)}s`
+			end
+			local skip = body and body:FindFirstChild("SkipPrompt")
+			local def = if item.tier then Eggs.tier(item.tier) else nil
+			if skip and skip:IsA("ProximityPrompt") and def then
+				skip.ObjectText =
+					`{Economy.format(Economy.skipCost(def.price, item.hatchLeft or 0, def.hatchSeconds))} coins`
 			end
 		end
 	end

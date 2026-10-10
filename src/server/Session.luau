@@ -92,6 +92,15 @@ local function publish(state: State)
 		if level >= Progression.MAX_LEVEL then 1 else left / Progression.xpForNext(level)
 	)
 	state.player:SetAttribute("Carrying", state.carry or "")
+	local owned = {}
+	for key, has in state.purchases.passes do
+		if has then
+			table.insert(owned, key)
+		end
+	end
+	table.sort(owned)
+	state.player:SetAttribute("Passes", table.concat(owned, ","))
+	state.player:SetAttribute("HatchTokens", state.purchases.hatchTokens)
 end
 
 -- Applies the player's speed (level, minus the carry penalty) to their character.

@@ -37,6 +37,9 @@ local TIER_COLORS: { [string]: Color3 } = {
 	Divine = Color3.fromRGB(255, 255, 255),
 }
 
+-- the guardian model's pivot is its body centre (7 studs tall), so its feet touch the ground when the pivot is this high
+local BODY_Y = 3.5
+
 local entries: { Entry } = {}
 local notify: (Player, string) -> () = function(_player: Player, _text: string) end
 
@@ -164,17 +167,17 @@ local function buildGuardian(entry: Entry, parent: Instance, c: Eggs.Character)
 	local model = Instance.new("Model")
 	model.Name = "Guardian"
 	local tint = Color3.fromHSV((#c.id * 0.137) % 1, 0.55, 1)
-	local body = box("Body", Vector3.new(6, 7, 8), CFrame.new(0, 4.5, 0), tint, model)
+	local body = box("Body", Vector3.new(6, 7, 8), CFrame.new(0, BODY_Y, 0), tint, model)
 	model.PrimaryPart = body
-	local head = box("Head", Vector3.new(5, 5, 5), CFrame.new(0, 10, -2.5), tint, model)
+	local head = box("Head", Vector3.new(5, 5, 5), CFrame.new(0, 9, -2.5), tint, model)
 	head.Shape = Enum.PartType.Ball
 	for _, sx in { -1, 1 } do
-		box("Eye", Vector3.new(1.2, 1.6, 0.6), CFrame.new(sx * 1.3, 10.6, -4.8), Color3.new(0, 0, 0), model)
-		box("Pupil", Vector3.new(0.6, 0.8, 0.3), CFrame.new(sx * 1.3, 10.6, -5.2), Color3.fromRGB(255, 20, 20), model)
-		local brow = box("Brow", Vector3.new(2, 0.5, 0.5), CFrame.new(sx * 1.3, 11.8, -4.9), Color3.new(0, 0, 0), model)
+		box("Eye", Vector3.new(1.2, 1.6, 0.6), CFrame.new(sx * 1.3, 9.6, -4.8), Color3.new(0, 0, 0), model)
+		box("Pupil", Vector3.new(0.6, 0.8, 0.3), CFrame.new(sx * 1.3, 9.6, -5.2), Color3.fromRGB(255, 20, 20), model)
+		local brow = box("Brow", Vector3.new(2, 0.5, 0.5), CFrame.new(sx * 1.3, 10.8, -4.9), Color3.new(0, 0, 0), model)
 		brow.CFrame = brow.CFrame * CFrame.Angles(0, 0, -sx * 0.45)
 	end
-	box("Beak", Vector3.new(3, 1.2, 3), CFrame.new(0, 9.2, -5.2), Color3.fromRGB(255, 140, 20), model)
+	box("Beak", Vector3.new(3, 1.2, 3), CFrame.new(0, 8.2, -5.2), Color3.fromRGB(255, 140, 20), model)
 	label(head, { c.name, "GUARDIAN" }, 4.2, 200)
 	model.Parent = parent
 	entry.model = model
@@ -229,7 +232,7 @@ local function buildNests(zone: Zones.Zone, parent: Instance)
 		}
 		model.Parent = parent
 		buildGuardian(entry, parent, c)
-		entry.model:PivotTo(CFrame.new(entry.guardian.x, 0, entry.guardian.z))
+		entry.model:PivotTo(CFrame.new(entry.guardian.x, BODY_Y, entry.guardian.z))
 		setEgg(entry, tier)
 		prompt.Triggered:Connect(function(who)
 			Wilds.steal(who, entry)
@@ -374,8 +377,10 @@ function Wilds.start()
 			end
 			local g = entry.guardian
 			if g.state ~= "Idle" or before ~= "Idle" then
-				local look = if target then Vector3.new(target.x, 0, target.z) else Vector3.new(g.homeX, 0, g.homeZ)
-				entry.model:PivotTo(CFrame.lookAt(Vector3.new(g.x, 0, g.z), look + Vector3.new(0, 0, 0)))
+				local look = if target
+					then Vector3.new(target.x, BODY_Y, target.z)
+					else Vector3.new(g.homeX, BODY_Y, g.homeZ)
+				entry.model:PivotTo(CFrame.lookAt(Vector3.new(g.x, BODY_Y, g.z), look))
 			end
 			if Nest.tick(entry.nest, dt, function()
 				return Zones.eggFor(entry.zone, math.random)

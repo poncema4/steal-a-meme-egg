@@ -55,8 +55,15 @@ PurchaseService.start(remotes, notify)
 Plots.setInstant(PurchaseService.instantHatch, PurchaseService.instantAvailable)
 
 Session.start(function(player)
-	if not Plots.assign(player) then
+	local plot = Plots.assign(player)
+	if not plot then
 		notify(player, "Server full: you have no base. Rejoin another server.")
+	else
+		-- the first character may already have spawned at someone else's plot while the save loaded: bring it home
+		local character = player.Character
+		if character then
+			character:PivotTo(plot.spawn.CFrame + Vector3.new(0, 5, 0))
+		end
 	end
 	Plots.refresh(player)
 end, function(player)
