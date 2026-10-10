@@ -36,7 +36,10 @@ return function(t)
 	local workspaceProps = project.tree.Workspace["$properties"]
 	t.check("streaming is on, so phones only hold the terrain near them", workspaceProps.StreamingEnabled == true)
 	t.check("with a radius that covers the next terrain gate", workspaceProps.StreamingTargetRadius >= 400)
-	t.check("and it never pauses a fast runner", workspaceProps.StreamingIntegrityMode == "MinimizeDisruption")
+	t.check(
+		"and it only pauses if the 128-stud radius around you is missing",
+		workspaceProps.StreamingIntegrityMode == "MinimumRadiusPause"
+	)
 	-- scenery and eggs cast no shadows; every model streams in whole
 	for _, name in { "Props/Tree", "Props/Nest", "Eggs/Soggy", "Props/LavaRock" } do
 		local text = fs.readFile(`src/models/{name}.rbxmx`)
