@@ -159,7 +159,7 @@ end
 
 -- Puts a picture on a button or label. `side` "center" fills the middle (icon-only buttons); "left" sits at the left edge and
 -- pads the text so it does not run under the picture. Returns false (and shows `glyph` as text instead) if there is no art.
-function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string, pad: number?): boolean
+function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string, pad: number?, grow: number?): boolean
 	local id = Ui.iconId(key)
 	local text = target :: any
 	if not id then
@@ -181,7 +181,7 @@ function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string,
 	else
 		image.Position = UDim2.new(0, 6, 0.5, 0)
 		image.AnchorPoint = Vector2.new(0, 0.5)
-		image.Size = UDim2.fromScale(0.2, 1.1)
+		image.Size = UDim2.fromScale(0.3, grow or 1.1)
 		local ratio = Instance.new("UIAspectRatioConstraint")
 		ratio.Parent = image
 		local padding = Instance.new("UIPadding")

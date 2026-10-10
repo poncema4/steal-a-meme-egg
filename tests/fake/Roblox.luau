@@ -239,6 +239,11 @@ local NumberSequence = {
 		return { a, b }
 	end,
 }
+local NumberSequenceKeypoint = {
+	new = function(time, value)
+		return { Time = time, Value = value }
+	end,
+}
 local ColorSequence = {
 	new = function(a, b)
 		return { a, b or a }
@@ -853,6 +858,7 @@ function Fake.world()
 			UDim2 = UDim2,
 			NumberRange = NumberRange,
 			NumberSequence = NumberSequence,
+			NumberSequenceKeypoint = NumberSequenceKeypoint,
 			ColorSequence = ColorSequence,
 			Enum = world.enum,
 			Random = {

@@ -73,7 +73,7 @@ function Hud.start(player: Player, actions: Actions?)
 		handler: () -> ()
 	)
 		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(150, tapHeight))
-		Ui.addIcon(b, icon, "left", "")
+		Ui.addIcon(b, icon, "left", "", 56, 1.2)
 		b.LayoutOrder = order
 		b.Activated:Connect(handler)
 		return b
@@ -169,17 +169,26 @@ function Hud.start(player: Player, actions: Actions?)
 	money.Size = UDim2.new(1, 0, 0, 62)
 	money.Position = UDim2.fromOffset(0, 54)
 	money.TextXAlignment = Enum.TextXAlignment.Left
-	local hasShoe = Ui.addIcon(speed, "shoe", "left", "", 60)
-	Ui.addIcon(money, "cash", "left", "", 74)
+	local hasShoe = Ui.addIcon(speed, "shoe", "left", "", 74, 1.5)
+	Ui.addIcon(money, "cash", "left", "", 92, 1.35)
 
 	-- top centre: the terrain you are in, what to do next, and any live event
 	local zone = Instance.new("Frame")
 	zone.Name = "ZoneBanner"
 	zone.AnchorPoint = Vector2.new(0.5, 0)
 	zone.Position = UDim2.new(0.5, 0, 0, 50)
-	zone.Size = UDim2.fromOffset(520, 56)
-	zone.BackgroundColor3 = Color3.fromRGB(20, 40, 60)
-	zone.BackgroundTransparency = 0.6
+	zone.Size = UDim2.fromOffset(620, 60)
+	zone.BackgroundColor3 = Color3.fromRGB(10, 20, 30)
+	zone.BackgroundTransparency = 0.45
+	-- like the reference, the band fades out toward both ends
+	local fade = Instance.new("UIGradient")
+	fade.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.25, 0),
+		NumberSequenceKeypoint.new(0.75, 0),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	fade.Parent = zone
 	zone.BorderSizePixel = 0
 	zone.Parent = gui
 	local zoneName = Ui.label(zone, "Name", 46, Color3.fromRGB(235, 235, 235))

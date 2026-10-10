@@ -79,6 +79,16 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 			if c.AutomaticSize == world.enum.AutomaticSize.Y then
 				ch = 0
 			end
+			-- an aspect-ratio constraint (ratio 1) shrinks the longer side to the shorter, like FitWithinMaxSize
+			if c:FindFirstChildOfClass("UIAspectRatioConstraint") then
+				cw = math.min(cw, ch)
+				ch = cw
+			end
+			local padLeft = 0
+			local pad = c:FindFirstChildOfClass("UIPadding")
+			if pad then
+				padLeft = (pad :: any).PaddingLeft.Offset or 0
+			end
 			local cx, cy
 			if grid then
 				local padX, padY = (grid :: any).CellPadding.X.Offset, (grid :: any).CellPadding.Y.Offset
@@ -87,9 +97,16 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 				cy = y + (gridIndex // columns) * (ch + padY)
 				gridIndex += 1
 			elseif list then
-				cx = x
-				cy = y + cursor
-				cursor += ch + (((list :: any).Padding or { Offset = 0 }).Offset or 0)
+				local gap = ((list :: any).Padding or { Offset = 0 }).Offset or 0
+				if (list :: any).FillDirection and (list :: any).FillDirection.Name == "Horizontal" then
+					cx = x + cursor
+					cy = y
+					cursor += cw + gap
+				else
+					cx = x
+					cy = y + cursor
+					cursor += ch + gap
+				end
 			else
 				local p = c.Position or ZERO
 				local a = c.AnchorPoint or { X = 0, Y = 0 }
@@ -124,6 +141,7 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 			local tc = (c :: any).TextColor3 or { R = 1, G = 1, B = 1 }
 			table.insert(rects, {
 				name = c.Name,
+				padLeft = padLeft,
 				x = cx * scale,
 				y = cy * scale,
 				w = cw * scale,
