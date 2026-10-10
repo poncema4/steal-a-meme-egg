@@ -16,7 +16,7 @@ Grab eggs off a conveyor, hatch them into meme characters that earn coins, and r
 5. Coins buy better eggs and more slots (up to 12).
 
 ## The Wilds (built)
-A long strip of themed terrains east of the bases (x 200 to 1400): Meme Meadow, Dune Desert, Lava Lands, Frozen Peaks, Cosmic Void. Each has 6 nests; on every nest a meme guardian sits on an egg. Hold E on the egg to steal it. The guardian chases you (it gives up after 12 s or 150 studs, and takes the egg back if it touches you; you wake up at home). Carry the egg into your own base to start it hatching and earn Meme Points. If your base is full when you get home the egg is sold for half its price instead (you still get the Meme Points), so a full base never traps you. You carry one egg at a time and run 10% slower while carrying.
+A long strip of themed terrains east of the bases (x 200 to 1400): Meme Meadow, Dune Desert, Lava Lands, Frozen Peaks, Cosmic Void. Each has 5 nests; on every nest a meme guardian sits on an egg. Hold E on the egg to steal it. The guardian chases you (it gives up after 12 s or 150 studs, and takes the egg back if it touches you; you wake up at home). Carry the egg into your own base to start it hatching and earn Meme Points. If your base is full when you get home the egg is sold for half its price instead (you still get the Meme Points), so a full base never traps you. You carry one egg at a time and run 10% slower while carrying.
 
 Gates: each terrain needs Meme Points (0 / 25 / 250 / 2,500 / 20,000). The server pushes you back from a terrain you have not unlocked. Rarer terrains hold rarer eggs and faster guardians (12 / 17 / 21 / 25 / 29 studs per second).
 
