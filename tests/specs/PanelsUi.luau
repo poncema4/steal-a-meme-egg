@@ -67,8 +67,7 @@ return function(t)
 		t.check(`{name} never takes more than 90% of the screen height (so it fits a phone)`, frame.Size.Y.Scale <= 0.9)
 		t.check(`{name} also has a maximum size for big screens`, limit ~= nil and limit.MaxSize.X <= 720)
 	end
-	t.check("all three start closed", not index.Visible and not eggs.Visible and not pets.Visible)	-- the Index: everything hidden at first, then a hatched character is revealed
-;
+	t.check("all three start closed", not index.Visible and not eggs.Visible and not pets.Visible); -- the Index: everything hidden at first, then a hatched character is revealed
 	(find(hudGui, "IndexButton") :: TextButton).Activated:Fire()
 	t.check("the Index button opens the Index", index.Visible)
 	local total = 0
@@ -97,8 +96,7 @@ return function(t)
 		string.find((find(find(index, "Card_BonkBean") :: Instance, "Chip_Rainbow") :: TextLabel).Text, "✓", 1, true)
 			== nil
 	)
-	t.equal("others stay hidden", (find(find(index, "Card_SleepySock") :: Instance, "Name") :: TextLabel).Text, "???")	-- opening another panel closes the Index (one at a time)
-;
+	t.equal("others stay hidden", (find(find(index, "Card_SleepySock") :: Instance, "Name") :: TextLabel).Text, "???"); -- opening another panel closes the Index (one at a time)
 	(find(hudGui, "PetsButton") :: TextButton).Activated:Fire()
 	t.check("opening Pets closes the Index", pets.Visible and not index.Visible)
 	t.check("the Pets panel lists the character", find(pets, "PetRow_1") ~= nil)
@@ -111,8 +109,7 @@ return function(t)
 	session.changed(ana)
 	world.advance(1)
 	t.check("a pet that leaves the base leaves the list", find(pets, "PetRow_1") == nil)
-	t.check("and the panel says so", string.find((find(pets, "Note") :: TextLabel).Text, "No pets", 1, true) ~= nil)	-- Eggs: Skip hatches the egg through the server
-;
+	t.check("and the panel says so", string.find((find(pets, "Note") :: TextLabel).Text, "No pets", 1, true) ~= nil); -- Eggs: Skip hatches the egg through the server
 	(find(hudGui, "EggsButton") :: TextButton).Activated:Fire()
 	t.check("the eggs button opens Eggs", eggs.Visible and not pets.Visible)
 	t.check(
