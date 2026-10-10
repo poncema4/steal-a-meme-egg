@@ -8,5 +8,5 @@ selene src tests
 stylua --check src tests
 lune run tests/run
 bash scripts/typecheck.sh
-rojo build -o build/RaidAMemeEgg.rbxl
+rojo build -o build/StealAMemeEgg.rbxl
 echo "ALL CHECKS PASSED"

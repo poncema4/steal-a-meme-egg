@@ -1,5 +1,5 @@
 {
-	"name": "RaidAMemeEgg",
+	"name": "StealAMemeEgg",
 	"tree": {
 		"$className": "DataModel",
 		"ReplicatedStorage": {

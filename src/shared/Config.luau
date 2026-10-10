@@ -1,7 +1,7 @@
 --!strict
 -- Every tunable number lives here. Logic in Shared/Game reads these through its callers, never hard-codes them.
 return table.freeze({
-	GameName = "Raid a Meme Egg",
+	GameName = "Steal a Meme Egg",
 	Version = "0.1.0",
 	GroupId = 749648777, -- Nexus Hollow Studios: group owner and high ranks are admins (no user ids to maintain)
 	Economy = table.freeze({
@@ -31,7 +31,7 @@ return table.freeze({
 		ClaimSeconds = 5 * 60, -- ...and each scheduled event runs this long
 	}),
 	Save = table.freeze({
-		StoreName = "RaidAMemeEgg_v1",
+		StoreName = "StealAMemeEgg_v1",
 		AutosaveSeconds = 60,
 	}),
 	Server = table.freeze({
