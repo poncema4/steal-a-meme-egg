@@ -18,6 +18,7 @@ local TOPIC = "RaidLive"
 local state = Events.new()
 local remotes: Folder? = nil
 local crossServer = false
+local sfxAll: (string) -> () = function(_name: string) end
 
 function LiveOps.state(): Events.State
 	return state
@@ -44,6 +45,7 @@ function LiveOps.beltRate(): number
 end
 
 local function announce(text: string)
+	sfxAll("horn")
 	local folder = remotes
 	if folder then
 		local remote = folder:FindFirstChild("Announce")
@@ -153,8 +155,9 @@ local function registerChat(tell: (Player, string) -> ())
 	end
 end
 
-function LiveOps.start(remoteFolder: Folder, tell: (Player, string) -> ())
+function LiveOps.start(remoteFolder: Folder, tell: (Player, string) -> (), sfxAllFn: (string) -> ())
 	remotes = remoteFolder
+	sfxAll = sfxAllFn
 	Session.setMultipliers(function()
 		return LiveOps.luck(), LiveOps.income()
 	end)

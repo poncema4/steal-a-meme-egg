@@ -60,6 +60,13 @@ return function(t)
 
 	-- hatching and earning
 	world.advance(9)
+	local heard = false
+	for _, entry in world.log do
+		if entry.remote == "Sfx" and entry.to == "client" and entry.args[1] == ana and entry.args[2] == "hatch" then
+			heard = true
+		end
+	end
+	t.check("a hatch plays the pop", heard)
 	t.equal("the hatched egg counts as a character", ana:GetAttribute("Characters"), 1)
 	t.equal("and is no longer hatching", ana:GetAttribute("EggsHatching"), 0)
 	t.check(
@@ -104,6 +111,13 @@ return function(t)
 	t.equal("and nothing changed", liveOps.luck(), 1)
 	world.studio = true
 	liveOps.command(ana, "/event megaluck 60")
+	local horn = false
+	for _, entry in world.log do
+		if entry.remote == "Sfx" and entry.to == "all" and entry.args[1] == "horn" then
+			horn = true
+		end
+	end
+	t.check("starting an event sounds the horn for everyone", horn)
 	t.equal("an admin event changes luck", liveOps.luck(), 5)
 	t.check("and the HUD can see it", string.find(tostring(storage:GetAttribute("ActiveEvents")), "MegaLuck") ~= nil)
 	local coinsBefore = ana:GetAttribute("Coins") :: number

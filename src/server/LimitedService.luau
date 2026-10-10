@@ -112,7 +112,7 @@ local function publish()
 	ReplicatedStorage:SetAttribute("LimitedLeft", readStock(now.key))
 end
 
-function LimitedService.start(remotes: Folder, notifyFn: (Player, string) -> ())
+function LimitedService.start(remotes: Folder, notifyFn: (Player, string) -> (), sfxAll: (string) -> ())
 	notify = notifyFn
 	local ok, result = pcall(function()
 		return MemoryStoreService:GetHashMap("StealAMemeEgg_Limited")
@@ -136,9 +136,13 @@ function LimitedService.start(remotes: Folder, notifyFn: (Player, string) -> ())
 		while true do
 			local now = rotation()
 			if now.index ~= lastSeen then
+				local lastSeenBefore = if lastSeen >= 0 then lastSeen else nil
 				lastSeen = now.index
 				local tier = Eggs.tier(now.tier)
 				if tier then
+					if lastSeenBefore ~= nil then
+						sfxAll("limited")
+					end
 					for _, player in game:GetService("Players"):GetPlayers() do
 						notify(player, `New limited egg: {tier.name}!`)
 					end

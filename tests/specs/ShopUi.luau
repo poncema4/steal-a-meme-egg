@@ -83,6 +83,21 @@ return function(t)
 	local item = session.get(ana).base.slots[1]
 	t.check("a rich player gets the egg", item ~= nil and item.kind == "egg" and item.tier == tier.id)
 
+	-- sound on the client: the tune starts, and effects are played by name from Config.Sounds
+	local Config = require("../../src/shared/Config")
+	local audio = world.load("src/client/Audio")
+	local audioOk, audioErr = pcall(audio.start)
+	t.check("the client audio starts", audioOk, tostring(audioErr))
+	t.check("the background tune plays", table.find(world.played, Config.Sounds.music) ~= nil)
+	local remotes = world.service("ReplicatedStorage"):FindFirstChild("Remotes") :: Instance
+	local sfxRemote = remotes:FindFirstChild("Sfx") :: RemoteEvent
+	sfxRemote:FireClient(ana, "hatch")
+	t.check("an effect sent by name plays its own asset", table.find(world.played, Config.Sounds.hatch) ~= nil)
+	local before = #world.played
+	sfxRemote:FireClient(ana, "no_such_sound")
+	sfxRemote:FireClient(ana, 12345)
+	t.equal("an unknown name or a number plays nothing", #world.played, before)
+
 	-- a character that spawned elsewhere while the save loaded is brought home
 	local late = Fake.world()
 	local V3 = late.Vector3

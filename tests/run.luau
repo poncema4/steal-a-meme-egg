@@ -22,6 +22,7 @@ function t.equal(name: string, actual: any, expected: any)
 end
 
 local specs = {
+	require("./specs/Config"),
 	require("./specs/Eggs"),
 	require("./specs/Base"),
 	require("./specs/Economy"),
