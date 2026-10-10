@@ -12,6 +12,8 @@ local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
+local Daily = require(ReplicatedStorage.Shared.Game.Daily)
+local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
 local Store = require(ReplicatedStorage.Shared.Game.Store)
 
 local Session = {}
@@ -26,6 +28,9 @@ export type State = {
 	carry: string?, -- the egg tier being carried back from the Wilds
 	carryFrom: string?, -- which nest it came from (so a catch can put it back)
 	purchases: Store.Purchases, -- passes owned, receipts seen, hatch tokens, paid limited eggs waiting for room
+	rebirths: number,
+	dailyLast: number?, -- the UTC day of the last daily reward
+	dailyStreak: number,
 }
 
 local states: { [Player]: State } = {}
@@ -77,10 +82,29 @@ function Session.onHatched(fn: (Player, { number }) -> ())
 	table.insert(hatchListeners, fn)
 end
 
+-- One number on the in-game player list (the "leaderstats" folder Roblox shows beside each name).
+local function setStat(player: Player, name: string, value: number)
+	local board = player:FindFirstChild("leaderstats")
+	if not board then
+		local folder = Instance.new("Folder")
+		folder.Name = "leaderstats"
+		folder.Parent = player
+		board = folder
+	end
+	local stat = (board :: Instance):FindFirstChild(name)
+	if not stat then
+		local made = Instance.new("IntValue")
+		made.Name = name
+		made.Parent = board
+		stat = made
+	end
+	(stat :: IntValue).Value = math.floor(value)
+end
+
 local function publish(state: State)
 	local _, income = multipliers()
 	local _, passIncome = Store.multipliers(catalog, state.purchases)
-	income *= passIncome
+	income *= passIncome * Rebirth.multiplier(state.rebirths)
 	state.player:SetAttribute("Coins", math.floor(state.coins))
 	state.player:SetAttribute("Income", Base.income(state.base, income))
 	state.player:SetAttribute("Slots", state.base.size)
@@ -114,6 +138,12 @@ local function publish(state: State)
 	end
 	state.player:SetAttribute("EggsHatching", eggs)
 	state.player:SetAttribute("Characters", characters)
+	state.player:SetAttribute("Rebirths", state.rebirths)
+	state.player:SetAttribute("RebirthCost", Rebirth.cost(state.rebirths))
+	state.player:SetAttribute("DailyStreak", state.dailyStreak)
+	-- the player list shows these next to every name: a cheap, constant reason to compare and compete
+	setStat(state.player, "Meme Pts", state.mp)
+	setStat(state.player, "Rebirths", state.rebirths)
 end
 
 -- Applies the player's speed (level, minus the carry penalty) to their character.
@@ -264,6 +294,69 @@ function Session.hatchNow(player: Player)
 	end
 end
 
+function Session.rebirths(player: Player): number
+	local state = states[player]
+	return if state then state.rebirths else 0
+end
+
+-- Starts over for a permanent income bonus: coins and base reset, Meme Points, speed and passes stay. Returns (ok, message).
+function Session.rebirth(player: Player): (boolean, string)
+	local state = states[player]
+	if not state then
+		return false, "not ready"
+	end
+	if state.carry then
+		return false, "put your egg down first"
+	end
+	if state.rebirths >= Rebirth.MAX then
+		return false, "you are fully reborn!"
+	end
+	local cost = Rebirth.cost(state.rebirths)
+	if not Rebirth.can(state.rebirths, state.coins) then
+		return false, `a rebirth costs {Economy.format(cost)} coins`
+	end
+	state.rebirths += 1
+	state.coins = Config.Economy.StartCoins
+	state.base = Base.new(Config.Economy.StartSlots)
+	Session.changed(player)
+	return true, `REBORN! Rebirth {state.rebirths}: x{Rebirth.multiplier(state.rebirths)} coins`
+end
+
+local dailyListeners: { (Player, number, number, string?) -> () } = {}
+
+function Session.onDaily(fn: (Player, number, number, string?) -> ())
+	table.insert(dailyListeners, fn)
+end
+
+-- The daily reward: once per UTC day, called when a player's save has loaded. Coins go straight in; an egg waits for room.
+function Session.claimDaily(player: Player): boolean
+	local state = states[player]
+	if not state then
+		return false
+	end
+	local streak = Daily.next(state.dailyLast, state.dailyStreak, Daily.dayOf(clock()))
+	if not streak then
+		return false
+	end
+	local _, income = multipliers()
+	local perSecond = Base.income(
+		state.base,
+		income * select(2, Store.multipliers(catalog, state.purchases)) * Rebirth.multiplier(state.rebirths)
+	)
+	local coins, egg = Daily.reward(streak, perSecond)
+	state.dailyLast = Daily.dayOf(clock())
+	state.dailyStreak = streak
+	state.coins += coins
+	if egg then
+		Store.queueLimited(state.purchases, egg)
+	end
+	Session.changed(player)
+	for _, fn in dailyListeners do
+		fn(player, streak, coins, egg)
+	end
+	return true
+end
+
 function Session.carrying(player: Player): (string?, string?)
 	local state = states[player]
 	if not state then
@@ -382,6 +475,9 @@ local function serialise(state: State): { [string]: any }
 		receipts = state.purchases.receiptOrder,
 		hatchTokens = state.purchases.hatchTokens,
 		pendingLimited = state.purchases.pendingLimited,
+		rebirths = state.rebirths,
+		dailyLast = state.dailyLast,
+		dailyStreak = state.dailyStreak,
 	}
 end
 
@@ -389,6 +485,9 @@ local function restore(state: State, saved: { [string]: any })
 	state.coins = tonumber(saved.coins) or Config.Economy.StartCoins
 	state.mp = math.max(tonumber(saved.mp) or 0, 0)
 	state.speedXp = math.max(tonumber(saved.speedXp) or 0, 0)
+	state.rebirths = math.clamp(math.floor(tonumber(saved.rebirths) or 0), 0, Rebirth.MAX)
+	state.dailyLast = tonumber(saved.dailyLast)
+	state.dailyStreak = math.max(math.floor(tonumber(saved.dailyStreak) or 0), 0)
 	local purchases = state.purchases
 	for key, owned in (if type(saved.passes) == "table" then saved.passes else {}) :: { [string]: any } do
 		purchases.passes[key] = owned == true
@@ -423,7 +522,11 @@ local function restore(state: State, saved: { [string]: any })
 		end
 	end
 	local away = clock() - (tonumber(saved.savedAt) or clock())
-	state.coins += Economy.offline(Base.income(state.base, 1), away, Config.Economy.OfflineCapSeconds)
+	state.coins += Economy.offline(
+		Base.income(state.base, Rebirth.multiplier(state.rebirths)),
+		away,
+		Config.Economy.OfflineCapSeconds
+	)
 end
 
 local function load(state: State)
@@ -471,6 +574,8 @@ local function add(player: Player, onJoin: (Player) -> ())
 		mp = 0,
 		speedXp = 0,
 		purchases = Store.new(),
+		rebirths = 0,
+		dailyStreak = 0,
 	}
 	states[player] = state
 	load(state)
@@ -478,6 +583,7 @@ local function add(player: Player, onJoin: (Player) -> ())
 	for _, fn in loadedListeners do
 		fn(player)
 	end
+	Session.claimDaily(player)
 	player.CharacterAdded:Connect(function()
 		task.defer(Session.applySpeed, player)
 	end)
@@ -531,7 +637,7 @@ function Session.start(onJoin: (Player) -> (), onLeave: (Player) -> ())
 			end, function()
 				return Eggs.mutation(myLuck, rng)
 			end)
-			state.coins += Base.income(state.base, income * passIncome) * step
+			state.coins += Base.income(state.base, income * passIncome * Rebirth.multiplier(state.rebirths)) * step
 			publish(state)
 			if #hatched > 0 then
 				for _, fn in hatchListeners do

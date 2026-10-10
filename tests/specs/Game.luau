@@ -2,6 +2,7 @@
 -- Runs the REAL server scripts against the fake Roblox world: the map is built, players get bases, eggs are bought off the
 -- belt, hatch and earn, characters are raided, locks hold, and admin events change the multipliers.
 local Fake = require("../fake/Roblox")
+local Daily = require("../../src/shared/Game/Daily")
 local Eggs = require("../../src/shared/Game/Eggs")
 
 return function(t)
@@ -42,7 +43,9 @@ return function(t)
 	local ana = world.addPlayer("Ana", 11)
 	local ben = world.addPlayer("Ben", 12)
 	world.advance(0.6)
-	t.equal("a joining player starts with coins", ana:GetAttribute("Coins"), 150)
+	-- 150 starting coins plus the first daily reward
+	local firstDay = (Daily.reward(1, 0))
+	t.equal("a joining player starts with coins and the first daily reward", ana:GetAttribute("Coins"), 150 + firstDay)
 	t.equal("and the starting slots", ana:GetAttribute("Slots"), 6)
 	local anaPlot = (map :: Instance):FindFirstChild("Plot_1") :: Instance
 	local benPlot = (map :: Instance):FindFirstChild("Plot_2") :: Instance
@@ -55,7 +58,7 @@ return function(t)
 	local buys = world.prompts(world.workspace, "Buy")
 	t.equal("an egg on the belt can be bought", #buys, 1)
 	buys[1].Triggered:Fire(ana)
-	t.equal("buying takes the price", ana:GetAttribute("Coins"), 50)
+	t.equal("buying takes the price", ana:GetAttribute("Coins"), 150 + firstDay - 100)
 	t.equal("the new egg counts as hatching", ana:GetAttribute("EggsHatching"), 1)
 	t.equal("and there are no characters yet", ana:GetAttribute("Characters"), 0)
 	t.equal("and removes the egg from the belt", #world.prompts(world.workspace, "Buy"), 0)
@@ -64,7 +67,11 @@ return function(t)
 	-- too poor: the 1000-coin egg is refused
 	conveyor.spawn("Disco")
 	world.prompts(world.workspace, "Buy")[1].Triggered:Fire(ana)
-	t.equal("a player who cannot afford an egg keeps their coins", math.floor(ana:GetAttribute("Coins") :: number), 50)
+	t.equal(
+		"a player who cannot afford an egg keeps their coins",
+		math.floor(ana:GetAttribute("Coins") :: number),
+		150 + firstDay - 100
+	)
 	t.equal("and the egg stays on the belt", #world.prompts(world.workspace, "Buy"), 1)
 
 	-- hatching and earning

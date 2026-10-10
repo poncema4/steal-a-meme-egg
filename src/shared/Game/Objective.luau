@@ -15,6 +15,7 @@ export type Facts = {
 	coins: number,
 	mp: number, -- Meme Points
 	speedLevel: number,
+	canRebirth: boolean?, -- coins have reached the cost of the next rebirth
 }
 
 -- The speed level you need to outrun the guardians of the furthest terrain you have unlocked, while carrying an egg.
@@ -31,6 +32,9 @@ end
 function Objective.hint(f: Facts): string
 	if f.carrying then
 		return "RUN HOME with the egg before the guardian catches you!"
+	end
+	if f.canRebirth then
+		return "You can REBIRTH! Hold E on the purple pad at the left of your base for a permanent coin boost."
 	end
 	if f.eggs == 0 and f.characters == 0 then
 		if f.coins >= 100 then

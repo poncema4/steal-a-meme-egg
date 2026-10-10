@@ -33,6 +33,12 @@ Limited eggs: every 30 minutes one of three exclusive eggs (Golden Goose, Cosmic
 
 Next: game passes and Robux products, then the shop screen.
 
+## Reasons to come back (built)
+- **Rebirth** (purple pad at the left of your base, hold E): spend 2,000,000 coins (5x more each time, up to 20) to reset coins and your base for a permanent +50% income. Meme Points, speed and passes stay, so every terrain you opened stays open. You cannot rebirth while carrying an egg.
+- **Daily reward**: log in on consecutive UTC days to grow a streak; coins scale with the day and with your income (at least a minute's worth), and day 7 adds a free Disco egg. A missed day resets it. It is paid automatically when you join.
+- **Player list scores**: Meme Pts and Rebirths show beside every name (Roblox leaderstats).
+- **Objective line**: the HUD always tells you the next step, including when a rebirth is affordable.
+
 ## Live ops (the reason people join)
 - Schedule every half hour on every server: Lucky Hour (:00), Egg Rain (:10), Coin Rain (:20).
 - Admin commands in chat (group owner/rank 250+; everyone in Studio): `/event <name> [seconds]`, `/give <coins>`, `/giveall <coins>`, `/announce <text>`, `/clear`, `/help`. Admin events go to EVERY server through MessagingService.

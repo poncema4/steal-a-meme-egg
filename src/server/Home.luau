@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
+local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
 local Plots = require(script.Parent.Plots)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
@@ -65,6 +66,12 @@ local function refreshLabels(player: Player)
 			then "max speed"
 			else `speed {level + 1}: {Economy.format(Progression.speedCost(level))}`
 	end
+	local reborn = plot.rebirthPad:FindFirstChildOfClass("ProximityPrompt")
+	if reborn then
+		reborn.ObjectText = if state.rebirths >= Rebirth.MAX
+			then "fully reborn"
+			else `{Economy.format(Rebirth.cost(state.rebirths))} coins, x{Rebirth.multiplier(state.rebirths + 1)}`
+	end
 	local slot = plot.slotPad:FindFirstChildOfClass("ProximityPrompt")
 	if slot then
 		slot.ObjectText = if state.base.size >= Config.Economy.MaxSlots
@@ -84,6 +91,17 @@ function Home.start(plots: { World.Plot })
 			end
 			local _, message = Session.buySpeed(who)
 			notify(who, message)
+		end)
+		local reborn = addPrompt(plot.rebirthPad, "Rebirth", "", 1.2)
+		reborn.Triggered:Connect(function(who)
+			if Plots.of(who) ~= plot then
+				return
+			end
+			local ok, message = Session.rebirth(who)
+			notify(who, message)
+			if ok then
+				sfx(who, "limited")
+			end
 		end)
 		local slot = addPrompt(plot.slotPad, "Buy slot", "", 0.3)
 		slot.Triggered:Connect(function(who)

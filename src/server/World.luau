@@ -12,6 +12,7 @@ export type Plot = {
 	lockPad: BasePart,
 	treadmill: BasePart,
 	slotPad: BasePart,
+	rebirthPad: BasePart,
 	sign: TextLabel,
 	index: number,
 	center: Vector3,
@@ -123,6 +124,13 @@ local function buildPlot(index: number, parent: Instance): Plot
 		Color3.fromRGB(60, 200, 90),
 		model
 	)
+	local rebirthPad = part(
+		"RebirthPad",
+		Vector3.new(5, 0.5, 5),
+		CFrame.new(center + Vector3.new(-20, 0.25, -15 * facing)),
+		Color3.fromRGB(170, 70, 255),
+		model
+	)
 	local sign = part(
 		"SignPost",
 		Vector3.new(14, 8, 1),
@@ -151,6 +159,7 @@ local function buildPlot(index: number, parent: Instance): Plot
 		lockPad = lockPad,
 		treadmill = treadmill,
 		slotPad = slotPad,
+		rebirthPad = rebirthPad,
 		sign = label,
 		index = index,
 		center = center,
