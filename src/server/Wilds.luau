@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local Config = require(ReplicatedStorage.Shared.Config)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Guardian = require(ReplicatedStorage.Shared.Game.Guardian)
+local Layout = require(ReplicatedStorage.Shared.Game.Layout)
 local Nest = require(ReplicatedStorage.Shared.Game.Nest)
 local Plots = require(script.Parent.Plots)
 local Session = require(script.Parent.Session)
@@ -109,12 +110,9 @@ local function label(parent: BasePart, lines: { string }, offset: number, width:
 end
 
 -- Scenery per terrain: simple parts only (no meshes), seeded so every server builds the same map.
-local function decorate(zone: Zones.Zone, parent: Instance)
-	local rng = Random.new(zone.startX)
-	for _ = 1, 28 do
-		local x = zone.startX + 12 + rng:NextNumber() * (zone.length - 24)
-		local z = (rng:NextNumber() - 0.5) * (Zones.WIDTH - 20)
-		local s = 3 + rng:NextNumber() * 5
+local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instance)
+	for _, prop in Layout.scenery(zone, nests) do
+		local x, z, s = prop.x, prop.z, prop.size
 		if zone.id == "Meadow" then
 			box("Trunk", Vector3.new(1.6, s * 1.6, 1.6), CFrame.new(x, s * 0.8, z), Color3.fromRGB(110, 70, 40), parent)
 			local leaves = box(
@@ -136,7 +134,7 @@ local function decorate(zone: Zones.Zone, parent: Instance)
 			box("CactusArm", Vector3.new(3.4, 1.4, 1.4), CFrame.new(x, s * 0.9, z), Color3.fromRGB(30, 150, 60), parent)
 		elseif zone.id == "Volcano" then
 			box("Rock", Vector3.new(s * 1.4, s, s * 1.2), CFrame.new(x, s * 0.5, z), Color3.fromRGB(50, 40, 45), parent)
-			if rng:NextNumber() < 0.35 then
+			if prop.extra < 0.35 then
 				box(
 					"Lava",
 					Vector3.new(s * 2, 0.2, s * 2),
@@ -200,15 +198,9 @@ local function setEgg(entry: Entry, tier: string?)
 	end
 end
 
-local function buildNests(zone: Zones.Zone, parent: Instance)
-	local rng = Random.new(zone.startX + 7)
-	for i = 1, zone.nests do
-		local x = zone.startX + 25 + (i - 1) * ((zone.length - 50) / math.max(zone.nests - 1, 1))
-		local side = if i % 2 == 0 then 1 else -1
-		local z = side * (22 + rng:NextNumber() * 55)
-		local tier = Zones.eggFor(zone, function()
-			return rng:NextNumber()
-		end)
+local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instance)
+	for i, place in nests do
+		local x, z, tier = place.x, place.z, place.tier
 		local model = Instance.new("Model")
 		model.Name = `Nest_{zone.id}_{i}`
 		-- a Roblox cylinder runs along its X size, so the thin height is X and the disc is Y by Z; the turn stands it up
@@ -231,7 +223,7 @@ local function buildNests(zone: Zones.Zone, parent: Instance)
 			id = model.Name,
 			zone = zone,
 			nest = Nest.new(tier),
-			guardian = Guardian.new(x + 9, z, zone.guardianSpeed),
+			guardian = Guardian.new(x + Layout.GUARDIAN_OFFSET, z, zone.guardianSpeed),
 			model = model,
 			egg = egg,
 			prompt = prompt,
@@ -262,8 +254,9 @@ function Wilds.build(): Folder
 			folder
 		)
 		floor:SetAttribute("Zone", zone.id)
-		decorate(zone, folder)
-		buildNests(zone, folder)
+		local nests = Layout.nests(zone)
+		decorate(zone, nests, folder)
+		buildNests(zone, nests, folder)
 		-- the gate: a see-through frame with the price on it (the server, not the frame, keeps people out)
 		local gate = box(
 			`Gate_{zone.id}`,
