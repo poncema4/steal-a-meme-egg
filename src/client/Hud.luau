@@ -244,17 +244,18 @@ function Hud.start(player: Player, actions: Actions?)
 
 	-- the hotbar: three trap slots (keys 1-3, or tap). At most 3 traps are out at once, so a slot lights up for each one left.
 	local trapRemote = remotes:WaitForChild("PlaceTrap") :: RemoteEvent
-	local slotSide = Ui.tap(gui, 56)
-	local hotbar = box(
-		gui,
-		"Hotbar",
-		UDim2.fromOffset(slotSide * 3 + 20, slotSide),
-		UDim2.new(0.5, 0, 1, -14),
-		Vector2.new(0.5, 1)
-	)
+	-- up to six slots (six only with the Trap Master pass); the bar is sized for six so it never grows into the event clock
+	local startCamera = workspace.CurrentCamera
+	local viewport = if startCamera then startCamera.ViewportSize else Vector2.new(1280, 720)
+	local designWidth = viewport.X / UiScale.factor(viewport.X, viewport.Y, Ui.isTouch())
+	local bar = UiScale.bottomBar(designWidth, 6, Ui.tap(gui, 46))
+	local slotSide = bar.slot
+	local hotbar =
+		box(gui, "Hotbar", UDim2.fromOffset(bar.hotbarWidth, slotSide), UDim2.new(0.5, 0, 1, -14), Vector2.new(0.5, 1))
 	local hotbarList = Instance.new("UIListLayout")
 	hotbarList.FillDirection = Enum.FillDirection.Horizontal
-	hotbarList.Padding = UDim.new(0, 10)
+	hotbarList.Padding = UDim.new(0, bar.gap)
+	hotbarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	hotbarList.SortOrder = Enum.SortOrder.LayoutOrder
 	hotbarList.Parent = hotbar
 	local trapSlots: { TextButton } = {}
@@ -295,7 +296,7 @@ function Hud.start(player: Player, actions: Actions?)
 	eventClock.Name = "EventClock"
 	eventClock.AnchorPoint = Vector2.new(1, 1)
 	eventClock.Position = UDim2.new(1, -16, 1, -12)
-	eventClock.Size = UDim2.fromOffset(380, 60)
+	eventClock.Size = UDim2.fromOffset(bar.clockWidth, 60)
 	eventClock.BackgroundTransparency = 1
 	eventClock.Parent = gui
 	local clockIcon = Ui.label(eventClock, "ClockIcon", 30)

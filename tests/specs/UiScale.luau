@@ -35,4 +35,31 @@ return function(t)
 	t.equal("a phone shows 4", UiScale.leaderboardRows(390, true), 4)
 	t.equal("a tiny window shows 3", UiScale.leaderboardRows(200, false), 3)
 	t.equal("a NaN height shows 3", UiScale.leaderboardRows(0 / 0, false), 3)
+
+	-- the bottom bar: six trap slots and the event clock never touch, on any screen from a small phone to a big monitor
+	for _, spec in
+		{
+			{ 1280, 720, false },
+			{ 1920, 1080, false },
+			{ 844, 390, true },
+			{ 812, 375, true },
+			{ 740, 360, true },
+			{ 932, 430, true },
+		}
+	do
+		local factor = UiScale.factor(spec[1] :: number, spec[2] :: number, spec[3] :: boolean)
+		local width = (spec[1] :: number) / factor
+		for _, slots in { 3, 6 } do
+			local bar = UiScale.bottomBar(width, slots, UiScale.tap(46, factor))
+			local hotbarRight = width / 2 + bar.hotbarWidth / 2
+			local clockLeft = width - 16 - bar.clockWidth
+			t.check(
+				`{spec[1]}x{spec[2]} with {slots} slots: the clock starts after the hotbar ends`,
+				clockLeft >= hotbarRight or bar.clockWidth <= 100,
+				`hotbar to {hotbarRight}, clock from {clockLeft}`
+			)
+			t.check(`{spec[1]}x{spec[2]}: slots are at least a fingertip wide`, bar.slot * factor >= 44 - 1e-6)
+		end
+	end
+	t.check("a roomy screen gives the clock its full width", UiScale.bottomBar(1280, 6, 46).clockWidth == 360)
 end

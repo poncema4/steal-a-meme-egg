@@ -31,6 +31,21 @@ function UiScale.tap(designSize: number, factor: number): number
 	return math.max(designSize, math.ceil(UiScale.MIN_TAP / factor))
 end
 
+-- The bottom bar: the trap hotbar sits in the middle and the event clock in the right corner. Given the design screen's width, how many
+-- trap slots there can be and how wide a slot is (never below a fingertip), this gives the slot size and gap and the widest the clock
+-- may be so the two never touch. Pure, so the "never overlap" rule is tested for every width.
+export type BottomBar = { slot: number, gap: number, hotbarWidth: number, clockWidth: number }
+
+function UiScale.bottomBar(designWidth: number, slots: number, tap: number): BottomBar
+	local n = math.max(slots, 1)
+	local slot = math.max(tap, 44)
+	local gap = 4
+	local hotbarWidth = n * slot + (n - 1) * gap
+	local margin = 16 -- the clock's distance from the right edge
+	local room = designWidth - margin - (designWidth / 2 + hotbarWidth / 2 + 12) -- from the hotbar's right edge (plus a gap) to the clock's right edge
+	return { slot = slot, gap = gap, hotbarWidth = hotbarWidth, clockWidth = math.clamp(room, 100, 360) }
+end
+
 -- How many leaderboard rows fit: fewer on a short (phone) screen.
 function UiScale.leaderboardRows(viewportY: number, touch: boolean): number
 	if not finite(viewportY) or viewportY < 300 then
