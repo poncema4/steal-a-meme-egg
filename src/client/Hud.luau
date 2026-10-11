@@ -30,9 +30,13 @@ export type Actions = {
 local GREEN_TEXT = Color3.fromRGB(80, 255, 90)
 local CYAN_TEXT = Color3.fromRGB(80, 220, 255)
 
+-- "3m 16s", or just "45s" under a minute: how the reference's event clock reads
 local function clock(seconds: number): string
 	seconds = math.max(0, math.floor(seconds))
-	return string.format("%d:%02d", seconds // 60, seconds % 60)
+	if seconds < 60 then
+		return `{seconds}s`
+	end
+	return `{seconds // 60}m {seconds % 60}s`
 end
 
 local function number(player: Instance, name: string, default: number): number
@@ -305,6 +309,12 @@ function Hud.start(player: Player, actions: Actions?)
 	clockText.Size = UDim2.new(1, -62, 1, 0)
 	clockText.TextXAlignment = Enum.TextXAlignment.Right
 	clockText.TextScaled = true
+	-- the event's name, small, above the countdown
+	local clockName = Ui.label(eventClock, "ClockName", 16, Color3.fromRGB(255, 240, 150))
+	clockName.AnchorPoint = Vector2.new(1, 0)
+	clockName.Position = UDim2.new(1, -62, 0, -16)
+	clockName.Size = UDim2.new(1, -62, 0, 20)
+	clockName.TextXAlignment = Enum.TextXAlignment.Right
 
 	-- top right: who is fastest and richest
 	local board = Instance.new("Frame")
@@ -468,7 +478,7 @@ function Hud.start(player: Player, actions: Actions?)
 			local id, ends = string.match(entry, "^(%w+):(%d+%.?%d*)$")
 			local eventDef = id and Events.Defs[id]
 			if eventDef and ends and tonumber(ends) :: number > now then
-				table.insert(lines, `{eventDef.name}  {clock((tonumber(ends) :: number) - now)}`)
+				table.insert(lines, `{eventDef.name}\n{clock((tonumber(ends) :: number) - now)} left`)
 			end
 		end
 		banner.Text = "" -- running events are shown by the clock in the corner (also kept in `lines` for it)
@@ -477,10 +487,14 @@ function Hud.start(player: Player, actions: Actions?)
 			string.match(tostring(ReplicatedStorage:GetAttribute("NextEvent") or ""), "^(%w+):(%d+%.?%d*)$")
 		local nextDef = nextId and Events.Defs[nextId]
 		if #lines > 0 then
-			clockText.Text = lines[1]
+			local name, remaining = string.match(lines[1], "^(.-)\n(.*)$")
+			clockName.Text = name or ""
+			clockText.Text = remaining or lines[1]
 		elseif nextDef and nextAt then
-			clockText.Text = `{nextDef.name} in {clock((tonumber(nextAt) :: number) - now)}`
+			clockName.Text = nextDef.name
+			clockText.Text = `in {clock((tonumber(nextAt) :: number) - now)}`
 		else
+			clockName.Text = ""
 			clockText.Text = ""
 		end
 	end

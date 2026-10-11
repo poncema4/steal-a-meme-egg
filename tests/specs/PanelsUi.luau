@@ -44,10 +44,22 @@ return function(t)
 		return
 	end
 	local api = why :: any
-	hud.start(ana, { shop = shop.toggle, index = api.index, eggs = api.eggs, pets = api.pets })
+	hud.start(ana, { shop = shop.toggle, index = api.index, eggs = api.eggs, pets = api.pets, trophy = api.trophy })
 	world.advance(1)
 	local screen = ana.PlayerGui:FindFirstChild("Panels") :: Instance
 	local hudGui = ana.PlayerGui:FindFirstChild("Hud") :: Instance
+	local trophyButton = find(hudGui, "TrophyButton") :: TextButton
+	t.check("and the trophy button, like the reference", trophyButton ~= nil)
+	trophyButton.Activated:Fire()
+	world.advance(1)
+	local trophyRows = find(screen, "Row_Ana")
+	t.check("the trophy button opens the top players, with Ana in it", trophyRows ~= nil)
+	t.check(
+		"showing four columns: player, speed, money and rebirths",
+		trophyRows ~= nil and find(trophyRows, "C4") ~= nil
+	)
+	trophyButton.Activated:Fire()
+	world.advance(0.5)
 	t.check(
 		"the HUD now has the Index, eggs and pets buttons",
 		find(hudGui, "IndexButton") ~= nil and find(hudGui, "EggsButton") ~= nil and find(hudGui, "PetsButton") ~= nil
