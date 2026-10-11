@@ -240,7 +240,7 @@ local function buildPlot(index: number, parent: Instance): Plot
 	model:SetAttribute("Index", index)
 	model:SetAttribute("OwnerUserId", 0)
 	local floor =
-		part("Floor", Vector3.new(World.PEN, 1, World.PEN), cf(f, 0, -0.3, 0), Color3.fromRGB(112, 214, 84), model)
+		part("Floor", Vector3.new(World.PEN, 1, World.PEN), cf(f, 0, -0.3, 0), Color3.fromRGB(86, 198, 66), model)
 	model.PrimaryPart = floor
 	buildFence(model, f, color)
 	local slots: { BasePart } = {}
@@ -353,7 +353,7 @@ local function buildCorridor(map: Instance)
 				"SafeFloor",
 				Vector3.new(x1 - x0, 2, z1 - z0),
 				CFrame.new((x0 + x1) / 2, -1, (z0 + z1) / 2),
-				if (k + j) % 2 == 0 then Color3.fromRGB(104, 208, 72) else Color3.fromRGB(92, 192, 62),
+				if (k + j) % 2 == 0 then Color3.fromRGB(72, 192, 56) else Color3.fromRGB(64, 178, 50),
 				map
 			)
 		end

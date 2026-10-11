@@ -73,7 +73,7 @@ function Hud.start(player: Player, actions: Actions?)
 		handler: () -> ()
 	)
 		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(150, tapHeight))
-		Ui.addIcon(b, icon, "left", "", 64, 1)
+		Ui.addIcon(b, icon, "left", "", tapHeight + 8, tapHeight - 6)
 		b.LayoutOrder = order
 		b.Activated:Connect(handler)
 		return b
@@ -169,8 +169,8 @@ function Hud.start(player: Player, actions: Actions?)
 	money.Size = UDim2.new(1, 0, 0, 62)
 	money.Position = UDim2.fromOffset(0, 54)
 	money.TextXAlignment = Enum.TextXAlignment.Left
-	local hasShoe = Ui.addIcon(speed, "shoe", "left", "", 79, 1.35)
-	Ui.addIcon(money, "cash", "left", "", 88, 1.2)
+	local hasShoe = Ui.addIcon(speed, "shoe", "left", "", 80, 64)
+	Ui.addIcon(money, "cash", "left", "", 92, 76)
 
 	-- top centre: the terrain you are in, what to do next, and any live event
 	local zone = Instance.new("Frame")
