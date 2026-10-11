@@ -35,7 +35,6 @@ Shop.toggle = function() end
 function Shop.start(player: Player)
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local buyKey = remotes:WaitForChild("Buy") :: RemoteEvent
-	local buyLimited = remotes:WaitForChild("BuyLimited") :: RemoteEvent
 
 	local gui = Ui.screen(player, "Shop", 5)
 	local panel = Ui.panel(gui, "SHOP", 560, 520)
@@ -64,10 +63,12 @@ function Shop.start(player: Player)
 	list.ScrollBarThickness = 6
 	list.Parent = body
 
-	-- the limited egg: a banner with the pet that hatches from it, the stock and the countdown
+	-- the limited egg: sold for Robux only. A banner with the egg, its stock and countdown, one Robux button, and the pets it can
+	-- hatch: hover one (or tap it on a phone) to see its stats
+	local BANNER_H = 176
 	local banner = Instance.new("Frame")
 	banner.Name = "LimitedCard"
-	banner.Size = UDim2.new(1, -8, 0, 124)
+	banner.Size = UDim2.new(1, -8, 0, BANNER_H)
 	banner.BackgroundColor3 = Color3.fromRGB(74, 52, 120)
 	banner.BorderSizePixel = 0
 	banner.Parent = list
@@ -76,8 +77,13 @@ function Shop.start(player: Player)
 	local bannerArt = Ui.label(banner, "Art", 40)
 	bannerArt.Size = UDim2.fromOffset(100, 100)
 	bannerArt.Position = UDim2.fromOffset(10, 12)
-	bannerArt.Text = "?"
-	local bannerPet: ViewportFrame? = nil
+	bannerArt.Text = ""
+	local bannerPicture = Instance.new("ImageLabel")
+	bannerPicture.Name = "Picture"
+	bannerPicture.BackgroundTransparency = 1
+	bannerPicture.Size = UDim2.fromScale(1, 1)
+	bannerPicture.ScaleType = Enum.ScaleType.Fit
+	bannerPicture.Parent = bannerArt
 	local function line(
 		parent: Instance,
 		name: string,
@@ -94,14 +100,24 @@ function Shop.start(player: Player)
 		l.TextXAlignment = Enum.TextXAlignment.Left
 		return l
 	end
-	local limitedTitle = line(banner, "LimitedTitle", 120, 8, 400, 30, 24, Color3.fromRGB(255, 221, 68))
-	local limitedInfo = line(banner, "LimitedInfo", 120, 38, 400, 22, 16)
-	local limitedCoins =
-		Ui.button(banner, "LimitedCoins", "", Ui.Palettes.Green, UDim2.fromOffset(210, Ui.tap(gui, 42)))
-	limitedCoins.Position = UDim2.fromOffset(120, 72)
-	local limitedRobux = Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Blue, UDim2.fromOffset(150, Ui.tap(gui, 42)))
-	limitedRobux.Position = UDim2.fromOffset(340, 72)
-	limitedRobux.Visible = false
+	local limitedTitle = line(banner, "LimitedTitle", 120, 8, 340, 30, 24, Color3.fromRGB(255, 221, 68))
+	limitedTitle.TextScaled = true
+	local limitedInfo = line(banner, "LimitedInfo", 120, 38, 340, 22, 16)
+	local limitedRobux =
+		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(170, Ui.tap(gui, 42)))
+	limitedRobux.Position = UDim2.fromOffset(120, 68)
+	limitedRobux.TextSize = 22
+	local petRow = Instance.new("Frame")
+	petRow.Name = "Pets"
+	petRow.BackgroundTransparency = 1
+	petRow.Position = UDim2.fromOffset(10, 120)
+	petRow.Size = UDim2.new(1, -20, 0, 48)
+	petRow.Parent = banner
+	local petStats = line(banner, "PetStats", 196, 120, 260, 48, 15, Color3.fromRGB(220, 225, 245))
+	petStats.TextWrapped = true
+	petStats.Text = "Hover a pet to see its stats"
+	local petButtons: { ImageButton } = {}
+	local shownTier = ""
 
 	-- the shop lists are grids of item cards built from the catalogue (only items with a real id): a picture, the name, what it
 	-- does and a buy button
@@ -117,7 +133,7 @@ function Shop.start(player: Player)
 		hatch1 = "egg",
 		hatch5 = "egg",
 	}
-	local y = 124 + 14
+	local y = BANNER_H + 14
 	local CARD_W, CARD_H, GAP = 166, 268, 10 -- tall enough that the two-line blurb sits above the button, never under it
 	local function section(title: string)
 		local l = line(list, "Section", 4, y, 400, 26, 20, Color3.fromRGB(150, 220, 255))
@@ -211,10 +227,10 @@ function Shop.start(player: Player)
 	addCards("product", hatchOnly :: any, "INSTANT HATCH")
 	list.CanvasSize = UDim2.fromOffset(0, y)
 
-	limitedCoins.Activated:Connect(function()
-		buyLimited:FireServer()
-	end)
 	limitedRobux.Activated:Connect(function()
+		if ((ReplicatedStorage:GetAttribute("LimitedLeft") :: number?) or 0) <= 0 then
+			return -- sold out
+		end
 		for key, product in catalog.Products do
 			if
 				product.kind == "limited"
@@ -233,46 +249,53 @@ function Shop.start(player: Player)
 			local left = (ReplicatedStorage:GetAttribute("LimitedLeft") :: number?) or 0
 			local ends = (ReplicatedStorage:GetAttribute("LimitedEnds") :: number?) or 0
 			limitedTitle.Text = `LIMITED: {tier.name}`
-			-- the banner shows the pet this egg hatches (its most common one), as a 3D model
-			if bannerPet and bannerPet:GetAttribute("For") ~= tier.id then
-				bannerPet:Destroy()
-				bannerPet = nil
-			end
-			if not bannerPet and tier.pool[1] then
-				local view = Ui.modelView(bannerArt, "Pets", tier.pool[1].id)
-				if view then
-					view:SetAttribute("For", tier.id)
-					bannerArt.Text = ""
-					bannerPet = view
+			bannerPicture.Image = (Config.EggIcons :: { [string]: string })[tier.id]
+				or Ui.petIconId((tier.pool[#tier.pool] or { id = "" }).id)
+				or ""
+			-- the pets this egg can hatch, rebuilt when the egg changes
+			if shownTier ~= tier.id then
+				shownTier = tier.id
+				for _, b in petButtons do
+					b:Destroy()
 				end
-			end
-			-- the flat picture of the best character this egg can hatch (the UI is 2D; a "?" was showing instead)
-			if not bannerPet then
-				local best = tier.pool[#tier.pool]
-				local id = best and Ui.petIconId(best.id)
-				local picture = bannerArt:FindFirstChild("Picture") :: ImageLabel?
-				if id then
-					if not picture then
-						local p = Instance.new("ImageLabel")
-						p.Name = "Picture"
-						p.BackgroundTransparency = 1
-						p.Size = UDim2.fromScale(1, 1)
-						p.ScaleType = Enum.ScaleType.Fit
-						p.Parent = bannerArt
-						picture = p
+				table.clear(petButtons)
+				local total = 0
+				for _, entry in tier.pool do
+					total += entry.weight
+				end
+				for i, entry in tier.pool do
+					local c = Eggs.character(entry.id)
+					local b = Instance.new("ImageButton")
+					b.Name = `Pet_{entry.id}`
+					b.Size = UDim2.fromOffset(52, 48)
+					b.Position = UDim2.fromOffset((i - 1) * 58, 0)
+					b.BackgroundColor3 = Color3.fromRGB(46, 34, 80)
+					b.Image = Ui.petIconId(entry.id) or ""
+					b.ScaleType = Enum.ScaleType.Fit
+					b.Parent = petRow
+					round(b, 10)
+					local stats = if c
+						then `{c.name}: {c.rarity}, {math.floor(entry.weight / total * 100 + 0.5)}% chance, +{Economy.format(
+							c.income
+						)}/s`
+						else entry.id
+					local function show()
+						petStats.Text = stats
 					end
-					(picture :: ImageLabel).Image = id
-					bannerArt.Text = ""
+					b.MouseEnter:Connect(show)
+					b.Activated:Connect(show) -- a tap on a phone, a press on a gamepad
+					b.SelectionGained:Connect(show)
+					table.insert(petButtons, b)
 				end
+				petStats.Text = "Hover a pet to see its stats"
 			end
 			limitedInfo.Text = `{left} left in the world, next egg in {clock(ends - workspace:GetServerTimeNow())}`
-			limitedCoins.Text = if left > 0 then `Buy: {Economy.format(tier.price)} coins` else "SOLD OUT"
-			Ui.setPalette(limitedCoins, if left > 0 then Ui.Palettes.Green else Ui.Palettes.Grey)
-			limitedRobux.Visible = false
+			limitedRobux.Text = "SOLD OUT"
+			Ui.setPalette(limitedRobux, Ui.Palettes.Grey)
 			for _, product in catalog.Products do
 				if product.kind == "limited" and product.tier == tier.id and product.id ~= 0 and left > 0 then
-					limitedRobux.Visible = true
-					limitedRobux.Text = `R${product.robux}`
+					limitedRobux.Text = `Buy R${product.robux}`
+					Ui.setPalette(limitedRobux, Ui.Palettes.Green)
 				end
 			end
 		end

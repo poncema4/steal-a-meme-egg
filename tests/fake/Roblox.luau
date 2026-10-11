@@ -356,6 +356,7 @@ function Fake.world()
 		DescendantAdded = true,
 		ChildAdded = true,
 		MouseEnter = true,
+		SelectionGained = true,
 		MouseLeave = true,
 		MouseButton1Down = true,
 		MouseButton1Up = true,
