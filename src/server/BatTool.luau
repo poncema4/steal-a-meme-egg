@@ -8,8 +8,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Bats = require(ReplicatedStorage.Shared.Game.Bats)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
+local Config = require(ReplicatedStorage.Shared.Config)
 local Models = require(script.Parent.Models)
 local Session = require(script.Parent.Session)
+local Traps = require(script.Parent.Traps)
 local Wilds = require(script.Parent.Wilds)
 
 local BatTool = {}
@@ -21,7 +23,8 @@ local notify: (Player, string) -> () = function(_player: Player, _text: string) 
 local sfx: (Player, string) -> () = function(_player: Player, _name: string) end
 
 local GRIP_READY = CFrame.new(0, -1.2, 0) * CFrame.Angles(math.rad(-25), 0, 0)
-local GRIP_SWUNG = CFrame.new(0, -1.2, 0) * CFrame.Angles(math.rad(-115), 0, 0)
+-- Roblox applies Grip inverted: a POSITIVE angle here tips the bat FORWARD (the old -115 swung it back over the shoulder)
+local GRIP_SWUNG = CFrame.new(0, -1.2, 0) * CFrame.Angles(math.rad(80), 0, 0)
 
 local function rootOf(player: Player): BasePart?
 	local character = player.Character
@@ -106,6 +109,7 @@ local function build(player: Player, tier: number): Tool
 	local tool = Instance.new("Tool")
 	tool.Name = "Bat"
 	tool.ToolTip = bat.name
+	tool.TextureId = Config.Icons.bat
 	tool.CanBeDropped = false
 	tool.RequiresHandle = true
 	tool.Grip = GRIP_READY
@@ -144,7 +148,27 @@ local function build(player: Player, tier: number): Tool
 	return tool
 end
 
--- Gives the player the bat for their tier (replacing the one they hold) and equips it.
+-- The trap item: hold it and click to set a bear trap where you stand (the server checks where and how many).
+local function buildTrap(player: Player): Tool
+	local tool = Instance.new("Tool")
+	tool.Name = "Trap"
+	tool.ToolTip = "Bear Trap: click to set one"
+	tool.TextureId = Config.Icons.trap
+	tool.CanBeDropped = false
+	tool.RequiresHandle = false
+	tool.Activated:Connect(function()
+		local ok, message = Traps.place(player)
+		notify(player, message)
+		if ok then
+			sfx(player, "click")
+		end
+	end)
+	return tool
+end
+
+-- Puts the player's items in their backpack like any Roblox game: the bat for their tier and the trap. Nothing is forced into
+-- their hands; they pick an item from the bar (1, 2 or a click) and put it away again. A better bat replaces the old one, and
+-- if they were holding the old one they hold the new one.
 function BatTool.give(player: Player)
 	local tier = (player:GetAttribute("BatTier") :: number?) or 0
 	local character = player.Character
@@ -152,6 +176,7 @@ function BatTool.give(player: Player)
 	if not character or not backpack then
 		return
 	end
+	local holding = character:FindFirstChild("Bat") ~= nil
 	local function clear(holder: Instance)
 		for _, child in holder:GetChildren() do
 			if child:IsA("Tool") and child.Name == "Bat" then
@@ -164,8 +189,11 @@ function BatTool.give(player: Player)
 	local tool = build(player, tier)
 	tool.Parent = backpack
 	given[player] = tier
+	if not backpack:FindFirstChild("Trap") and not character:FindFirstChild("Trap") then
+		buildTrap(player).Parent = backpack
+	end
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if humanoid then
+	if humanoid and holding then
 		pcall(function()
 			humanoid:EquipTool(tool)
 		end)
