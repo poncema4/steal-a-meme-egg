@@ -197,18 +197,19 @@ return table.freeze({
 	}),
 	-- HUD icons: sticker renders of the brick models (art/ui/make_all.sh), uploaded to the studio group. These are IMAGE ids (an ImageLabel draws
 	-- nothing from a Decal id). A missing icon falls back to a glyph.
+	-- HUD and shop icons: smooth cartoon art like Steal an Egg (art/ui/cartoon_icons.py), one Image id each
 	Icons = table.freeze({
-		book = "rbxassetid://131870281566055",
-		cart = "rbxassetid://88596727948666",
-		cash = "rbxassetid://81717768066058",
-		clock = "rbxassetid://80638444085571",
-		egg = "rbxassetid://101348751354332",
-		paw = "rbxassetid://104733613065962",
-		potion = "rbxassetid://92228450259238",
-		shoe = "rbxassetid://139495518818150",
-		trap = "rbxassetid://110889935273799",
-		bat = "rbxassetid://126221350566211",
-		trophy = "rbxassetid://124314879033798",
+		book = "rbxassetid://121507954762513",
+		cart = "rbxassetid://132453993626916",
+		cash = "rbxassetid://93514424698283",
+		clock = "rbxassetid://131917973669516",
+		egg = "rbxassetid://96059258580867",
+		paw = "rbxassetid://127080637555607",
+		potion = "rbxassetid://112674684021077",
+		shoe = "rbxassetid://123691087443726",
+		trap = "rbxassetid://135157184755259",
+		bat = "rbxassetid://96955999977109",
+		trophy = "rbxassetid://123343204382303",
 	}),
 	-- character portraits: a sticker render of each character's brick model (art/ui/make_all.sh), one Image id each; a character without one shows a letter tile
 	PetIcons = table.freeze({

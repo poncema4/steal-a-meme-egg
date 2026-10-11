@@ -367,10 +367,10 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		timer.Position = UDim2.fromOffset(68, 32)
 		timer.Size = UDim2.new(0.45, 0, 0, 24)
 		timer.TextXAlignment = Enum.TextXAlignment.Left
-		local instant = Ui.button(root, "Instant", "Instant", Ui.Palettes.Gold, UDim2.fromOffset(110, Ui.tap(gui, 36)))
+		local instant = Ui.button(root, "Instant", "Instant", Ui.Palettes.Gold, UDim2.fromOffset(96, Ui.tap(gui, 28)))
 		instant.AnchorPoint = Vector2.new(1, 0.5)
 		instant.Position = UDim2.new(1, -10, 0.5, 0)
-		instant.TextSize = 16
+		instant.TextSize = 14
 		instant.Activated:Connect(function()
 			action:FireServer("instant", slot)
 		end)
