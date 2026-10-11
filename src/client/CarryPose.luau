@@ -14,13 +14,21 @@ local R15_RIGHT = CFrame.Angles(math.rad(170), 0, math.rad(-12))
 local R15_LEFT = CFrame.Angles(math.rad(170), 0, math.rad(12))
 local R6_UP = CFrame.Angles(0, 0, math.pi)
 
--- The shoulder joints of a character and the pose each one takes, or nothing for an unknown rig.
-function CarryPose.joints(character: Model): { { motor: Motor6D, pose: CFrame } }
-	local out = {}
+-- The shoulder joints of a character and the pose each one takes, or nothing for an unknown rig. A joint is a classic Motor6D
+-- (turned through its C0) or, with Roblox's avatar joint upgrade, an AnimationConstraint (turned through its torso-side
+-- attachment); animations touch neither, so the pose holds while the walk animation plays.
+export type Joint = { target: Instance, pose: CFrame }
+function CarryPose.joints(character: Model): { Joint }
+	local out: { Joint } = {}
 	local function add(parent: Instance?, name: string, pose: CFrame)
-		local motor = parent and parent:FindFirstChild(name)
-		if motor and motor:IsA("Motor6D") then
-			table.insert(out, { motor = motor, pose = pose })
+		local joint = parent and parent:FindFirstChild(name)
+		if joint and joint:IsA("Motor6D") then
+			table.insert(out, { target = joint :: Instance, pose = pose })
+		elseif joint and joint:IsA("AnimationConstraint") then
+			local attachment = (joint :: AnimationConstraint).Attachment0
+			if attachment then
+				table.insert(out, { target = attachment :: Instance, pose = pose })
+			end
 		end
 	end
 	add(character:FindFirstChild("RightUpperArm"), "RightShoulder", R15_RIGHT)
@@ -36,19 +44,32 @@ local function carrying(player: Player): boolean
 	return typeof(tier) == "string" and tier ~= ""
 end
 
--- the joint's own resting C0 is kept on the joint (an attribute) while the arms are up, so it is put back exactly
-local REST = "CarryRestC0"
+-- the joint's own resting frame is kept on it (an attribute) while the arms are up, so it is put back exactly
+local REST = "CarryRest"
+
+local function frameOf(target: Instance): CFrame
+	return if target:IsA("Motor6D") then (target :: Motor6D).C0 else (target :: Attachment).CFrame
+end
+
+local function setFrame(target: Instance, cf: CFrame)
+	if target:IsA("Motor6D") then
+		(target :: Motor6D).C0 = cf
+	else
+		(target :: Attachment).CFrame = cf
+	end
+end
 
 local function pose(character: Model, on: boolean)
 	for _, joint in CarryPose.joints(character) do
-		local motor = joint.motor
-		local saved = motor:GetAttribute(REST)
+		local target = joint.target
+		local saved = target:GetAttribute(REST)
 		if on and saved == nil then
-			motor:SetAttribute(REST, motor.C0)
-			motor.C0 = motor.C0 * joint.pose
+			local rest = frameOf(target)
+			target:SetAttribute(REST, rest)
+			setFrame(target, rest * joint.pose)
 		elseif not on and typeof(saved) == "CFrame" then
-			motor.C0 = saved
-			motor:SetAttribute(REST, nil)
+			setFrame(target, saved)
+			target:SetAttribute(REST, nil)
 		end
 	end
 end
