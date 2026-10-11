@@ -123,9 +123,9 @@ function Shop.start(player: Player)
 	statsMax.Parent = petStats
 	petStats.Text = "Hover a pet to see its stats"
 	local limitedRobux =
-		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(190, Ui.tap(gui, 42)))
+		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(150, Ui.tap(gui, 34)))
 	limitedRobux.Position = UDim2.fromOffset(120, PET_Y + PET_H + 10)
-	limitedRobux.TextSize = 22
+	limitedRobux.TextSize = 19
 	local BANNER_H = math.max(12 + 100, PET_Y + PET_H + 10 + limitedRobux.Size.Y.Offset) + 12
 	banner.Size = UDim2.new(1, -8, 0, BANNER_H)
 	local petButtons: { ImageButton } = {}
@@ -207,7 +207,7 @@ function Shop.start(player: Player)
 			blurb.TextWrapped = true
 			blurb.TextYAlignment = Enum.TextYAlignment.Top
 			blurb.Text = item.blurb or ""
-			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(1, -16, 0, Ui.tap(gui, 38)))
+			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(1, -16, 0, Ui.tap(gui, 32)))
 			b.AnchorPoint = Vector2.new(0.5, 1)
 			b.Position = UDim2.new(0.5, 0, 1, -8)
 			b.TextSize = 20
