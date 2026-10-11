@@ -700,6 +700,12 @@ function Fake.world()
 		local s = create(name)
 		data[s].props.Name = name
 		services[name] = s
+		if name == "TweenService" then
+			-- a tween is just remembered (and Play does nothing): the tests check what was asked for, not the animation
+			s.Create = function(_, target, info, goal)
+				return { Play = function() end, Cancel = function() end, Target = target, Info = info, Goal = goal }
+			end
+		end
 		if name == "Players" then
 			data[s].props.CharacterAutoLoads = true
 			s.GetPlayers = function()
@@ -865,6 +871,11 @@ function Fake.world()
 			NumberRange = NumberRange,
 			NumberSequence = NumberSequence,
 			NumberSequenceKeypoint = NumberSequenceKeypoint,
+			TweenInfo = {
+				new = function(time, style, direction)
+					return { Time = time, EasingStyle = style, EasingDirection = direction }
+				end,
+			},
 			ColorSequence = ColorSequence,
 			Enum = world.enum,
 			Random = {
