@@ -161,16 +161,21 @@ function LiveOps.start(remoteFolder: Folder, tell: (Player, string) -> (), sfxAl
 	Session.setMultipliers(function()
 		return LiveOps.luck(), LiveOps.income()
 	end)
-	local okSub = pcall(function()
-		local MessagingService = game:GetService("MessagingService")
-		MessagingService:SubscribeAsync(TOPIC, function(message)
-			local data = message.Data
-			if type(data) == "table" then
-				apply(data)
-			end
+	-- Subscribing waits on Roblox's messaging service. That call can take a long time (or never return) when the service is slow or
+	-- down, and nothing else may wait for it: the rest of the server (the shop, the traps, the HUD's remotes) has to start
+	-- regardless. So it runs on its own thread; until it answers, events simply stay local to this server.
+	task.spawn(function()
+		local okSub = pcall(function()
+			local MessagingService = game:GetService("MessagingService")
+			MessagingService:SubscribeAsync(TOPIC, function(message)
+				local data = message.Data
+				if type(data) == "table" then
+					apply(data)
+				end
+			end)
 		end)
+		crossServer = okSub
 	end)
-	crossServer = okSub
 	registerChat(tell)
 	-- the schedule: start whatever the clock says should be running, once a second
 	task.spawn(function()
