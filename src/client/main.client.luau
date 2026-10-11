@@ -22,4 +22,7 @@ Roam.start()
 TreadmillRun.start(Players.LocalPlayer)
 Shop.start(Players.LocalPlayer)
 local panels = Panels.start(Players.LocalPlayer)
-Hud.start(Players.LocalPlayer, { shop = Shop.toggle, index = panels.index, eggs = panels.eggs, pets = panels.pets })
+Hud.start(
+	Players.LocalPlayer,
+	{ shop = Shop.toggle, index = panels.index, eggs = panels.eggs, pets = panels.pets, trophy = panels.trophy }
+)

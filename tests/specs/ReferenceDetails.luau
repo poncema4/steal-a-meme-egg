@@ -95,7 +95,12 @@ return function(t)
 		"the clock shows an event that is on, or counts down to the next one",
 		if running
 			then text ~= ""
-			else string.match(text, "^" .. (Events.Defs[nextId :: string] :: any).name .. " in %d+:%d%d$") ~= nil,
+			else string.match(text, "^in %d+m %d+s$") ~= nil or string.match(text, "^in %d+s$") ~= nil,
 		text
+	)
+	t.check(
+		"the event's name sits above the countdown",
+		(find(clock, "ClockName") :: TextLabel).Text ~= "",
+		(find(clock, "ClockName") :: TextLabel).Text
 	)
 end

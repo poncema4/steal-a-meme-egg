@@ -2,6 +2,7 @@
 -- The three panels behind the HUD buttons: the Index (every character and which mutations you have seen), Eggs (what is
 -- hatching, with Skip and Instant buttons) and Pets (the characters in your base and what each earns). Everything is read
 -- from attributes the server publishes (Index, BaseItems, Coins...), so the panels never trust the client.
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
@@ -108,7 +109,7 @@ local function sections(): { Section }
 	return list
 end
 
-function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: () -> () }
+function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: () -> (), trophy: () -> () }
 	local gui = Ui.screen(player, "Panels", 4)
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local action = remotes:WaitForChild("BaseAction") :: RemoteEvent
@@ -389,6 +390,55 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			)} slots`
 	end
 
+	-- ---------------------------------------------------------------- Trophy: who is ahead in this server
+	local trophyPanel = Ui.panel(gui, "TOP PLAYERS", 600, 460)
+	local trophyList = scroller(trophyPanel.body, "Rows", UDim2.fromOffset(0, 0), UDim2.fromScale(1, 1))
+	local trophyLayout = Instance.new("UIListLayout")
+	trophyLayout.Padding = UDim.new(0, 6)
+	trophyLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	trophyLayout.Parent = trophyList
+
+	local function refreshTrophy()
+		for _, child in trophyList:GetChildren() do
+			if child:IsA("Frame") then
+				child:Destroy()
+			end
+		end
+		local people = Players:GetPlayers()
+		table.sort(people, function(a, b)
+			return number(a, "SpeedStat") > number(b, "SpeedStat")
+		end)
+		local function row(name: string, place: number, cells: { string }, color: Color3)
+			local r = frame(
+				trophyList,
+				name,
+				UDim2.new(1, -8, 0, Ui.tap(gui, 40)),
+				if place == 0 then Color3.fromRGB(30, 30, 42) else nil
+			)
+			r.LayoutOrder = place
+			corner(r, 8)
+			local widths = { 0.34, 0.22, 0.22, 0.22 }
+			local lefts = { 0.02, 0.36, 0.58, 0.8 }
+			for i, text in cells do
+				local l = Ui.label(r, `C{i}`, if place == 0 then 15 else 19, color)
+				l.Size = UDim2.fromScale(widths[i], 1)
+				l.Position = UDim2.fromScale(lefts[i], 0)
+				l.TextXAlignment = if i == 1 then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
+				l.TextTruncate = Enum.TextTruncate.AtEnd
+				l.Text = text
+			end
+		end
+		row("Header", 0, { "Player", "Speed", "Money/s", "Rebirths" }, Color3.fromRGB(170, 175, 190))
+		for i, p in people do
+			row(`Row_{p.Name}`, i, {
+				p.DisplayName,
+				Economy.full(number(p, "SpeedStat")),
+				Economy.format(number(p, "Income")),
+				tostring(number(p, "Rebirths")),
+			}, if p == player then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1))
+		end
+	end
+
 	task.spawn(function()
 		while true do
 			if indexPanel.isOpen() then
@@ -399,6 +449,9 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			end
 			if petsPanel.isOpen() then
 				refreshPets()
+			end
+			if trophyPanel.isOpen() then
+				refreshTrophy()
 			end
 			task.wait(0.4)
 		end
@@ -416,6 +469,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		index = opening(indexPanel, refreshIndex),
 		eggs = opening(eggsPanel, refreshEggs),
 		pets = opening(petsPanel, refreshPets),
+		trophy = opening(trophyPanel, refreshTrophy),
 	}
 end
 
