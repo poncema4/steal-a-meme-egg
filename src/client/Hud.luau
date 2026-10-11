@@ -307,9 +307,11 @@ function Hud.start(player: Player, actions: Actions?)
 	local clockText = Ui.label(eventClock, "ClockText", 34, Color3.new(1, 1, 1))
 	clockText.AnchorPoint = Vector2.new(1, 0.5)
 	clockText.Position = UDim2.new(1, -62, 0.5, 0)
-	clockText.Size = UDim2.new(1, -62, 1, 0)
+	-- one line tall: TextScaled wraps words whenever that gives bigger text, so a taller box split "4m 12s left" over three lines
+	clockText.Size = UDim2.new(1, -62, 0, 36)
 	clockText.TextXAlignment = Enum.TextXAlignment.Right
 	clockText.TextScaled = true
+	clockText.TextWrapped = false
 	-- the event's name, small, above the countdown
 	local clockName = Ui.label(eventClock, "ClockName", 16, Color3.fromRGB(255, 240, 150))
 	clockName.AnchorPoint = Vector2.new(1, 0)
