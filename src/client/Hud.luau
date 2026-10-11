@@ -253,19 +253,6 @@ function Hud.start(player: Player, actions: Actions?)
 	local designWidth = viewport.X / UiScale.factor(viewport.X, viewport.Y, Ui.isTouch())
 	local bar = UiScale.bottomBar(designWidth, 2, Ui.tap(gui, 46))
 
-	-- while you are locked on the treadmill: a big way off (jumping works too)
-	local leaveRemote = remotes:WaitForChild("LeaveTreadmill") :: RemoteEvent
-	local leave = Ui.button(gui, "LeaveButton", "Jump off", Ui.Palettes.Green, UDim2.fromOffset(190, Ui.tap(gui, 56)))
-	-- bottom right above the event clock: world prompts (like "Upgrade treadmill") show near the middle of the screen, and a
-	-- button there ended up under them
-	leave.AnchorPoint = Vector2.new(1, 1)
-	leave.Position = UDim2.new(1, -16, 1, -104)
-	leave.Visible = false
-	leave.TextSize = 26
-	leave.Activated:Connect(function()
-		leaveRemote:FireServer()
-	end)
-
 	-- bottom right: the event clock (what is on now and how long it lasts, else what comes next and in how long)
 	local eventClock = Instance.new("Frame")
 	eventClock.Name = "EventClock"
@@ -325,7 +312,7 @@ function Hud.start(player: Player, actions: Actions?)
 	-- messages from the server
 	local toast = Ui.label(gui, "Toast", 26)
 	toast.AnchorPoint = Vector2.new(0.5, 1)
-	toast.Position = UDim2.new(0.5, 0, 1, -176) -- above the Drop / Jump off buttons (bottom -96, 52 tall), never on them
+	toast.Position = UDim2.new(0.5, 0, 1, -176) -- above the Drop button (bottom -96, 52 tall), never on it
 	toast.Size = UDim2.fromOffset(700, 40)
 	local toastToken = 0
 	local function show(text: string)
@@ -384,7 +371,6 @@ function Hud.start(player: Player, actions: Actions?)
 		speed.Text = (if hasShoe then "" else "👟 ")
 			.. Economy.speed(number(player, "SpeedStat", Progression.SPEED_STAT_BASE))
 			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")
-		leave.Visible = player:GetAttribute("TreadmillLocked") == true
 	end
 	RunService.RenderStepped:Connect(liveStats)
 

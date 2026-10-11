@@ -193,19 +193,13 @@ return function(t)
 	t.check("movement keys are taken away", world.actions["TreadmillSink"] ~= nil)
 	t.check("but jump leaves", world.actions["TreadmillLeave"] ~= nil)
 	local hudGui = ana.PlayerGui:FindFirstChild("Hud") :: Instance
-	local button = hudGui:FindFirstChild("LeaveButton", true) :: TextButton
 	world.advance(0.6)
-	t.check("a Jump off button is on screen while locked", button ~= nil and button.Visible)
+	t.check(
+		"there is no Jump off button: jumping is the way off (Marco)",
+		hudGui:FindFirstChild("LeaveButton", true) == nil
+	)
 	world.actions["TreadmillLeave"]("TreadmillLeave", world.enum.UserInputState.Begin)
 	t.equal("pressing jump takes you off", ana:GetAttribute("TreadmillLocked"), false)
 	world.render(1 / 60)
 	t.check("the keys come back", world.actions["TreadmillSink"] == nil and world.actions["TreadmillLeave"] == nil)
-	world.advance(0.6)
-	t.check("and the button goes away", not button.Visible)
-	world.advance(2)
-	root.AssemblyLinearVelocity = V3.new(0, 0, 0)
-	root.Position = belt.Position + V3.new(0, 3, 0)
-	world.advance(0.4)
-	button.Activated:Fire()
-	t.equal("the on-screen button takes you off too", ana:GetAttribute("TreadmillLocked"), false)
 end

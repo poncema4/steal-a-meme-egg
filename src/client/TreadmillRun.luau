@@ -1,10 +1,12 @@
 --!strict
 -- The client half of the treadmill lock. While the server says you are locked on your belt (TreadmillLocked) this module runs
 -- for you: it stops the normal movement controls and calls Humanoid:Move toward the belt's front every frame, so the run
--- animation plays with no key held. Jump (Space, gamepad A) or the Jump off button on screen tells the server you want off.
+-- animation plays with no key held. Jumping takes you off, like in Steal an Egg: Space or gamepad A tell the server, and on a
+-- phone the controls stay on so Roblox's own jump button is there (the server sees the jump and lets you go). No extra button.
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local TreadmillRun = {}
 
@@ -33,7 +35,8 @@ function TreadmillRun.start(player: Player)
 			return
 		end
 		active = true
-		local c = controls(player)
+		-- on a phone the controls stay on: they hold Roblox's jump button, which is how you get off
+		local c = if UserInputService.TouchEnabled then nil else controls(player)
 		if c then
 			c:Disable()
 		end
