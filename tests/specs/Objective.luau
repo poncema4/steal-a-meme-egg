@@ -12,6 +12,10 @@ local function facts(over: { [string]: any }): Objective.Facts
 end
 
 return function(t)
+	t.check(
+		"the key is a capital E in the Safe Zone hint too",
+		string.find(Objective.hint(facts({ zone = "Safe Zone" })), "hold E", 1, true) ~= nil
+	)
 	-- the hint names the key on a PC and the button on a phone
 	t.check(
 		"a PC is told to hold E",
