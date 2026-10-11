@@ -16,11 +16,12 @@ ROOT = pathlib.Path(__file__).parent.parent
 
 def wide():
     img = punch(Image.open(ROOT / "art/renders/thumb_wide.png").convert("RGB")).convert("RGBA")
-    outlined_text(img, (46, 18), "MEME EGG", 150, RAINBOW, outline=14, horizontal=True)
-    outlined_text(img, (52, 168), "$12,000,000/s", 84, MONEY, outline=11)
+    outlined_text(img, (54, 6), "STEAL A", 66, [(255, 255, 255), (255, 235, 80)], outline=9, horizontal=True)
+    outlined_text(img, (46, 66), "MEME EGG", 150, RAINBOW, outline=14, horizontal=True)
+    outlined_text(img, (52, 222), "$12,000,000/s", 84, MONEY, outline=11)
     arrow(img, (900, 60), (1150, -10), (1130, 190))  # from the name to the egg
-    bang(img, 330, 330, 70, 12)  # the guardian is not happy
-    bang(img, 405, 322, 70, 12)
+    bang(img, 340, 345, 70, 12)  # the boss is not happy
+    bang(img, 415, 337, 70, 12)
     outlined_text(img, (1355, 560), "YOU", 96, [(255, 255, 255), (255, 235, 80)], outline=12, horizontal=True)
     arrow(img, (1400, 690), (1380, 760), (1300, 735), width=22)  # YOU -> the avatar
     out = ROOT / "brand/thumb_1920x1080.png"
