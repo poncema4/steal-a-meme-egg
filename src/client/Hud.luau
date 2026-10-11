@@ -3,7 +3,6 @@
 -- round icon buttons down the right, speed and money bottom-left, the terrain name on top, a People list (speed and money
 -- per second) top-right, and while you carry an egg a big RUN banner with a Drop button. Everything it shows is an
 -- attribute the server publishes. Sizes are design pixels: Ui.screen scales them to the real screen.
-local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -242,63 +241,12 @@ function Hud.start(player: Player, actions: Actions?)
 		dropRemote:FireServer()
 	end)
 
-	-- the hotbar: two items, like the reference: 1 = your bat (tap or press 1 to swing), 2 = your traps (tap or press 2 to set
-	-- one; the number says how many are left). The Roblox backpack is hidden, so this is the only equipment bar.
-	local trapRemote = remotes:WaitForChild("PlaceTrap") :: RemoteEvent
+	-- the items (bat, trap) are ordinary Roblox tools in Roblox's own backpack bar at the bottom middle; the event clock keeps
+	-- clear of a two-item bar
 	local startCamera = workspace.CurrentCamera
 	local viewport = if startCamera then startCamera.ViewportSize else Vector2.new(1280, 720)
 	local designWidth = viewport.X / UiScale.factor(viewport.X, viewport.Y, Ui.isTouch())
 	local bar = UiScale.bottomBar(designWidth, 2, Ui.tap(gui, 46))
-	local slotSide = bar.slot
-	local hotbar =
-		box(gui, "Hotbar", UDim2.fromOffset(bar.hotbarWidth, slotSide), UDim2.new(0.5, 0, 1, -14), Vector2.new(0.5, 1))
-	local hotbarList = Instance.new("UIListLayout")
-	hotbarList.FillDirection = Enum.FillDirection.Horizontal
-	hotbarList.Padding = UDim.new(0, bar.gap)
-	hotbarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	hotbarList.SortOrder = Enum.SortOrder.LayoutOrder
-	hotbarList.Parent = hotbar
-	local function slot(name: string, order: number, icon: string, glyph: string): TextButton
-		local button = Ui.button(hotbar, name, "", Ui.Palettes.Slot, UDim2.fromOffset(slotSide, slotSide))
-		button.LayoutOrder = order
-		Ui.addIcon(button, icon, "center", glyph)
-		button.TextSize = 16
-		local key = Ui.label(button, "Key", 16)
-		key.Position = UDim2.fromOffset(4, 0)
-		key.Size = UDim2.fromOffset(20, 20)
-		key.Text = tostring(order)
-		return button
-	end
-	local batSlot = slot("BatSlot", 1, "bat", "BAT")
-	local trapSlot = slot("TrapSlot", 2, "trap", "TRAP")
-	local trapCount = Ui.label(trapSlot, "Count", 18, Color3.new(1, 1, 1))
-	trapCount.AnchorPoint = Vector2.new(1, 1)
-	trapCount.Position = UDim2.new(1, -4, 1, -2)
-	trapCount.Size = UDim2.fromOffset(40, 20)
-	trapCount.TextXAlignment = Enum.TextXAlignment.Right
-	local function swing()
-		local character = player.Character
-		local bat = character and character:FindFirstChild("Bat")
-		if bat and bat:IsA("Tool") then
-			bat:Activate()
-		end
-	end
-	batSlot.Activated:Connect(swing)
-	trapSlot.Activated:Connect(function()
-		trapRemote:FireServer()
-	end)
-	ContextActionService:BindAction("SwingBat", function(_, state)
-		if state == Enum.UserInputState.Begin then
-			swing()
-		end
-		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.One)
-	ContextActionService:BindAction("PlaceTrap", function(_, state)
-		if state == Enum.UserInputState.Begin then
-			trapRemote:FireServer()
-		end
-		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.Two, Enum.KeyCode.ButtonX)
 
 	-- while you are locked on the treadmill: a big way off (jumping works too)
 	local leaveRemote = remotes:WaitForChild("LeaveTreadmill") :: RemoteEvent
@@ -478,11 +426,6 @@ function Hud.start(player: Player, actions: Actions?)
 		run.Visible = def ~= nil
 		drop.Visible = def ~= nil
 		runText.Text = "RUN!!"
-		local placed = number(player, "TrapsPlaced", 0)
-		local cooling = number(player, "TrapReadyAt", 0) > workspace:GetServerTimeNow()
-		local trapsLeft = math.max(number(player, "TrapsMax", 3) - placed, 0)
-		trapCount.Text = `x{trapsLeft}`
-		Ui.setPalette(trapSlot, if trapsLeft > 0 and not cooling then Ui.Palettes.Slot else Ui.Palettes.SlotUsed)
 		local eggBadge = badges.EggsButton
 		if eggBadge then
 			eggBadge.Visible = eggs > 0

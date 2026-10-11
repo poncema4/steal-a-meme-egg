@@ -86,43 +86,27 @@ return function(t)
 	t.check("B closes it", not shopPanel.Visible)
 	t.check("and stops listening", world.actions["ClosePanel_SHOP"] == nil)
 
-	-- the hotbar: two items only (Marco): 1 = the bat, 2 = the traps with how many are left
-	local world_ = world
-	local hotbar = find(gui, "Hotbar") :: Instance
-	local items = 0
-	for _, child in hotbar:GetChildren() do
-		if child:IsA("TextButton") then
-			items += 1
-		end
-	end
-	t.equal("the hotbar holds exactly two items", items, 2)
-	t.check("slot 1 is the bat", find(gui, "BatSlot") ~= nil and (find(gui, "BatSlot") :: TextButton).LayoutOrder == 1)
-	t.check(
-		"slot 2 is the traps",
-		find(gui, "TrapSlot") ~= nil and (find(gui, "TrapSlot") :: TextButton).LayoutOrder == 2
-	)
-	t.check("the trap art is on its slot", find(find(gui, "TrapSlot") :: Instance, "Icon") ~= nil)
-	t.check("key 1 swings the bat", world_.actions["SwingBat"] ~= nil)
-	t.check("key 2 and the gamepad X set a trap", world_.actions["PlaceTrap"] ~= nil)
-	local slotOne = find(gui, "TrapSlot") :: TextButton
-	local slotTwo = slotOne
-	world.advance(0.3)
-	t.equal("the trap slot says how many are left", (find(slotOne, "Count") :: TextLabel).Text, "x3")
-	slotOne.Activated:Fire()
+	-- no hotbar of our own: the bat and trap are ordinary tools in Roblox's backpack bar
+	t.check("there is no custom hotbar", find(gui, "Hotbar") == nil)
+	local trapTool = ana.Backpack:FindFirstChild("Trap") :: Tool
+	t.check("the trap item is in the backpack", trapTool ~= nil)
+	local humanoid = ana.Character:FindFirstChildOfClass("Humanoid")
+	humanoid:EquipTool(trapTool)
+	trapTool.Activated:Fire()
 	world.advance(0.3)
 	t.equal("a trap cannot be set in the Safe Zone", ana:GetAttribute("TrapsPlaced"), 0)
 	local meadowX = require("../../src/shared/Game/Zones").List[1].startX + 60
 	world.root(ana).Position = V3.new(meadowX, 3, 0)
-	slotTwo.Activated:Fire()
+	trapTool.Activated:Fire()
 	world.advance(0.3)
-	t.equal("tapping a slot out in the Wilds sets a trap", ana:GetAttribute("TrapsPlaced"), 1)
+	t.equal("clicking with the trap out in the Wilds sets one", ana:GetAttribute("TrapsPlaced"), 1)
 	world.advance(3)
 	world.root(ana).Position = V3.new(meadowX + 20, 3, 0)
-	world.actions["PlaceTrap"]("PlaceTrap", world.enum.UserInputState.Begin)
+	trapTool.Activated:Fire()
 	world.advance(0.3)
-	t.equal("pressing a key sets another", ana:GetAttribute("TrapsPlaced"), 2)
-	world.advance(0.3)
-	t.equal("and the count goes down", (find(slotOne, "Count") :: TextLabel).Text, "x1")
+	t.equal("and clicking again sets another", ana:GetAttribute("TrapsPlaced"), 2)
+	humanoid:UnequipTools()
+	t.check("the trap goes back in the backpack when put away", trapTool.Parent == ana.Backpack)
 	world.root(ana).Position = V3.new(world.root(ana).Position.X, 3, 0)
 
 	-- Slow Mode

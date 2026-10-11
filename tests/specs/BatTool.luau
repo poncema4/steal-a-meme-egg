@@ -47,7 +47,21 @@ return function(t)
 		return character:FindFirstChild("Bat") or player.Backpack:FindFirstChild("Bat")
 	end
 	t.check("every player is given a bat", bat(ana) ~= nil and bat(ben) ~= nil)
-	t.check("and it is held (equipped), so a click swings it", bat(ana).Parent == ana.Character)
+	t.check(
+		"it waits in the backpack like any Roblox item (nothing is forced into your hands)",
+		bat(ana).Parent == ana.Backpack
+	)
+	t.check("next to the trap item", ana.Backpack:FindFirstChild("Trap") ~= nil)
+	t.check(
+		"both show their picture in the backpack bar",
+		bat(ana).TextureId ~= "" and ana.Backpack.Trap.TextureId ~= ""
+	)
+	ana.Character:FindFirstChildOfClass("Humanoid"):EquipTool(bat(ana))
+	t.check("picking the bat puts it in your hand", bat(ana).Parent == ana.Character)
+	bat(ana).Activated:Fire()
+	-- Roblox applies Grip inverted, so a swing tips the bat forward when the grip's look points UP (Marco: it swung backwards)
+	t.check("a swing chops the bat forward, not back over the shoulder", bat(ana).Grip.LookVector.Y > 0.5)
+	world.advance(1.5)
 	t.equal("a new player holds the Wooden Bat", bat(ana).ToolTip, "Wooden Bat")
 
 	-- the Safe Zone is safe
