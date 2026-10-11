@@ -118,14 +118,16 @@ def treadmill_topper(g):
         g.ellipsoid((x, 3.9, 0), (0.45, 0.45, 0.45), rgb("ffc21a"))
     g.cylinder((0, 2.4, 0.05), 2.2, 1.0, dark, axis="z")  # dial housing
     g.cylinder((0, 2.4, -0.45), 1.9, 0.3, rgb("f6f6fb"), axis="z")  # dial face (toward -Z, the runner)
-    for k in range(9):  # ticks from green (slow) to red (fast)
-        a = math.radians(210 - k * 30)
-        col = rgb("3ddc5a") if k < 3 else (rgb("ffd23a") if k < 6 else rgb("e8262a"))
-        g.box((math.cos(a) * 1.55, 2.4 + math.sin(a) * 1.55, -0.7), (0.35, 0.35, 0.3), col)
-    a = math.radians(70)
-    for r in (0.4, 0.8, 1.2):  # the needle
-        g.box((math.cos(a) * r, 2.4 + math.sin(a) * r, -0.7), (0.3, 0.3, 0.3), rgb("16161c"))
-    g.ellipsoid((0, 2.4, -0.75), (0.35, 0.35, 0.25), rgb("e8262a"))
+    for k in range(25):  # one smooth arc from green (slow) through yellow to red (fast)
+        f = k / 24
+        a = math.radians(200 - f * 220)
+        col = rgb("3ddc5a") if f < 0.4 else (rgb("ffd23a") if f < 0.7 else rgb("e8262a"))
+        g.box((math.cos(a) * 1.45, 2.4 + math.sin(a) * 1.45, -0.66), (0.42, 0.42, 0.12), col)
+    a = math.radians(55)
+    for k in range(9):  # the needle, a solid line from the hub
+        r = 0.15 + k * 0.13
+        g.box((math.cos(a) * r, 2.4 + math.sin(a) * r, -0.7), (0.2, 0.2, 0.1), rgb("16161c"))
+    g.cylinder((0, 2.4, -0.72), 0.3, 0.14, rgb("e8262a"), axis="z")  # the hub
     return 4.6
 
 
@@ -295,7 +297,7 @@ RECIPES = {"ToyBlocks": toy_blocks, "PalmTree": palm_tree, "GearTower": gear_tow
 
 
 # the big, round props use bigger bricks: far fewer parts (there are about thirty of each in a terrain) and a chunkier toy look
-UNITS = {"BearTrap": 0.3, "ToyBlocks": 0.5, "PalmTree": 0.6, "GearTower": 0.6, "JungleVine": 0.6, "GoldPillar": 0.6, "SwampTree": 0.75, "CloudPuff": 0.6, "CandyCane": 0.5, "Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
+UNITS = {"TreadmillTopper": 0.12, "BearTrap": 0.3, "ToyBlocks": 0.5, "PalmTree": 0.6, "GearTower": 0.6, "JungleVine": 0.6, "GoldPillar": 0.6, "SwampTree": 0.75, "CloudPuff": 0.6, "CandyCane": 0.5, "Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
 
 
 def build(name):
