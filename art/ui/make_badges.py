@@ -10,16 +10,16 @@ SIZE = 512
 
 # key: (sticker, disc top colour, disc bottom colour)
 BADGES = {
-    "welcome": ("Icons/egg", (80, 210, 120), (20, 130, 70)),
+    "welcome": ("Cartoon/egg", (80, 210, 120), (20, 130, 70)),
     "firstSteal": ("Pets/SoggyToast", (255, 170, 60), (200, 90, 20)),
     "firstHatch": ("Eggs/Golden", (255, 120, 190), (170, 30, 110)),
-    "homeSafe": ("Icons/cart", (90, 170, 255), (30, 80, 190)),
-    "speedDemon": ("Icons/shoe", (255, 90, 80), (170, 20, 40)),
+    "homeSafe": ("Cartoon/cart", (90, 170, 255), (30, 80, 190)),
+    "speedDemon": ("Cartoon/shoe", (255, 90, 80), (170, 20, 40)),
     "reborn": ("Pets/TaxAngel", (255, 215, 70), (210, 140, 10)),
-    "collector": ("Icons/book", (110, 140, 255), (50, 50, 170)),
+    "collector": ("Cartoon/book", (110, 140, 255), (50, 50, 170)),
     "bossEscape": ("Pets/FinalBossHamster", (230, 60, 70), (110, 10, 30)),
     "deepDiver": ("Pets/ZeusZucchini", (140, 210, 255), (60, 120, 220)),
-    "trapSpringer": ("Icons/trap", (150, 160, 190), (60, 70, 100)),
+    "trapSpringer": ("Cartoon/trap", (150, 160, 190), (60, 70, 100)),
 }
 
 
