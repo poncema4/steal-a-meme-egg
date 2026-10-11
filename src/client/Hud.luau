@@ -73,7 +73,7 @@ function Hud.start(player: Player, actions: Actions?)
 		handler: () -> ()
 	)
 		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(150, tapHeight))
-		Ui.addIcon(b, icon, "left", "", 56, 1.2)
+		Ui.addIcon(b, icon, "left", "", 64, 1)
 		b.LayoutOrder = order
 		b.Activated:Connect(handler)
 		return b
@@ -104,7 +104,7 @@ function Hud.start(player: Player, actions: Actions?)
 	local slowTrack = Instance.new("Frame")
 	slowTrack.Name = "Track"
 	slowTrack.Size = UDim2.fromOffset(52, 28)
-	slowTrack.Position = UDim2.fromOffset(0, 6)
+	slowTrack.Position = UDim2.fromOffset(-62, 6) -- the label's padding insets its children too: step back out of it
 	slowTrack.BackgroundColor3 = Color3.fromRGB(70, 60, 58)
 	slowTrack.BorderSizePixel = 0
 	slowTrack.Parent = slow
@@ -169,8 +169,8 @@ function Hud.start(player: Player, actions: Actions?)
 	money.Size = UDim2.new(1, 0, 0, 62)
 	money.Position = UDim2.fromOffset(0, 54)
 	money.TextXAlignment = Enum.TextXAlignment.Left
-	local hasShoe = Ui.addIcon(speed, "shoe", "left", "", 74, 1.5)
-	Ui.addIcon(money, "cash", "left", "", 92, 1.35)
+	local hasShoe = Ui.addIcon(speed, "shoe", "left", "", 79, 1.35)
+	Ui.addIcon(money, "cash", "left", "", 88, 1.2)
 
 	-- top centre: the terrain you are in, what to do next, and any live event
 	local zone = Instance.new("Frame")
@@ -459,7 +459,7 @@ function Hud.start(player: Player, actions: Actions?)
 				table.insert(lines, `{eventDef.name}  {clock((tonumber(ends) :: number) - now)}`)
 			end
 		end
-		banner.Text = table.concat(lines, "   ")
+		banner.Text = "" -- running events are shown by the clock in the corner (also kept in `lines` for it)
 		-- the clock: the event running now, else the next one
 		local nextId, nextAt =
 			string.match(tostring(ReplicatedStorage:GetAttribute("NextEvent") or ""), "^(%w+):(%d+%.?%d*)$")

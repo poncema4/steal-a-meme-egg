@@ -191,13 +191,17 @@ function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string,
 		image.Size = UDim2.fromScale(0.78, 0.78)
 		text.Text = ""
 	else
-		image.Position = UDim2.new(0, 6, 0.5, 0)
+		local padLeft = pad or 40
+		-- UIPadding insets everything inside the target, the icon included, so the icon is moved back into the padding with a
+		-- negative offset; its height is a share of the target's and its width follows the height (a square), not the other way round
 		image.AnchorPoint = Vector2.new(0, 0.5)
-		image.Size = UDim2.fromScale(0.3, grow or 1.1)
+		image.Position = UDim2.new(0, 6 - padLeft, 0.5, 0)
+		image.Size = UDim2.fromScale(0, grow or 1)
 		local ratio = Instance.new("UIAspectRatioConstraint")
+		ratio.DominantAxis = Enum.DominantAxis.Height
 		ratio.Parent = image
 		local padding = Instance.new("UIPadding")
-		padding.PaddingLeft = UDim.new(0, pad or 40)
+		padding.PaddingLeft = UDim.new(0, padLeft)
 		padding.Parent = target
 	end
 	image.Parent = target

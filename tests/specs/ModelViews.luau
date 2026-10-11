@@ -108,4 +108,14 @@ return function(t)
 		"an icon without a model keeps its picture or glyph",
 		find(find(hudGui, "Left"), "IndexButton") ~= nil and find(find(hudGui, "IndexButton"), "Model3D") == nil
 	)
+	-- Roblox rules the real Studio run showed: padding insets children (so the icon steps back out of it) and a square icon is
+	-- sized from its height, not its width
+	local icon = find(shopButton, "Icon") :: GuiObject
+	t.check("the icon sits inside the padding, at the button's left edge", icon.Position.X.Offset < 0)
+	local ratio = icon:FindFirstChildOfClass("UIAspectRatioConstraint") :: UIAspectRatioConstraint
+	t.check("and its width follows its height", ratio.DominantAxis == world.enum.DominantAxis.Height)
+	t.check(
+		"the Slow Mode track steps back out of the label's padding too",
+		(find(hudGui, "Track") :: GuiObject).Position.X.Offset < 0
+	)
 end

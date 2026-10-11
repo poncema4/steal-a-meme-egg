@@ -30,7 +30,9 @@ session.addSpeedXp(ana, 800)
 local shop = world.load("src/client/Shop")
 shop.start(ana)
 local panels = world.load("src/client/Panels").start(ana)
-world.load("src/client/Hud").start(ana, { shop = shop.toggle, index = panels.index, eggs = panels.eggs, pets = panels.pets })
+world
+	.load("src/client/Hud")
+	.start(ana, { shop = shop.toggle, index = panels.index, eggs = panels.eggs, pets = panels.pets })
 -- something to look at in every panel
 session.get(ana).base.slots[1] = { kind = "char", id = "BonkBean", mutation = "Gold" }
 session.get(ana).base.slots[2] = { kind = "char", id = "DiscoPickle", mutation = "Normal" }
@@ -71,7 +73,15 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 	local cursor = 0
 	local used = 0
 	for _, c in children do
-		if (c:IsA("Frame") or c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("ScrollingFrame") or c:IsA("ImageLabel")) and c.Visible ~= false then
+		if
+			(
+				c:IsA("Frame")
+				or c:IsA("TextLabel")
+				or c:IsA("TextButton")
+				or c:IsA("ScrollingFrame")
+				or c:IsA("ImageLabel")
+			) and c.Visible ~= false
+		then
 			local cw, ch = sizeOf(c, w, h)
 			if grid then
 				cw, ch = (grid :: any).CellSize.X.Offset, (grid :: any).CellSize.Y.Offset
@@ -80,9 +90,16 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 				ch = 0
 			end
 			-- an aspect-ratio constraint (ratio 1) shrinks the longer side to the shorter, like FitWithinMaxSize
-			if c:FindFirstChildOfClass("UIAspectRatioConstraint") then
-				cw = math.min(cw, ch)
-				ch = cw
+			-- an aspect-ratio constraint keeps the shape: with Height dominant the width follows the height, otherwise the height
+			-- follows the width (Roblox's default)
+			local ratioConstraint = c:FindFirstChildOfClass("UIAspectRatioConstraint")
+			if ratioConstraint then
+				local ratio = (ratioConstraint :: any).AspectRatio or 1
+				if (ratioConstraint :: any).DominantAxis and (ratioConstraint :: any).DominantAxis.Name == "Height" then
+					cw = ch * ratio
+				else
+					ch = cw / ratio
+				end
 			end
 			local padLeft = 0
 			local pad = c:FindFirstChildOfClass("UIPadding")
@@ -147,7 +164,11 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 				w = cw * scale,
 				h = ch * scale,
 				text = if c:IsA("Frame") or c:IsA("ImageLabel") or c:IsA("ScrollingFrame") then "" else c.Text,
-				kind = if c:IsA("TextLabel") then "TextLabel" elseif c:IsA("TextButton") then "TextButton" elseif c:IsA("ImageLabel") then "Image" else "Frame",
+				kind = if c:IsA("TextLabel")
+					then "TextLabel"
+					elseif c:IsA("TextButton") then "TextButton"
+					elseif c:IsA("ImageLabel") then "Image"
+					else "Frame",
 				transparent = c.BackgroundTransparency or 0,
 				r = math.floor(bg.R * 255),
 				g = math.floor(bg.G * 255),
@@ -164,9 +185,33 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 				textColor = { math.floor(tc.R * 255), math.floor(tc.G * 255), math.floor(tc.B * 255) },
 				align = tostring((c :: any).TextXAlignment and (c :: any).TextXAlignment.Name or "Center"),
 				image = if c:IsA("ImageLabel") then c.Image else nil,
-				imageColor = if c:IsA("ImageLabel") and (c :: any).ImageColor3 then { math.floor((c :: any).ImageColor3.R * 255), math.floor((c :: any).ImageColor3.G * 255), math.floor((c :: any).ImageColor3.B * 255) } else nil,
+				imageColor = if c:IsA("ImageLabel") and (c :: any).ImageColor3
+					then {
+						math.floor((c :: any).ImageColor3.R * 255),
+						math.floor((c :: any).ImageColor3.G * 255),
+						math.floor((c :: any).ImageColor3.B * 255),
+					}
+					else nil,
 			})
-			walk(c, cx, cy, cw, ch, scale, depth + 1)
+			-- UIPadding insets the container's whole content area: children are laid out inside it
+			local innerLeft, innerTop, innerRight, innerBottom = 0, 0, 0, 0
+			local inset = c:FindFirstChildOfClass("UIPadding")
+			if inset then
+				local function off(u: any): number
+					return if u then (u.Offset or 0) else 0
+				end
+				innerLeft, innerRight = off((inset :: any).PaddingLeft), off((inset :: any).PaddingRight)
+				innerTop, innerBottom = off((inset :: any).PaddingTop), off((inset :: any).PaddingBottom)
+			end
+			walk(
+				c,
+				cx + innerLeft,
+				cy + innerTop,
+				cw - innerLeft - innerRight,
+				ch - innerTop - innerBottom,
+				scale,
+				depth + 1
+			)
 		end
 	end
 	used = cursor
