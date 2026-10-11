@@ -61,8 +61,8 @@ function Hud.start(player: Player, actions: Actions?)
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 
 	-- left column: Shop, Index, Slow Mode
-	local tapHeight = Ui.tap(gui, 42) -- Marco: smaller buttons (a phone still gets at least a fingertip, see UiScale.tap)
-	local left = box(gui, "Left", UDim2.fromOffset(160, 170), UDim2.new(0, 14, 0.34, 0), Vector2.new(0, 0))
+	local tapHeight = Ui.tap(gui, 52)
+	local left = box(gui, "Left", UDim2.fromOffset(190, 200), UDim2.new(0, 14, 0.34, 0), Vector2.new(0, 0))
 	local list = Instance.new("UIListLayout")
 	list.Padding = UDim.new(0, 10)
 	list.SortOrder = Enum.SortOrder.LayoutOrder
@@ -76,9 +76,9 @@ function Hud.start(player: Player, actions: Actions?)
 		handler: () -> ()
 	)
 		-- like the reference: the picture on the left, the word big and bold right next to it, nothing cut off
-		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(146, tapHeight))
+		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(176, tapHeight))
 		Ui.addIcon(b, icon, "left", "", tapHeight + 8, tapHeight - 6)
-		b.TextSize = 23
+		b.TextSize = 28
 		b.TextXAlignment = Enum.TextXAlignment.Left
 		b.LayoutOrder = order
 		b.Activated:Connect(handler)
@@ -94,7 +94,7 @@ function Hud.start(player: Player, actions: Actions?)
 	local slow = Instance.new("TextButton")
 	slow.Name = "SlowToggle"
 	slow.LayoutOrder = 3
-	slow.Size = UDim2.fromOffset(146, Ui.tap(gui, 36))
+	slow.Size = UDim2.fromOffset(176, Ui.tap(gui, 40))
 	slow.BackgroundTransparency = 1
 	slow.AutoButtonColor = false
 	slow.Selectable = true
@@ -139,7 +139,7 @@ function Hud.start(player: Player, actions: Actions?)
 	end)
 
 	-- right column: eggs, pets, trophy
-	local side = Ui.tap(gui, 52)
+	local side = Ui.tap(gui, 64)
 	local right =
 		box(gui, "Right", UDim2.fromOffset(side, side * 3 + 20), UDim2.new(1, -14, 0.5, 0), Vector2.new(1, 0.5))
 	local rightList = Instance.new("UIListLayout")
@@ -250,7 +250,7 @@ function Hud.start(player: Player, actions: Actions?)
 	runText.Size = UDim2.fromScale(1, 1)
 	runText.Text = "RUN!!"
 	local dropRemote = remotes:WaitForChild("Drop") :: RemoteEvent
-	local drop = Ui.button(gui, "DropButton", "🗑 Drop", Ui.Palettes.Red, UDim2.fromOffset(140, Ui.tap(gui, 42)))
+	local drop = Ui.button(gui, "DropButton", "🗑 Drop", Ui.Palettes.Red, UDim2.fromOffset(170, Ui.tap(gui, 52)))
 	drop.AnchorPoint = Vector2.new(0.5, 1)
 	drop.Position = UDim2.new(0.5, 0, 1, -96)
 	drop.Visible = false
