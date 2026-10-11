@@ -152,6 +152,27 @@ function Ui.iconId(key: string): string?
 	return if id and id ~= "" then id else nil
 end
 
+-- One row of a player table (the HUD leaderboard and the Top Players panel share it): name, Speed, Money/s and Rebirths in
+-- columns that keep a 4% margin on both sides, so the last column never touches the edge. Long names end in "...".
+local COLUMN_LEFTS = { 0.04, 0.34, 0.56, 0.78 }
+local COLUMN_WIDTHS = { 0.30, 0.22, 0.22, 0.18 }
+function Ui.tableCells(row: GuiObject, cells: { string }, textSize: number, color: Color3)
+	for i, text in cells do
+		local l = Instance.new("TextLabel")
+		l.Name = `C{i}`
+		l.BackgroundTransparency = 1
+		l.Font = Ui.FONT
+		l.TextSize = textSize
+		l.TextColor3 = color
+		l.Text = text
+		l.TextTruncate = Enum.TextTruncate.AtEnd
+		l.TextXAlignment = if i == 1 then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
+		l.Size = UDim2.fromScale(COLUMN_WIDTHS[i], 1)
+		l.Position = UDim2.fromScale(COLUMN_LEFTS[i], 0)
+		l.Parent = row
+	end
+end
+
 -- The portrait of a character, or nil if it has none yet.
 function Ui.petIconId(characterId: string): string?
 	local id = (Config.PetIcons :: { [string]: string })[characterId]

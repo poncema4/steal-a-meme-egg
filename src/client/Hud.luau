@@ -316,24 +316,7 @@ function Hud.start(player: Player, actions: Actions?)
 		r.Size = UDim2.new(1, 0, 0, 20)
 		r.BackgroundTransparency = 1
 		r.Parent = board
-		-- four columns that always fit: name (cut with ... if long), Speed, Money/s and Rebirths
-		-- a 4% margin on both sides so the last column ("Rebirths") never touches the edge
-		local widths = { 0.30, 0.22, 0.24, 0.18 }
-		local lefts = { 0.04, 0.34, 0.56, 0.78 }
-		for i, text in { a, b, c, d } do
-			local l = Instance.new("TextLabel")
-			l.Name = `C{i}`
-			l.BackgroundTransparency = 1
-			l.Font = Ui.FONT
-			l.TextSize = if order == 0 then 12 else 14
-			l.TextColor3 = color
-			l.Text = text
-			l.TextTruncate = Enum.TextTruncate.AtEnd
-			l.TextXAlignment = if i == 1 then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
-			l.Size = UDim2.fromScale(widths[i], 1)
-			l.Position = UDim2.fromScale(lefts[i], 0)
-			l.Parent = r
-		end
+		Ui.tableCells(r, { a, b, c, d }, if order == 0 then 12 else 14, color)
 		return r
 	end
 

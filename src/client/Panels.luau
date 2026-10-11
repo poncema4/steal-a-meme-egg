@@ -516,16 +516,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			)
 			r.LayoutOrder = place
 			corner(r, 8)
-			local widths = { 0.34, 0.22, 0.22, 0.22 }
-			local lefts = { 0.02, 0.36, 0.58, 0.8 }
-			for i, text in cells do
-				local l = Ui.label(r, `C{i}`, if place == 0 then 15 else 19, color)
-				l.Size = UDim2.fromScale(widths[i], 1)
-				l.Position = UDim2.fromScale(lefts[i], 0)
-				l.TextXAlignment = if i == 1 then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
-				l.TextTruncate = Enum.TextTruncate.AtEnd
-				l.Text = text
-			end
+			Ui.tableCells(r, cells, if place == 0 then 15 else 19, color)
 		end
 		row("Header", 0, { "Player", "Speed", "Money/s", "Rebirths" }, Color3.fromRGB(170, 175, 190))
 		for i, p in people do
