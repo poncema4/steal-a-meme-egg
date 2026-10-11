@@ -12,6 +12,17 @@ local function facts(over: { [string]: any }): Objective.Facts
 end
 
 return function(t)
+	-- the hint names the key on a PC and the button on a phone
+	t.check(
+		"a PC is told to hold E",
+		string.find(Objective.hint(facts({ zone = "Meme Meadow" })), "Hold E", 1, true) ~= nil
+	)
+	local phone = Objective.hint(facts({ zone = "Meme Meadow", touch = true }))
+	t.check("a phone is not told about a key it does not have", string.find(phone, "E ", 1, true) == nil, phone)
+	t.check(
+		"a phone is told to tap in the pen",
+		string.find(Objective.hint(facts({ carrying = true, inPen = true, touch = true })), "Tap", 1, true) ~= nil
+	)
 	-- Marco saw "Walk east to the Meadow" while standing in the Meadow
 	t.check(
 		"a new player in the Safe Zone is told where to go",
