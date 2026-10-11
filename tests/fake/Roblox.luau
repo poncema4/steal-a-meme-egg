@@ -341,6 +341,7 @@ function Fake.world()
 		OnClientEvent = true,
 		Died = true,
 		Heartbeat = true,
+		Stepped = true,
 		RenderStepped = true,
 		PlayerAdded = true,
 		PlayerRemoving = true,
@@ -986,6 +987,7 @@ function Fake.world()
 					error(err, 0)
 				end
 			end
+			service("RunService").Stepped:Fire(step, step)
 			service("RunService").Heartbeat:Fire(step)
 		end
 	end

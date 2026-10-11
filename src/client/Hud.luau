@@ -242,13 +242,13 @@ function Hud.start(player: Player, actions: Actions?)
 		dropRemote:FireServer()
 	end)
 
-	-- the hotbar: three trap slots (keys 1-3, or tap). At most 3 traps are out at once, so a slot lights up for each one left.
+	-- the hotbar: two items, like the reference: 1 = your bat (tap or press 1 to swing), 2 = your traps (tap or press 2 to set
+	-- one; the number says how many are left). The Roblox backpack is hidden, so this is the only equipment bar.
 	local trapRemote = remotes:WaitForChild("PlaceTrap") :: RemoteEvent
-	-- up to six slots (six only with the Trap Master pass); the bar is sized for six so it never grows into the event clock
 	local startCamera = workspace.CurrentCamera
 	local viewport = if startCamera then startCamera.ViewportSize else Vector2.new(1280, 720)
 	local designWidth = viewport.X / UiScale.factor(viewport.X, viewport.Y, Ui.isTouch())
-	local bar = UiScale.bottomBar(designWidth, 6, Ui.tap(gui, 46))
+	local bar = UiScale.bottomBar(designWidth, 2, Ui.tap(gui, 46))
 	local slotSide = bar.slot
 	local hotbar =
 		box(gui, "Hotbar", UDim2.fromOffset(bar.hotbarWidth, slotSide), UDim2.new(0.5, 0, 1, -14), Vector2.new(0.5, 1))
@@ -258,27 +258,47 @@ function Hud.start(player: Player, actions: Actions?)
 	hotbarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	hotbarList.SortOrder = Enum.SortOrder.LayoutOrder
 	hotbarList.Parent = hotbar
-	local trapSlots: { TextButton } = {}
-	for i = 1, 6 do
-		local slot = Ui.button(hotbar, `TrapSlot_{i}`, "", Ui.Palettes.Slot, UDim2.fromOffset(slotSide, slotSide))
-		slot.LayoutOrder = i
-		Ui.addIcon(slot, "trap", "center", "TRAP")
-		slot.TextSize = 16
-		local key = Ui.label(slot, "Key", 16)
+	local function slot(name: string, order: number, icon: string, glyph: string): TextButton
+		local button = Ui.button(hotbar, name, "", Ui.Palettes.Slot, UDim2.fromOffset(slotSide, slotSide))
+		button.LayoutOrder = order
+		Ui.addIcon(button, icon, "center", glyph)
+		button.TextSize = 16
+		local key = Ui.label(button, "Key", 16)
 		key.Position = UDim2.fromOffset(4, 0)
 		key.Size = UDim2.fromOffset(20, 20)
-		key.Text = tostring(i)
-		slot.Activated:Connect(function()
-			trapRemote:FireServer()
-		end)
-		trapSlots[i] = slot
+		key.Text = tostring(order)
+		return button
 	end
+	local batSlot = slot("BatSlot", 1, "bat", "BAT")
+	local trapSlot = slot("TrapSlot", 2, "trap", "TRAP")
+	local trapCount = Ui.label(trapSlot, "Count", 18, Color3.new(1, 1, 1))
+	trapCount.AnchorPoint = Vector2.new(1, 1)
+	trapCount.Position = UDim2.new(1, -4, 1, -2)
+	trapCount.Size = UDim2.fromOffset(40, 20)
+	trapCount.TextXAlignment = Enum.TextXAlignment.Right
+	local function swing()
+		local character = player.Character
+		local bat = character and character:FindFirstChild("Bat")
+		if bat and bat:IsA("Tool") then
+			bat:Activate()
+		end
+	end
+	batSlot.Activated:Connect(swing)
+	trapSlot.Activated:Connect(function()
+		trapRemote:FireServer()
+	end)
+	ContextActionService:BindAction("SwingBat", function(_, state)
+		if state == Enum.UserInputState.Begin then
+			swing()
+		end
+		return Enum.ContextActionResult.Pass
+	end, false, Enum.KeyCode.One)
 	ContextActionService:BindAction("PlaceTrap", function(_, state)
 		if state == Enum.UserInputState.Begin then
 			trapRemote:FireServer()
 		end
 		return Enum.ContextActionResult.Pass
-	end, false, Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.ButtonX)
+	end, false, Enum.KeyCode.Two, Enum.KeyCode.ButtonX)
 
 	-- while you are locked on the treadmill: a big way off (jumping works too)
 	local leaveRemote = remotes:WaitForChild("LeaveTreadmill") :: RemoteEvent
@@ -460,12 +480,9 @@ function Hud.start(player: Player, actions: Actions?)
 		runText.Text = "RUN!!"
 		local placed = number(player, "TrapsPlaced", 0)
 		local cooling = number(player, "TrapReadyAt", 0) > workspace:GetServerTimeNow()
-		for i, slot in trapSlots do
-			local limit = number(player, "TrapsMax", 3)
-			slot.Visible = i <= limit
-			local ready = i <= limit - placed and not cooling
-			Ui.setPalette(slot, if ready then Ui.Palettes.Slot else Ui.Palettes.SlotUsed)
-		end
+		local trapsLeft = math.max(number(player, "TrapsMax", 3) - placed, 0)
+		trapCount.Text = `x{trapsLeft}`
+		Ui.setPalette(trapSlot, if trapsLeft > 0 and not cooling then Ui.Palettes.Slot else Ui.Palettes.SlotUsed)
 		local eggBadge = badges.EggsButton
 		if eggBadge then
 			eggBadge.Visible = eggs > 0
