@@ -123,9 +123,9 @@ function Shop.start(player: Player)
 	statsMax.Parent = petStats
 	petStats.Text = "Hover a pet to see its stats"
 	local limitedRobux =
-		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(150, Ui.tap(gui, 34)))
+		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(120, Ui.tap(gui, 28)))
 	limitedRobux.Position = UDim2.fromOffset(120, PET_Y + PET_H + 10)
-	limitedRobux.TextSize = 19
+	limitedRobux.TextSize = 17
 	local BANNER_H = math.max(12 + 90, PET_Y + PET_H + 10 + limitedRobux.Size.Y.Offset) + 12
 	banner.Size = UDim2.new(1, -8, 0, BANNER_H)
 	local petButtons: { ImageButton } = {}
@@ -149,7 +149,7 @@ function Shop.start(player: Player)
 	-- compact cards, four to a row (Marco: the things inside the shop should be smaller). The card's height follows its button's
 	-- real height (taller on a phone), so the blurb always sits above the button, never under it.
 	local COLS, CARD_W, GAP = 4, 124, 10
-	local BUTTON_H = Ui.tap(gui, 28)
+	local BUTTON_H = Ui.tap(gui, 24) -- Marco: the green/purple buy buttons inside the shop should be small
 	local BLURB_Y, BLURB_H = 94, 42
 	local CARD_H = BLURB_Y + BLURB_H + 6 + BUTTON_H + 6
 	local function section(title: string)
@@ -216,10 +216,10 @@ function Shop.start(player: Player)
 			blurbMax.Parent = blurb
 			blurb.TextYAlignment = Enum.TextYAlignment.Top
 			blurb.Text = item.blurb or ""
-			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(1, -14, 0, BUTTON_H))
+			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(0.72, 0, 0, BUTTON_H))
 			b.AnchorPoint = Vector2.new(0.5, 1)
 			b.Position = UDim2.new(0.5, 0, 1, -6)
-			b.TextSize = 16
+			b.TextSize = 14
 			table.insert(rows, { key = key, kind = kind, button = b, name = item.name, robux = item.robux })
 			b.Activated:Connect(function()
 				buyKey:FireServer(kind, key)
