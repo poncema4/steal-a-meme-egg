@@ -160,7 +160,7 @@ end
 
 -- Puts a picture on a button or label. `side` "center" fills the middle (icon-only buttons); "left" sits at the left edge and
 -- pads the text so it does not run under the picture. Returns false (and shows `glyph` as text instead) if there is no art.
-function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string, pad: number?, grow: number?): boolean
+function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string, pad: number?, size: number?): boolean
 	-- the icon is a brick model seen in 3D when the client has one, else the uploaded picture, else the glyph
 	local holder = Instance.new("Frame")
 	holder.Name = "Icon"
@@ -192,14 +192,12 @@ function Ui.addIcon(target: GuiObject, key: string, side: string, glyph: string,
 		text.Text = ""
 	else
 		local padLeft = pad or 40
+		local edge = size or 40
 		-- UIPadding insets everything inside the target, the icon included, so the icon is moved back into the padding with a
-		-- negative offset; its height is a share of the target's and its width follows the height (a square), not the other way round
+		-- negative offset. Its size is plain pixels: a zero-width scale with an aspect-ratio constraint came out as nothing in Studio.
 		image.AnchorPoint = Vector2.new(0, 0.5)
 		image.Position = UDim2.new(0, 6 - padLeft, 0.5, 0)
-		image.Size = UDim2.fromScale(0, grow or 1)
-		local ratio = Instance.new("UIAspectRatioConstraint")
-		ratio.DominantAxis = Enum.DominantAxis.Height
-		ratio.Parent = image
+		image.Size = UDim2.fromOffset(edge, edge)
 		local padding = Instance.new("UIPadding")
 		padding.PaddingLeft = UDim.new(0, padLeft)
 		padding.Parent = target

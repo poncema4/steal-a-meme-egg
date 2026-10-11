@@ -112,8 +112,10 @@ return function(t)
 	-- sized from its height, not its width
 	local icon = find(shopButton, "Icon") :: GuiObject
 	t.check("the icon sits inside the padding, at the button's left edge", icon.Position.X.Offset < 0)
-	local ratio = icon:FindFirstChildOfClass("UIAspectRatioConstraint") :: UIAspectRatioConstraint
-	t.check("and its width follows its height", ratio.DominantAxis == world.enum.DominantAxis.Height)
+	t.check(
+		"and it has a real size in pixels (a zero-width scale drew nothing in Studio)",
+		icon.Size.X.Offset > 20 and icon.Size.Y.Offset > 20 and icon.Size.X.Scale == 0
+	)
 	t.check(
 		"the Slow Mode track steps back out of the label's padding too",
 		(find(hudGui, "Track") :: GuiObject).Position.X.Offset < 0

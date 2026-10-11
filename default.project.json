@@ -61,20 +61,20 @@
       "$className": "Lighting",
       "$ignoreUnknownInstances": true,
       "$properties": {
-        "Brightness": 2,
+        "Brightness": 1.6,
         "ClockTime": 14.5,
         "GeographicLatitude": 30,
         "Ambient": [
-          0.28,
-          0.3,
-          0.34
+          0.22,
+          0.24,
+          0.28
         ],
         "OutdoorAmbient": [
-          0.4,
-          0.42,
-          0.46
+          0.32,
+          0.34,
+          0.38
         ],
-        "ExposureCompensation": -0.25,
+        "ExposureCompensation": 0,
         "EnvironmentDiffuseScale": 0.45,
         "EnvironmentSpecularScale": 0.25,
         "GlobalShadows": true,
