@@ -24,13 +24,24 @@ function Badges.setCatalog(c: { [string]: { id: number, name: string, descriptio
 end
 
 -- How a badge reaches Roblox. Tests replace this to see which badges were handed out.
-local award: (Player, number) -> () = function(player: Player, id: number)
-	pcall(function()
-		BadgeService:AwardBadge(player.UserId, id)
-	end)
+-- Roblox's badge service sometimes fails for a moment, so an award is tried up to three times (and given up on only then).
+-- Returns true once it is awarded.
+local award: (Player, number) -> boolean = function(player: Player, id: number): boolean
+	for attempt = 1, 3 do
+		local ok = pcall(function()
+			BadgeService:AwardBadge(player.UserId, id)
+		end)
+		if ok then
+			return true
+		end
+		if attempt < 3 then
+			task.wait(attempt * 2)
+		end
+	end
+	return false
 end
 
-function Badges.setAwarder(fn: (Player, number) -> ())
+function Badges.setAwarder(fn: (Player, number) -> boolean)
 	award = fn
 end
 
@@ -49,7 +60,12 @@ function Badges.give(player: Player, key: string): boolean
 		return false
 	end
 	(mine :: { [string]: boolean })[key] = true
-	task.spawn(award, player, badge.id)
+	task.spawn(function()
+		-- if Roblox never accepted it, forget it so the next time the player earns it is another try
+		if not award(player, badge.id) and given[player] then
+			(given[player] :: { [string]: boolean })[key] = nil
+		end
+	end)
 	return true
 end
 
@@ -73,7 +89,12 @@ local function checkProgress(player: Player)
 end
 
 function Badges.start()
-	Session.onLoaded(function(player)
+	-- Welcome: everyone who joins earns it at once (it used to wait for the save to load, so a player who left quickly, or
+	-- whose save was slow, never got it and the badge's rate stayed below 100%)
+	for _, player in Players:GetPlayers() do
+		Badges.give(player, "welcome")
+	end
+	Players.PlayerAdded:Connect(function(player)
 		Badges.give(player, "welcome")
 	end)
 	Session.onHatched(function(player)

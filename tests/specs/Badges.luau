@@ -38,12 +38,31 @@ return function(t)
 	badges.setCatalog(catalog)
 	badges.setAwarder(function(_, id)
 		table.insert(given, ids[id])
+		return true
 	end)
 
 	local ana = world.addPlayer("Ana", 901)
 	world.spawnCharacter(ana)
 	world.advance(0.6)
 	t.check("joining gives Welcome", table.find(given, "welcome") ~= nil)
+
+	-- a badge Roblox refused is tried again the next time it is earned (it is not marked as given)
+	local tries = 0
+	badges.setAwarder(function()
+		tries += 1
+		return tries > 1
+	end)
+	local probe = world.addPlayer("Probe", 902)
+	world.advance(0.3)
+	t.equal("a refused Welcome was attempted", tries, 1)
+	t.check("and can be earned again", badges.give(probe, "welcome"))
+	world.advance(0.3)
+	t.equal("the second try goes through", tries, 2)
+	t.check("after that it counts as given", not badges.give(probe, "welcome"))
+	badges.setAwarder(function(_, id)
+		table.insert(given, ids[id])
+		return true
+	end)
 
 	-- stealing, delivering, hatching
 	local entry = wilds.entries()[1]
