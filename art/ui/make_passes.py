@@ -1,5 +1,6 @@
-"""Square icons for the gamepasses and developer products (Creator Hub wants 512x512), with NOTHING cut off: every line of text is
-sized to fit inside a safe margin, and the picture is one of the sticker icons from art/ui (run art/ui/make_all.sh first).
+"""Square icons for the gamepasses and developer products (Creator Hub wants 512x512), with NOTHING cut off. The Roblox store shows
+these icons cropped to a CIRCLE, so every line of text is sized to fit inside the circle at its height (with a margin), and the
+picture sits in the middle. The picture is one of the sticker icons from art/ui (run art/ui/make_all.sh first).
 Usage: python3 art/ui/make_passes.py     (writes brand/passes/*.png)"""
 import pathlib
 import sys
@@ -13,6 +14,15 @@ from make_thumb_lib import FONT, MONEY, RAINBOW, gradient  # noqa: E402
 OUT = ROOT / "brand" / "passes"
 SIZE = 512
 SAFE = 44  # nothing is drawn closer than this to an edge
+CIRCLE = SIZE / 2 - 30  # the store crops to a circle: everything stays inside this radius
+
+
+def chord(centre_y: int, height: int) -> int:
+    """The widest a line of text may be at this height so its corners stay inside the circle."""
+    import math
+
+    far = max(abs(centre_y - height / 2 - SIZE / 2), abs(centre_y + height / 2 - SIZE / 2))
+    return int(2 * math.sqrt(max(CIRCLE**2 - far**2, 0)))
 
 # key: (picture, top line, bottom line, background top/bottom colours, text colours)
 ICONS = {
@@ -61,12 +71,11 @@ def make(key: str):
     ImageDraw.Draw(glow).ellipse((SAFE, 120, SIZE - SAFE, 420), fill=(255, 255, 255, 60))
     img.alpha_composite(glow)
     sticker = Image.open(ROOT / "art" / "ui" / f"{art}.png").convert("RGBA")
-    h = 270
+    h = 236
     sticker = sticker.resize((h, h), Image.LANCZOS)
-    img.alpha_composite(sticker, ((SIZE - h) // 2, 118))
-    width = SIZE - 2 * SAFE
-    fit_text(img, top, 76, 70, stops, width)
-    fit_text(img, bottom, 438, 84, stops, width)
+    img.alpha_composite(sticker, ((SIZE - h) // 2, (SIZE - h) // 2 + 4))
+    fit_text(img, top, 120, 62, stops, chord(120, 62))
+    fit_text(img, bottom, 392, 70, stops, chord(392, 70))
     OUT.mkdir(exist_ok=True)
     img.convert("RGB").save(OUT / f"{key}.png")
 
