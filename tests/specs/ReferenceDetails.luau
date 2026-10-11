@@ -87,7 +87,13 @@ return function(t)
 	world.advance(1)
 	-- the server publishes what is next ("Id:time"); the clock names it and counts down
 	local nextId = string.match(tostring(rs:GetAttribute("NextEvent")), "^(%w+):")
-	local text = (find(clock, "ClockText") :: TextLabel).Text
+	local clockText = find(clock, "ClockText") :: TextLabel
+	local text = clockText.Text
+	-- Marco saw "4m / 12s / left" stacked on three lines: the countdown box is one line tall and never wraps
+	t.check(
+		"the countdown is one line (no wrapping)",
+		clockText.Size.Y.Scale == 0 and clockText.Size.Y.Offset <= 40 and not clockText.TextWrapped
+	)
 	local Events = require("../../src/shared/Game/Events")
 	t.check("the server publishes the next event", nextId ~= nil and Events.Defs[nextId] ~= nil, tostring(nextId))
 	local running = tostring(rs:GetAttribute("ActiveEvents")) ~= ""
