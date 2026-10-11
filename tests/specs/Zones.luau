@@ -18,7 +18,7 @@ return function(t)
 	local rising = true
 	for i = 2, #Zones.List do
 		local a, b = Zones.List[i - 1], Zones.List[i]
-		if b.mp <= a.mp or b.guardianSpeed <= a.guardianSpeed then
+		if b.level <= a.level or b.guardianSpeed <= a.guardianSpeed then
 			rising = false
 		end
 		local ta, tb = Eggs.tier(a.eggs[2]), Eggs.tier(b.eggs[1])
@@ -27,7 +27,7 @@ return function(t)
 		end
 	end
 	t.check("deeper terrains cost more, chase faster and hold better eggs", rising)
-	t.equal("the first terrain is free", Zones.List[1].mp, 0)
+	t.equal("the first terrain is free", Zones.List[1].level, 0)
 	local real = true
 	for _, zone in Zones.List do
 		for _, id in zone.eggs do
@@ -44,9 +44,9 @@ return function(t)
 	t.equal("the start is inclusive", (Zones.at(Zones.List[1].startX) :: Zones.Zone).id, "Meadow")
 	t.equal("the boundary belongs to the next terrain", (Zones.at(Zones.List[2].startX) :: Zones.Zone).id, "Dune")
 	t.equal("past the last terrain is nothing", Zones.at(1500), nil)
-	t.equal("zero points opens only the Meadow", Zones.furthest(0).id, "Meadow")
-	t.equal("25 points opens the Dune", Zones.furthest(25).id, "Dune")
-	t.equal("24 points does not", Zones.furthest(24).id, "Meadow")
+	t.equal("speed level 0 opens only the Meadow", Zones.furthest(0).id, "Meadow")
+	t.equal("level 5 opens the Dune", Zones.furthest(5).id, "Dune")
+	t.equal("level 4 does not", Zones.furthest(4).id, "Meadow")
 	t.equal("everything open at the top", Zones.furthest(1e9).id, "Cosmic")
 	t.equal("the next locked terrain after the Meadow", (Zones.nextLocked(0) :: Zones.Zone).id, "Dune")
 	t.equal("nothing is locked at the top", Zones.nextLocked(1e9), nil)
@@ -59,7 +59,7 @@ return function(t)
 		Zones.pushBack(Zones.List[2].startX + 60, 0),
 		Zones.List[2].startX - 4
 	)
-	t.equal("with enough points they stay", Zones.pushBack(Zones.List[2].startX + 60, 25), nil)
+	t.equal("with enough speed they stay", Zones.pushBack(Zones.List[2].startX + 60, 5), nil)
 
 	-- which egg a nest grows
 	local meadow = Zones.List[1]
@@ -109,4 +109,17 @@ return function(t)
 			`{zone.guardianSpeed} vs {top}`
 		)
 	end
+
+	-- the Index groups characters by the world their egg belongs to
+	t.equal("the Soggy egg belongs to the Meadow", (Zones.forTier("Soggy") :: Zones.Zone).id, "Meadow")
+	t.equal("the Disco egg to the Dune", (Zones.forTier("Disco") :: Zones.Zone).id, "Dune")
+	t.equal("the Divine egg to the deepest world", (Zones.forTier("Divine") :: Zones.Zone).id, "Cosmic")
+	t.equal("limited eggs belong to no world", Zones.forTier("GooseGold"), nil)
+	local homes = true
+	for _, tier in Eggs.Tiers do
+		if not Zones.forTier(tier.id) then
+			homes = false
+		end
+	end
+	t.check("every regular egg has a world", homes)
 end

@@ -59,6 +59,12 @@ return function(t)
 	local one = plot.slots[1]:FindFirstChild("Item", true) :: Instance
 	local visual = one:FindFirstChild("Visual")
 	t.check("a pet stands as its model", visual ~= nil and visual:IsA("Model"))
+	local roamers = world.tags["RoamPet"] or {}
+	t.equal("a pet with a model roams its patch (both BonkBeans, not the model-less goose)", #roamers, 2)
+	t.check(
+		"each roaming pet has its own walk",
+		(roamers[1] :: Instance):GetAttribute("RoamSeed") ~= (roamers[2] :: Instance):GetAttribute("RoamSeed")
+	)
 	local picture = one:FindFirstChild("Picture", true)
 	t.check("the portrait card is not used when the model exists", picture == nil)
 	t.check("the pet still has its name tag", one:FindFirstChild("Tag", true) ~= nil)

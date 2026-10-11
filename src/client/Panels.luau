@@ -9,6 +9,7 @@ local BaseView = require(ReplicatedStorage.Shared.Game.BaseView)
 local Collection = require(ReplicatedStorage.Shared.Game.Collection)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
+local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 local Ui = require(script.Parent.Ui)
 
 local Panels = {}
@@ -67,15 +68,43 @@ local function number(player: Player, name: string): number
 	return if typeof(v) == "number" then v else 0
 end
 
--- every character in the game, weakest first
-local function allCharacters(): { Eggs.Character }
-	local list = {}
-	for _, c in Eggs.Characters do
-		table.insert(list, c)
+-- the Index is grouped by world: each terrain shows the characters its eggs hatch, weakest first, then the limited ones
+type Section = { title: string, characters: { Eggs.Character } }
+
+local function sections(): { Section }
+	local byWorld: { [string]: { Eggs.Character } } = {}
+	local function add(world: string, tiers: { Eggs.Tier })
+		for _, tier in tiers do
+			for _, entry in tier.pool do
+				local c = Eggs.character(entry.id)
+				if c then
+					byWorld[world] = byWorld[world] or {}
+					table.insert(byWorld[world], c)
+				end
+			end
+		end
 	end
-	table.sort(list, function(a, b)
-		return a.income < b.income
-	end)
+	for _, zone in Zones.List do
+		local tiers = {}
+		for _, tier in Eggs.Tiers do
+			local home = Zones.forTier(tier.id)
+			if home and home.id == zone.id then
+				table.insert(tiers, tier)
+			end
+		end
+		add(zone.id, tiers)
+	end
+	add("Limited", Eggs.LimitedTiers)
+	local list: { Section } = {}
+	for _, zone in Zones.List do
+		table.insert(list, { title = string.upper(zone.name), characters = byWorld[zone.id] or {} })
+	end
+	table.insert(list, { title = "LIMITED EGGS", characters = byWorld.Limited or {} })
+	for _, section in list do
+		table.sort(section.characters, function(a, b)
+			return a.income < b.income
+		end)
+	end
 	return list
 end
 
@@ -89,11 +118,10 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	local progress = Ui.label(indexPanel.body, "Progress", 22, Color3.fromRGB(255, 240, 150))
 	progress.Size = UDim2.new(1, 0, 0, 30)
 	local cards = scroller(indexPanel.body, "Cards", UDim2.fromOffset(0, 36), UDim2.new(1, 0, 1, -36))
-	local grid = Instance.new("UIGridLayout")
-	grid.CellSize = UDim2.fromOffset(150, 168)
-	grid.CellPadding = UDim2.fromOffset(10, 10)
-	grid.SortOrder = Enum.SortOrder.LayoutOrder
-	grid.Parent = cards
+	local stack = Instance.new("UIListLayout")
+	stack.Padding = UDim.new(0, 6)
+	stack.SortOrder = Enum.SortOrder.LayoutOrder
+	stack.Parent = cards
 	type Card = {
 		root: Frame,
 		portrait: Frame,
@@ -106,61 +134,82 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		char: Eggs.Character,
 	}
 	local cardList: { Card } = {}
-	for order, c in allCharacters() do
-		local root = frame(cards, `Card_{c.id}`, UDim2.fromOffset(150, 168))
-		root.LayoutOrder = order
-		corner(root, 10)
-		local portrait =
-			frame(root, "Portrait", UDim2.fromOffset(78, 78), RARITY_COLORS[c.rarity] or RARITY_COLORS.Common)
-		portrait.AnchorPoint = Vector2.new(0.5, 0)
-		portrait.Position = UDim2.new(0.5, 0, 0, 8)
-		corner(portrait, 12)
-		local letter = Ui.label(portrait, "Letter", 44)
-		letter.Size = UDim2.fromScale(1, 1)
-		-- the portrait: a rendered picture where we have one (a black silhouette until discovered), else the letter tile
-		local picture: ImageLabel? = nil
-		local view = Ui.modelView(portrait, "Pets", c.id)
-		if view then
-			letter.Visible = false
+	local order = 0
+	for sectionNumber, section in sections() do
+		local header = Ui.label(cards, `World_{sectionNumber}`, 20, Color3.fromRGB(255, 240, 150))
+		header.Size = UDim2.new(1, 0, 0, 30)
+		header.TextXAlignment = Enum.TextXAlignment.Left
+		header.Text = section.title
+		header.LayoutOrder = sectionNumber * 2 - 1
+		local holder = Instance.new("Frame")
+		holder.Name = `Section_{sectionNumber}`
+		holder.BackgroundTransparency = 1
+		holder.Size = UDim2.fromScale(1, 0)
+		holder.AutomaticSize = Enum.AutomaticSize.Y
+		holder.LayoutOrder = sectionNumber * 2
+		holder.Parent = cards
+		local grid = Instance.new("UIGridLayout")
+		grid.CellSize = UDim2.fromOffset(150, 168)
+		grid.CellPadding = UDim2.fromOffset(10, 10)
+		grid.SortOrder = Enum.SortOrder.LayoutOrder
+		grid.Parent = holder
+		for _, c in section.characters do
+			order += 1
+			local root = frame(holder, `Card_{c.id}`, UDim2.fromOffset(150, 168))
+			root.LayoutOrder = order
+			corner(root, 10)
+			local portrait =
+				frame(root, "Portrait", UDim2.fromOffset(78, 78), RARITY_COLORS[c.rarity] or RARITY_COLORS.Common)
+			portrait.AnchorPoint = Vector2.new(0.5, 0)
+			portrait.Position = UDim2.new(0.5, 0, 0, 8)
+			corner(portrait, 12)
+			local letter = Ui.label(portrait, "Letter", 44)
+			letter.Size = UDim2.fromScale(1, 1)
+			-- the portrait: a rendered picture where we have one (a black silhouette until discovered), else the letter tile
+			local picture: ImageLabel? = nil
+			local view = Ui.modelView(portrait, "Pets", c.id)
+			if view then
+				letter.Visible = false
+			end
+			local artId = Ui.petIconId(c.id)
+			if artId and not view then
+				local image = Instance.new("ImageLabel")
+				image.Name = "Picture"
+				image.BackgroundTransparency = 1
+				image.Size = UDim2.fromScale(1.05, 1.05)
+				image.Position = UDim2.fromScale(-0.025, -0.025)
+				image.Image = artId
+				image.ScaleType = Enum.ScaleType.Fit
+				image.Parent = portrait
+				letter.Visible = false
+				picture = image
+			end
+			local name = Ui.label(root, "Name", 17)
+			name.Position = UDim2.fromOffset(0, 90)
+			name.Size = UDim2.new(1, 0, 0, 22)
+			name.TextScaled = true
+			local income = Ui.label(root, "Income", 16, Color3.fromRGB(80, 255, 90))
+			income.Position = UDim2.fromOffset(0, 114)
+			income.Size = UDim2.new(1, 0, 0, 20)
+			local chips: { [string]: TextLabel } = {}
+			for i, mutation in { "Gold", "Rainbow" } do
+				local chip = Ui.label(root, `Chip_{mutation}`, 13, MUTATION_COLORS[mutation])
+				chip.Size = UDim2.fromOffset(66, 18)
+				chip.Position = UDim2.fromOffset(6 + (i - 1) * 72, 140)
+				chips[mutation] = chip
+			end
+			table.insert(cardList, {
+				root = root,
+				portrait = portrait,
+				letter = letter,
+				picture = picture,
+				view = view,
+				name = name,
+				income = income,
+				chips = chips,
+				char = c,
+			})
 		end
-		local artId = Ui.petIconId(c.id)
-		if artId and not view then
-			local image = Instance.new("ImageLabel")
-			image.Name = "Picture"
-			image.BackgroundTransparency = 1
-			image.Size = UDim2.fromScale(1.05, 1.05)
-			image.Position = UDim2.fromScale(-0.025, -0.025)
-			image.Image = artId
-			image.ScaleType = Enum.ScaleType.Fit
-			image.Parent = portrait
-			letter.Visible = false
-			picture = image
-		end
-		local name = Ui.label(root, "Name", 17)
-		name.Position = UDim2.fromOffset(0, 90)
-		name.Size = UDim2.new(1, 0, 0, 22)
-		name.TextScaled = true
-		local income = Ui.label(root, "Income", 16, Color3.fromRGB(80, 255, 90))
-		income.Position = UDim2.fromOffset(0, 114)
-		income.Size = UDim2.new(1, 0, 0, 20)
-		local chips: { [string]: TextLabel } = {}
-		for i, mutation in { "Gold", "Rainbow" } do
-			local chip = Ui.label(root, `Chip_{mutation}`, 13, MUTATION_COLORS[mutation])
-			chip.Size = UDim2.fromOffset(66, 18)
-			chip.Position = UDim2.fromOffset(6 + (i - 1) * 72, 140)
-			chips[mutation] = chip
-		end
-		table.insert(cardList, {
-			root = root,
-			portrait = portrait,
-			letter = letter,
-			picture = picture,
-			view = view,
-			name = name,
-			income = income,
-			chips = chips,
-			char = c,
-		})
 	end
 
 	local function refreshIndex()

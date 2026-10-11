@@ -29,7 +29,7 @@ return function(t)
 		entry.nest.tier = "Soggy"
 		world.root(ana).Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 		entry.prompt.Triggered:Fire(ana)
-		world.root(ana).Position = V3.new(entry.egg.Position.X - 141, 3, entry.egg.Position.Z)
+		world.root(ana).Position = V3.new(entry.zone.startX + 2, 3, entry.egg.Position.Z)
 		world.advance(0.2)
 	end
 

@@ -19,8 +19,8 @@ export type Facts = {
 }
 
 -- The speed level you need to outrun the guardians of the furthest terrain you have unlocked, while carrying an egg.
-function Objective.speedNeeded(mp: number): number
-	local zone = Zones.furthest(mp)
+function Objective.speedNeeded(reached: number): number
+	local zone = Zones.furthest(reached)
 	for level = 0, Progression.MAX_LEVEL do
 		if Progression.carrySpeed(Progression.walkSpeed(level), true) > zone.guardianSpeed then
 			return level
@@ -42,13 +42,13 @@ function Objective.hint(f: Facts): string
 	if f.freeSlots == 0 then
 		return "Your base is full! Stand on the green pad to buy another slot."
 	end
-	local nextZone = Zones.nextLocked(f.mp)
-	local needed = Objective.speedNeeded(f.mp)
+	local nextZone = Zones.nextLocked(f.speedLevel)
+	local needed = Objective.speedNeeded(f.speedLevel)
 	if f.speedLevel < needed then
 		return `Train on the treadmill: you need speed level {needed} to outrun the guardians out here.`
 	end
 	if nextZone then
-		return `Bring eggs home for Meme Points: {f.mp} of {nextZone.mp} to unlock {nextZone.name}.`
+		return `Train on the treadmill to Speed {Zones.speedLabel(nextZone)} to unlock {nextZone.name}.`
 	end
 	if f.eggs > 0 and f.characters == 0 then
 		return "Your egg is hatching. Hold E on it to skip the wait with coins."

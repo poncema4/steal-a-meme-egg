@@ -162,13 +162,13 @@ return function(t)
 	end
 	t.check("more XP never means a lower level or a lower speed", broken == nil, tostring(broken))
 	broken = nil
-	for _, mp in { -5, 0, 1, 24, 25, 1e6, 1e12, 1e300 } do
+	for _, mp in { -5, 0, 1, 4, 5, 30, 1e6, 1e300 } do
 		local zone = Zones.furthest(mp)
-		if mp < zone.mp and zone ~= Zones.List[1] then
-			broken = `{mp} points reached a terrain that costs {zone.mp}`
+		if mp < zone.level and zone ~= Zones.List[1] then
+			broken = `level {mp} reached a terrain that needs {zone.level}`
 		end
 	end
-	t.check("Meme Points never reach a terrain they cannot afford", broken == nil, tostring(broken))
+	t.check("a Speed level never reaches a terrain it cannot enter", broken == nil, tostring(broken))
 	broken = nil
 
 	-- 7) events never produce an impossible multiplier

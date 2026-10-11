@@ -58,6 +58,7 @@ local specs = {
 	require("./specs/Rebirth"),
 	require("./specs/Store"),
 	require("./specs/Zones"),
+	require("./specs/Wander"),
 	require("./specs/Progression"),
 	require("./specs/Guardian"),
 	require("./specs/Game"),

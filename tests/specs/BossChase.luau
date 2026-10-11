@@ -34,4 +34,13 @@ return function(t)
 	t.equal("Ana is caught and drops the egg", ana:GetAttribute("Carrying"), "")
 	t.check("Ben still carries his", ben:GetAttribute("Carrying") ~= "")
 	t.equal("and the boss turns on Ben", g.state, "Chase")
+
+	-- 2) a thief who reaches the Safe Zone is safe, and no monster ever follows them in
+	local zone = first.boss.zone
+	world.root(ben).Position = V3.new(zone.startX - 20, 3, 0)
+	for _ = 1, 40 do
+		world.advance(0.25)
+		t.check("the boss stays inside its terrain", g.x >= zone.startX)
+	end
+	t.check("the chase ends when the thief is in the Safe Zone", g.state ~= "Chase")
 end

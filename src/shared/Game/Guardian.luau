@@ -42,6 +42,15 @@ function Guardian.stunned(g: Guardian, seconds: number)
 	g.stun = math.max(g.stun, seconds)
 end
 
+-- Keeps the guardian inside its own terrain (a box in x and z), so a chase can never carry it out into the Safe Zone or the
+-- next terrain. Returns true if it had to be pulled back.
+function Guardian.confine(g: Guardian, minX: number, maxX: number, minZ: number, maxZ: number): boolean
+	local x, z = math.clamp(g.x, minX, maxX), math.clamp(g.z, minZ, maxZ)
+	local moved = x ~= g.x or z ~= g.z
+	g.x, g.z = x, z
+	return moved
+end
+
 -- Advances one tick. `target` is the thief's position (nil if they are gone or no longer carrying the egg). Returns true on
 -- the tick the guardian catches them.
 function Guardian.step(

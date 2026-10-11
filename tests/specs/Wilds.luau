@@ -205,12 +205,16 @@ return function(t)
 	local duneX = Zones.List[2].startX
 	root.Position = V3.new(duneX + 60, 3, 0)
 	world.advance(0.7)
-	t.check("a player without enough points is pushed out of the Dune", root.Position.X < duneX)
+	t.check("a player who is too slow is pushed out of the Dune", root.Position.X < duneX)
 	t.equal("the HUD zone is the Meadow-side or home", ana:GetAttribute("Zone") ~= "Dune Desert", true)
-	session.addPoints(ana, 25)
+	t.check(
+		"and Meme Points alone do not open it",
+		(session.addPoints(ana, 1e6) :: any) == nil and Zones.pushBack(duneX + 60, session.speedLevel(ana)) ~= nil
+	)
+	session.addSpeedXp(ana, 1000) -- training to speed level 5 opens it
 	root.Position = V3.new(duneX + 60, 3, 0)
 	world.advance(0.7)
-	t.check("with the points they can stay", root.Position.X >= duneX + 60)
+	t.check("once fast enough they can stay", root.Position.X >= duneX + 60)
 	t.equal("and the zone shows", ana:GetAttribute("Zone"), "Dune Desert")
 	local dune = entries[7]
 	t.equal("the seventh nest is the Dune's first", dune.zone.id, "Dune")
