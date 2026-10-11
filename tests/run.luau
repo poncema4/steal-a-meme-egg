@@ -44,6 +44,7 @@ local specs = {
 	require("./specs/CarryPose"),
 	require("./specs/PlaceAndHatch"),
 	require("./specs/LimitedBannerLayout"),
+	require("./specs/RealPurchases"),
 	require("./specs/BossChase"),
 	require("./specs/ModelViews"),
 	require("./specs/Perf"),
