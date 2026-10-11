@@ -118,7 +118,7 @@ function Shop.start(player: Player)
 		hatch5 = "egg",
 	}
 	local y = 124 + 14
-	local CARD_W, CARD_H, GAP = 166, 240, 10
+	local CARD_W, CARD_H, GAP = 166, 268, 10 -- tall enough that the two-line blurb sits above the button, never under it
 	local function section(title: string)
 		local l = line(list, "Section", 4, y, 400, 26, 20, Color3.fromRGB(150, 220, 255))
 		l.Text = title
@@ -174,8 +174,8 @@ function Shop.start(player: Player)
 			name.TextScaled = true
 			name.Text = item.name
 			local blurb = Ui.label(card, "Blurb", 13, Color3.fromRGB(200, 205, 225))
-			blurb.Size = UDim2.new(1, -12, 0, 62)
-			blurb.Position = UDim2.fromOffset(6, 130)
+			blurb.Size = UDim2.new(1, -12, 0, 64)
+			blurb.Position = UDim2.fromOffset(6, 130) -- ends at 194; the button starts at CARD_H - 8 - 38 = 222
 			blurb.TextWrapped = true
 			blurb.TextYAlignment = Enum.TextYAlignment.Top
 			blurb.Text = item.blurb or ""
@@ -244,6 +244,25 @@ function Shop.start(player: Player)
 					view:SetAttribute("For", tier.id)
 					bannerArt.Text = ""
 					bannerPet = view
+				end
+			end
+			-- the flat picture of the best character this egg can hatch (the UI is 2D; a "?" was showing instead)
+			if not bannerPet then
+				local best = tier.pool[#tier.pool]
+				local id = best and Ui.petIconId(best.id)
+				local picture = bannerArt:FindFirstChild("Picture") :: ImageLabel?
+				if id then
+					if not picture then
+						local p = Instance.new("ImageLabel")
+						p.Name = "Picture"
+						p.BackgroundTransparency = 1
+						p.Size = UDim2.fromScale(1, 1)
+						p.ScaleType = Enum.ScaleType.Fit
+						p.Parent = bannerArt
+						picture = p
+					end
+					(picture :: ImageLabel).Image = id
+					bannerArt.Text = ""
 				end
 			end
 			limitedInfo.Text = `{left} left in the world, next egg in {clock(ends - workspace:GetServerTimeNow())}`

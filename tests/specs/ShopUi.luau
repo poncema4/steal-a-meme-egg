@@ -84,6 +84,20 @@ return function(t)
 		end
 	end
 	t.check("a pass says what it does", (find(find(gui, "Card_luck2x") :: Instance, "Blurb") :: TextLabel).Text ~= "")
+	-- nothing cut off: every card's blurb ends above its button (Marco saw the second line hidden under OWNED)
+	local clipped = 0
+	for _, card in (find(gui, "Card_luck2x") :: Instance).Parent:GetChildren() do
+		local blurb = card:FindFirstChild("Blurb") :: TextLabel?
+		local button = card:FindFirstChildWhichIsA("TextButton") :: TextButton?
+		if blurb and button and card:IsA("Frame") then
+			local blurbBottom = blurb.Position.Y.Offset + blurb.Size.Y.Offset
+			local buttonTop = card.Size.Y.Offset + button.Position.Y.Offset - button.Size.Y.Offset
+			if blurbBottom > buttonTop then
+				clipped += 1
+			end
+		end
+	end
+	t.equal("no blurb runs under its card's button", clipped, 0)
 	t.check("the limited egg has its own banner", find(gui, "LimitedCard") ~= nil)
 
 	-- buying with coins from the screen
