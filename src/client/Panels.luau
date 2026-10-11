@@ -10,6 +10,7 @@ local BaseView = require(ReplicatedStorage.Shared.Game.BaseView)
 local Collection = require(ReplicatedStorage.Shared.Game.Collection)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
+local Bats = require(ReplicatedStorage.Shared.Game.Bats)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 local Ui = require(script.Parent.Ui)
 
@@ -70,7 +71,7 @@ local function number(player: Player, name: string): number
 end
 
 -- the Index is grouped by world: each terrain shows the characters its eggs hatch, weakest first, then the limited ones
-type Section = { title: string, characters: { Eggs.Character } }
+type Section = { title: string, name: string, zoneId: string, characters: { Eggs.Character } }
 
 local function sections(): { Section }
 	local byWorld: { [string]: { Eggs.Character } } = {}
@@ -98,9 +99,15 @@ local function sections(): { Section }
 	add("Limited", Eggs.LimitedTiers)
 	local list: { Section } = {}
 	for _, zone in Zones.List do
-		table.insert(list, { title = string.upper(zone.name), characters = byWorld[zone.id] or {} })
+		table.insert(
+			list,
+			{ title = string.upper(zone.name), name = zone.name, zoneId = zone.id, characters = byWorld[zone.id] or {} }
+		)
 	end
-	table.insert(list, { title = "LIMITED EGGS", characters = byWorld.Limited or {} })
+	table.insert(
+		list,
+		{ title = "LIMITED EGGS", name = "Limited", zoneId = "Limited", characters = byWorld.Limited or {} }
+	)
 	for _, section in list do
 		table.sort(section.characters, function(a, b)
 			return a.income < b.income
@@ -118,7 +125,27 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	local indexPanel = Ui.panel(gui, "INDEX", 720, 540)
 	local progress = Ui.label(indexPanel.body, "Progress", 22, Color3.fromRGB(255, 240, 150))
 	progress.Size = UDim2.new(1, 0, 0, 30)
-	local cards = scroller(indexPanel.body, "Cards", UDim2.fromOffset(0, 36), UDim2.new(1, 0, 1, -36))
+	-- one tab per world, like the reference: pick a world to see its characters, finish them all for a reward and a better bat
+	local tabsBar = Instance.new("ScrollingFrame")
+	tabsBar.Name = "Tabs"
+	tabsBar.BackgroundTransparency = 1
+	tabsBar.BorderSizePixel = 0
+	tabsBar.Position = UDim2.fromOffset(0, 34)
+	tabsBar.Size = UDim2.new(1, 0, 0, 56)
+	tabsBar.ScrollBarThickness = 4
+	tabsBar.ScrollingDirection = Enum.ScrollingDirection.X
+	tabsBar.AutomaticCanvasSize = Enum.AutomaticSize.X
+	tabsBar.CanvasSize = UDim2.new()
+	tabsBar.Parent = indexPanel.body
+	local tabsLayout = Instance.new("UIListLayout")
+	tabsLayout.FillDirection = Enum.FillDirection.Horizontal
+	tabsLayout.Padding = UDim.new(0, 6)
+	tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	tabsLayout.Parent = tabsBar
+	local reward = Ui.label(indexPanel.body, "Reward", 16, Color3.fromRGB(190, 235, 255))
+	reward.Position = UDim2.fromOffset(0, 94)
+	reward.Size = UDim2.new(1, 0, 0, 24)
+	local cards = scroller(indexPanel.body, "Cards", UDim2.fromOffset(0, 122), UDim2.new(1, 0, 1, -122))
 	local stack = Instance.new("UIListLayout")
 	stack.Padding = UDim.new(0, 6)
 	stack.SortOrder = Enum.SortOrder.LayoutOrder
@@ -135,20 +162,38 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		char: Eggs.Character,
 	}
 	local cardList: { Card } = {}
+	type SectionView = { title: string, zoneId: string, tab: TextButton, holder: Frame, total: number }
+	local sectionViews: { SectionView } = {}
+	local selected = 1
+	local refreshTabs: () -> () = function() end
+	local function selectSection(n: number)
+		selected = n
+		refreshTabs()
+	end
 	local order = 0
 	for sectionNumber, section in sections() do
-		local header = Ui.label(cards, `World_{sectionNumber}`, 20, Color3.fromRGB(255, 240, 150))
-		header.Size = UDim2.new(1, 0, 0, 30)
-		header.TextXAlignment = Enum.TextXAlignment.Left
-		header.Text = section.title
-		header.LayoutOrder = sectionNumber * 2 - 1
+		local tab = Ui.button(tabsBar, `Tab_{sectionNumber}`, "", Ui.Palettes.Blue, UDim2.fromOffset(124, 50))
+		tab.LayoutOrder = sectionNumber
+		tab.TextSize = 15
+		tab.TextWrapped = true
 		local holder = Instance.new("Frame")
 		holder.Name = `Section_{sectionNumber}`
 		holder.BackgroundTransparency = 1
 		holder.Size = UDim2.fromScale(1, 0)
 		holder.AutomaticSize = Enum.AutomaticSize.Y
-		holder.LayoutOrder = sectionNumber * 2
+		holder.LayoutOrder = sectionNumber
+		holder.Visible = sectionNumber == 1
 		holder.Parent = cards
+		sectionViews[sectionNumber] = {
+			title = section.name,
+			zoneId = section.zoneId,
+			tab = tab,
+			holder = holder,
+			total = #section.characters,
+		}
+		tab.Activated:Connect(function()
+			selectSection(sectionNumber)
+		end)
 		local grid = Instance.new("UIGridLayout")
 		grid.CellSize = UDim2.fromOffset(150, 168)
 		grid.CellPadding = UDim2.fromOffset(10, 10)
@@ -213,7 +258,50 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		end
 	end
 
+	refreshTabs = function()
+		local found = Collection.decode(attr(player, "Index"))
+		local claims: { [string]: boolean } = {}
+		local claimedCount = 0
+		for id in string.gmatch(attr(player, "IndexClaims"), "[^,]+") do
+			claims[id] = true
+			claimedCount += 1
+		end
+		for i, view in sectionViews do
+			local count, total = Collection.worldProgress(found, view.zoneId)
+			if view.zoneId == "Limited" then
+				count, total = 0, view.total
+				for _, card in cardList do
+					if card.root.Parent == view.holder and Collection.has(found, card.char.id) then
+						count += 1
+					end
+				end
+			end
+			local done = claims[view.zoneId] == true
+			view.tab.Text = `{view.title}\n{count}/{total}{if done then " ✓" else ""}`
+			Ui.setPalette(
+				view.tab,
+				if i == selected then Ui.Palettes.Gold elseif done then Ui.Palettes.Green else Ui.Palettes.Blue
+			)
+			view.holder.Visible = i == selected
+		end
+		local view = sectionViews[selected]
+		local tier = if view
+			then Eggs.tier(((Zones.get(view.zoneId) or { eggs = { "" } }).eggs :: { string })[1])
+			else nil
+		if view and view.zoneId == "Limited" then
+			reward.Text = "Limited eggs come and go in the shop: collect them while you can."
+		elseif view and claims[view.zoneId] then
+			reward.Text = "Index complete! Reward claimed: coins and a better bat."
+		elseif view and tier then
+			reward.Text =
+				`Find all {view.total}: win {Economy.format(tier.price * Config.Index.RewardEggs)} coins and the {Bats.get(
+					claimedCount + 1
+				).name}`
+		end
+	end
+
 	local function refreshIndex()
+		refreshTabs()
 		local found = Collection.decode(attr(player, "Index"))
 		local count, total = Collection.progress(found)
 		progress.Text = `Discovered {count} / {total}`

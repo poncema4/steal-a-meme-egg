@@ -74,6 +74,8 @@ return table.freeze({
 		StealHoldSeconds = 1.5,
 		ZoneLabelSeconds = 0.5, -- how often the server updates which terrain each player is in (the HUD's zone banner)
 	}),
+	-- Finishing a world's Index pays this many of that world's common egg, and unlocks the next bat.
+	Index = table.freeze({ RewardEggs = 25 }),
 	Admin = table.freeze({
 		MinGroupRank = 250, -- the owner is 255
 		UserIds = table.freeze({} :: { number }), -- extra admins by user id

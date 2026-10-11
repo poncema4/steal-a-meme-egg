@@ -76,3 +76,7 @@ The Drop button puts the egg on the ground exactly where you stand; anyone can h
 
 ## 2D art
 Every picture in the UI is a sticker render of the real brick model (`scripts/preview/portrait.py` renders it on a transparent background, `art/ui/stylize.py` crops, outlines and shades it, `art/ui/make_all.sh` does all of them). Uploaded images must use their IMAGE id (look the Decal id up with Roblox's asset delivery), never the Decal id, or an ImageLabel draws nothing.
+
+## The Index, and bats
+- The Index screen has one tab per world (and one for the limited eggs), like the reference: pick a world to see its characters, with how many you have found on the tab. Finding every character of a world pays a reward (25 of that world's common egg, in coins) and unlocks the next bat; the tab turns green with a tick.
+- Everyone starts with the Wooden Bat, held at all times (Roblox's own tool bar is hidden; the number keys place traps). Click or tap to swing: a player in front of the swing is thrown back and stunned for a moment, and a runner who is hit drops the egg they carry where they stand. There is no fighting in the Safe Zone or the bases. Sixteen bats, each better than the last (more knockback, longer stun, longer reach, faster swing): Wooden, Foam, Rubber, Stone, Iron, Silver, Golden, Ruby, Emerald, Frost, Lava, Neon, Ghost, Cloud, Galaxy, Divine (`Shared/Game/Bats`, `server/BatTool`).

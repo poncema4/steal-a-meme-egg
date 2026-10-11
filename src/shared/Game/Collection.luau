@@ -3,6 +3,7 @@
 -- published as two short attributes. Keys are "<id>" for a character and "<id>:<mutation>" for a mutation of it.
 local Base = require("./Base")
 local Eggs = require("./Eggs")
+local Zones = require("./Zones")
 
 local Collection = {}
 
@@ -53,6 +54,38 @@ function Collection.progress(c: Collection): (number, number)
 		end
 	end
 	return found, total
+end
+
+-- The characters that belong to a world: the ones its eggs hatch (each egg tier belongs to one world, see Zones.forTier).
+function Collection.worldCharacters(zoneId: string): { string }
+	local list = {}
+	for _, tier in Eggs.Tiers do
+		local home = Zones.forTier(tier.id)
+		if home and home.id == zoneId then
+			for _, entry in tier.pool do
+				table.insert(list, entry.id)
+			end
+		end
+	end
+	return list
+end
+
+-- How many of a world's characters are discovered, out of how many it has.
+function Collection.worldProgress(c: Collection, zoneId: string): (number, number)
+	local ids = Collection.worldCharacters(zoneId)
+	local found = 0
+	for _, id in ids do
+		if c[id] then
+			found += 1
+		end
+	end
+	return found, #ids
+end
+
+-- Has every character of the world been discovered?
+function Collection.worldComplete(c: Collection, zoneId: string): boolean
+	local found, total = Collection.worldProgress(c, zoneId)
+	return total > 0 and found == total
 end
 
 -- A sorted, comma-separated list (stable, so an unchanged Index never re-replicates).

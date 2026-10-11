@@ -42,6 +42,11 @@ def main(only):
         if only and name not in only:
             continue
         emit("Props", name, grid_parts(props.build(name), "Brick"), report)
+    import bats
+    for name in bats.RECIPES:
+        if only and name not in only:
+            continue
+        emit("Bats", name, grid_parts(bats.build(name), "Brick"), report)
     import icons
     for name in icons.RECIPES:
         if only and name not in only:

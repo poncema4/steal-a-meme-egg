@@ -61,6 +61,7 @@ local specs = {
 	require("./specs/Wander"),
 	require("./specs/PassPerks"),
 	require("./specs/Badges"),
+	require("./specs/BatTool"),
 	require("./specs/Progression"),
 	require("./specs/Guardian"),
 	require("./specs/Game"),
