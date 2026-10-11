@@ -1,14 +1,15 @@
 --!strict
 -- How big the UI is on each screen. Everything is drawn for a "design screen" and scaled to fit, so the same layout works
--- on a monitor, a phone held sideways and a TV. Touch screens get a smaller design screen (so everything is bigger), and
--- no button may end up smaller than a fingertip. Pure maths, so it is tested exactly.
+-- on a monitor, a phone held sideways and a TV. Touch screens get a slightly smaller design screen than a monitor (a touch
+-- bigger, for fingers, but the same share of the screen as on a PC: Marco found 820x460 made everything far too big on a
+-- phone), and no button may end up smaller than a fingertip. Pure maths, so it is tested exactly.
 local UiScale = {}
 
 UiScale.DESKTOP = { x = 1280, y = 720 }
-UiScale.TOUCH = { x = 820, y = 460 }
+UiScale.TOUCH = { x = 1060, y = 560 }
 UiScale.MIN = 0.55
 UiScale.MAX = 1.6
-UiScale.MIN_TAP = 44 -- pixels: the smallest a touch target may render
+UiScale.MIN_TAP = 40 -- pixels: the smallest a touch target may render (still a comfortable thumb)
 
 local function finite(n: number): boolean
 	return n == n and n > -math.huge and n < math.huge

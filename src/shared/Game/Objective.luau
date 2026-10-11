@@ -17,6 +17,7 @@ export type Facts = {
 	speedLevel: number,
 	canRebirth: boolean?, -- coins have reached the cost of the next rebirth
 	inPen: boolean?, -- you stand in your own pen
+	touch: boolean?, -- a phone or tablet: say "hold the button" instead of naming a key
 	zone: string?, -- the terrain you stand in ("Safe Zone" or nil when you are not out in the Wilds)
 }
 
@@ -32,21 +33,24 @@ function Objective.speedNeeded(reached: number): number
 end
 
 function Objective.hint(f: Facts): string
+	local hold = if f.touch then "Hold the button" else "Hold E"
 	if f.carrying and f.inPen then
-		return "Click or tap a spot in your pen to put the egg down!"
+		return if f.touch
+			then "Tap a spot in your pen to put the egg down!"
+			else "Click a spot in your pen to put the egg down!"
 	end
 	if f.carrying then
 		return "RUN HOME with the egg before the guardian catches you!"
 	end
 	if f.canRebirth then
-		return "You can REBIRTH! Hold E on the purple pad at the left of your base for a permanent coin boost."
+		return `You can REBIRTH! {hold} on the purple pad at the left of your base for a permanent coin boost.`
 	end
 	local outside = f.zone ~= nil and f.zone ~= "" and f.zone ~= "Safe Zone"
 	if f.eggs == 0 and f.characters == 0 then
 		if outside then
-			return "Hold E on a guardian's egg to steal it, then run it home!"
+			return `{hold} on a guardian's egg to steal it, then run it home!`
 		end
-		return "Walk east to the Meadow and hold E on a guardian's egg to steal it!"
+		return `Walk east to the Meadow and {string.lower(hold)} on a guardian's egg to steal it!`
 	end
 	if f.freeSlots == 0 then
 		return "Your base is full! Stand on the green pad to buy another slot."

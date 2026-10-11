@@ -5,7 +5,15 @@ return function(t)
 	t.equal("a 720p monitor is the design size", UiScale.factor(1280, 720, false), 1)
 	t.equal("a 1080p monitor scales up 1.5x", UiScale.factor(1920, 1080, false), 1.5)
 	t.equal("a 4K screen is capped", UiScale.factor(3840, 2160, false), UiScale.MAX)
-	t.check("a phone held sideways gets a real scale", UiScale.factor(844, 390, true) > 0.8)
+	t.check("a phone held sideways gets a real scale", UiScale.factor(844, 390, true) > 0.6)
+	-- not too big on a phone (Marco): a 176 px button takes about the same share of a phone's width as of a monitor's
+	local phoneShare = 176 * UiScale.factor(844, 390, true) / 844
+	local pcShare = 176 * UiScale.factor(1920, 1080, false) / 1920
+	t.check(
+		"a phone's buttons are not much bigger than a PC's, as a share of the screen",
+		phoneShare <= pcShare * 1.25,
+		tostring(phoneShare / pcShare)
+	)
 	t.check(
 		"touch screens draw bigger than desktops at the same size",
 		UiScale.factor(844, 390, true) > UiScale.factor(844, 390, false)
@@ -26,7 +34,11 @@ return function(t)
 			worst = math.min(worst, UiScale.tap(36, f) * f)
 		end
 	end
-	t.check("a 36 px design button never renders under 44 px", worst >= UiScale.MIN_TAP - 1e-9, tostring(worst))
+	t.check(
+		"a 36 px design button never renders under the fingertip minimum",
+		worst >= UiScale.MIN_TAP - 1e-9,
+		tostring(worst)
+	)
 	t.equal("a button that is already big enough is left alone", UiScale.tap(80, 1), 80)
 	t.equal("a bad scale leaves the size alone", UiScale.tap(50, 0), 50)
 	t.equal("a NaN scale leaves the size alone", UiScale.tap(50, 0 / 0), 50)
@@ -58,7 +70,10 @@ return function(t)
 				clockLeft >= hotbarRight or bar.clockWidth <= 100,
 				`hotbar to {hotbarRight}, clock from {clockLeft}`
 			)
-			t.check(`{spec[1]}x{spec[2]}: slots are at least a fingertip wide`, bar.slot * factor >= 44 - 1e-6)
+			t.check(
+				`{spec[1]}x{spec[2]}: slots are at least a fingertip wide`,
+				bar.slot * factor >= UiScale.MIN_TAP - 1e-6
+			)
 		end
 	end
 	t.check("a roomy screen gives the clock its full width", UiScale.bottomBar(1280, 6, 46).clockWidth == 360)

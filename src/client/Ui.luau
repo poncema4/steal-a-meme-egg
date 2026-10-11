@@ -169,6 +169,12 @@ function Ui.tableCells(row: GuiObject, cells: { string }, textSize: number, colo
 		l.TextXAlignment = if i == 1 then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
 		l.Size = UDim2.fromScale(COLUMN_WIDTHS[i], 1)
 		l.Position = UDim2.fromScale(COLUMN_LEFTS[i], 0)
+		-- on a small screen a cell shrinks to fit its column instead of running into the next one ("Money/s" met "Rebirths")
+		l.TextScaled = true
+		local most = Instance.new("UITextSizeConstraint")
+		most.MaxTextSize = textSize
+		most.MinTextSize = 7
+		most.Parent = l
 		l.Parent = row
 	end
 end

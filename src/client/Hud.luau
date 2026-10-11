@@ -412,6 +412,7 @@ function Hud.start(player: Player, actions: Actions?)
 			canRebirth = Rebirth.can(rebirths, coins),
 			zone = tostring(player:GetAttribute("Zone") or ""),
 			inPen = player:GetAttribute("InPen") == true,
+			touch = Ui.isTouch(),
 		})
 		local def = if carrying ~= "" then Eggs.tier(carrying) else nil
 		run.Visible = def ~= nil
