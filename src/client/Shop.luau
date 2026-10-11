@@ -123,9 +123,17 @@ function Shop.start(player: Player)
 	statsMax.Parent = petStats
 	petStats.Text = "Hover a pet to see its stats"
 	local limitedRobux =
-		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(120, Ui.tap(gui, 28)))
+		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(132, Ui.tap(gui, 30)))
 	limitedRobux.Position = UDim2.fromOffset(120, PET_Y + PET_H + 10)
-	limitedRobux.TextSize = 17
+	-- the price always fills the small button legibly (it scales to the button, up to 20 px)
+	limitedRobux.TextScaled = true
+	local buyMax = Instance.new("UITextSizeConstraint")
+	buyMax.MaxTextSize = 20
+	buyMax.Parent = limitedRobux
+	local buyPad = Instance.new("UIPadding")
+	buyPad.PaddingTop, buyPad.PaddingBottom = UDim.new(0, 4), UDim.new(0, 4)
+	buyPad.PaddingLeft, buyPad.PaddingRight = UDim.new(0, 8), UDim.new(0, 8)
+	buyPad.Parent = limitedRobux
 	local BANNER_H = math.max(12 + 90, PET_Y + PET_H + 10 + limitedRobux.Size.Y.Offset) + 12
 	banner.Size = UDim2.new(1, -8, 0, BANNER_H)
 	local petButtons: { ImageButton } = {}

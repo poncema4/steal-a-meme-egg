@@ -50,7 +50,7 @@ function Objective.hint(f: Facts): string
 		if outside then
 			return `{hold} on a guardian's egg to steal it, then run it home!`
 		end
-		return `Walk east to the Meadow and {string.lower(hold)} on a guardian's egg to steal it!`
+		return `Walk east to the Meadow and {if f.touch then "hold the button" else "hold E"} on a guardian's egg to steal it!`
 	end
 	if f.freeSlots == 0 then
 		return "Your base is full! Stand on the green pad to buy another slot."
