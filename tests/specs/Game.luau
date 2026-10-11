@@ -37,22 +37,8 @@ return function(t)
 	t.check("and a wall at each end", (map :: Instance):FindFirstChild("EndWall") ~= nil)
 	local line = (map :: Instance):FindFirstChild("RedLine") :: Part
 	t.check("a red line marks the edge of the Safe Zone", line ~= nil)
-	-- the gateway over the red line: SAFE ZONE on the side that faces the pens, THE WILDS on the other
-	local gate = (map :: Instance):FindFirstChild("GateSign") :: Part
-	t.check("a gateway stands over the red line", gate ~= nil)
-	local faces: { [string]: string } = {}
-	for _, d in gate:GetChildren() do
-		if d:IsA("SurfaceGui") then
-			faces[tostring((d :: SurfaceGui).Face)] = ((d :: Instance):FindFirstChild("GateText") :: TextLabel).Text
-		end
-	end
-	local front = faces[tostring(world.enum.NormalId.Front)]
-	t.equal("its front face says SAFE ZONE", front, "SAFE ZONE")
-	t.check(
-		"and its back face points to the Wilds",
-		string.find(faces[tostring(world.enum.NormalId.Back)] or "", "WILDS", 1, true) ~= nil
-	)
-	t.check("the front face looks toward the pens (west)", gate.CFrame.LookVector.X < -0.99)
+	-- no big boards over the red line (Marco: only a small recommended-speed sign by each boss)
+	t.check("no gateway board stands over the red line", (map :: Instance):FindFirstChild("GateSign") == nil)
 	-- pens stand in a semicircle: all west of the red line, inside the walls, the same distance from the plaza, clear of each other
 	local centers: { Vector3 } = {}
 	for _, child in (map :: Instance):GetChildren() do

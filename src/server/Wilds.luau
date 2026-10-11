@@ -135,23 +135,43 @@ local function label(parent: BasePart, lines: { string }, offset: number, width:
 	end
 end
 
-local SCENERY = {
-	Meadow = "Tree",
-	Dune = "Cactus",
-	Volcano = "LavaRock",
-	Frost = "IcePine",
-	Cosmic = "Crystal",
-	Swamp = "SwampTree",
-	Candy = "CandyCane",
-	Neon = "NeonPylon",
-	Haunted = "Tombstone",
-	Sky = "CloudPuff",
-	Toy = "ToyBlocks",
-	Pirate = "PalmTree",
-	Robot = "GearTower",
-	Jungle = "JungleVine",
-	Throne = "GoldPillar",
-}
+-- A small wooden sign beside the boss's home spot, readable from both sides: "Recommended" and the speed for this terrain.
+local function bossSign(zone: Zones.Zone, parent: Instance)
+	local spot = Layout.bossSign(zone)
+	local post =
+		box("SignLeg", Vector3.new(0.6, 4.4, 0.6), CFrame.new(spot.x, 2.2, spot.z), Color3.fromRGB(120, 90, 60), parent)
+	post.CanCollide = false
+	local board = box(
+		`Sign_{zone.id}`,
+		Vector3.new(0.4, 2.8, 6.4),
+		CFrame.new(spot.x, 5.4, spot.z),
+		Color3.fromRGB(150, 108, 66),
+		parent
+	)
+	board.CanCollide = false
+	for _, face in { Enum.NormalId.Left, Enum.NormalId.Right } do
+		local gui = Instance.new("SurfaceGui")
+		gui.Face = face
+		gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+		gui.PixelsPerStud = 40
+		gui.Parent = board
+		for i, text in { "Recommended", `Speed {Zones.speedLabel(zone)}` } do
+			local l = Instance.new("TextLabel")
+			l.Name = `L{i}`
+			l.Size = UDim2.fromScale(0.92, 0.42)
+			l.Position = UDim2.fromScale(0.04, if i == 1 then 0.06 else 0.5)
+			l.BackgroundTransparency = 1
+			l.Font = Enum.Font.FredokaOne
+			l.TextScaled = true
+			l.TextColor3 = if i == 1 then Color3.new(1, 1, 1) else Color3.fromRGB(255, 226, 90)
+			l.TextStrokeTransparency = 0.2
+			l.Text = text
+			l.Parent = gui
+		end
+	end
+end
+
+local SCENERY = Layout.SceneryModel
 
 -- Scenery per terrain: simple parts only (no meshes), seeded so every server builds the same map.
 local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instance)
@@ -395,29 +415,8 @@ function Wilds.build(): Folder
 		local nests = Layout.nests(zone)
 		decorate(zone, nests, folder)
 		buildNests(zone, nests, buildBoss(zone, folder), folder)
-		-- no gates: two signposts at the entrance say which speed is recommended here (anyone may walk in, bosses just catch the slow)
-		for _, side in { -1, 1 } do
-			local z = side * 18
-			local board = box(
-				`Sign_{zone.id}`,
-				Vector3.new(16, 7, 0.8),
-				CFrame.new(zone.startX + 4, 9.5, z) * CFrame.Angles(0, math.pi / 2, 0),
-				Color3.fromRGB(38, 44, 60),
-				folder
-			)
-			board.CanCollide = false
-			for _, dz in { -6, 6 } do
-				local leg = box(
-					"Leg",
-					Vector3.new(1, 6, 1),
-					CFrame.new(zone.startX + 4, 3, z + dz),
-					Color3.fromRGB(120, 90, 60),
-					folder
-				)
-				leg.CanCollide = false
-			end
-			label(board, { zone.name, `Recommended speed: {Zones.speedLabel(zone)}` }, 0, 300)
-		end
+		-- no gates and no big signposts: one small sign by the boss says which speed is recommended here
+		bossSign(zone, folder)
 	end
 	return folder
 end

@@ -2,6 +2,7 @@
 -- Runs the real server scripts: stealing an egg from a guardian, being chased, caught or escaping, delivering it home, the
 -- gates that keep you out of terrains you have not unlocked, the treadmill and the buy pads.
 local Fake = require("../fake/Roblox")
+local Layout = require("../../src/shared/Game/Layout")
 local Progression = require("../../src/shared/Game/Progression")
 local Zones = require("../../src/shared/Game/Zones")
 
@@ -35,14 +36,22 @@ return function(t)
 					text ..= (d :: TextLabel).Text .. "|"
 				end
 			end
-			if string.find(text, "Recommended speed", 1, true) == nil then
+			if string.find(text, "Recommended|Speed ", 1, true) == nil then
 				signs -= 1000
 			end
 		elseif string.match(child.Name, "^Gate_") then
 			gates += 1
 		end
 	end
-	t.equal("every terrain has two signposts saying its recommended speed", signs, 2 * #Zones.List)
+	t.equal("every terrain has one small sign saying its recommended speed", signs, #Zones.List)
+	for _, zone in Zones.List do
+		local sign = folder:FindFirstChild(`Sign_{zone.id}`) :: Part
+		local boss = Layout.bossSpot(zone)
+		local away = math.sqrt((sign.Position.X - boss.x) ^ 2 + (sign.Position.Z - boss.z) ^ 2)
+		t.check(`{zone.id}'s sign stands by its boss`, away < Layout.BOSS_CLEAR)
+		t.check(`{zone.id}'s sign is small`, sign.Size.Y <= 3 and sign.Size.Z <= 7)
+		t.check(`{zone.id}'s sign is not in anyone's way`, not sign.CanCollide)
+	end
 	t.equal("and there are no gates or red walls", gates, 0)
 	local bosses = wilds.bosses()
 	t.equal("there is exactly one boss per terrain", #bosses, #Zones.List)

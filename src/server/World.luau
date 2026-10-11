@@ -305,36 +305,6 @@ local function buildPlot(index: number, parent: Instance): Plot
 	}
 end
 
--- A gateway over the red line: a wide board on two legs. Its Front face looks into the Safe Zone, its Back face into the Wilds.
-local function buildGate(map: Instance)
-	local x = World.SAFE_FRONT - 6
-	local board = part(
-		"GateSign",
-		Vector3.new(130, 16, 2),
-		CFrame.lookAt(Vector3.new(x, 32, 0), Vector3.new(x - 1, 32, 0)),
-		Color3.fromRGB(30, 110, 200),
-		map
-	)
-	for _, side in { -1, 1 } do
-		part("GateLeg", Vector3.new(4, 26, 4), CFrame.new(x, 13, side * 62), Color3.fromRGB(70, 70, 84), map)
-	end
-	for face, text in { [Enum.NormalId.Front] = "SAFE ZONE", [Enum.NormalId.Back] = "THE WILDS  >>>" } do
-		local gui = Instance.new("SurfaceGui")
-		gui.Face = face
-		gui.Parent = board
-		local label = Instance.new("TextLabel")
-		label.Name = "GateText"
-		label.Size = UDim2.fromScale(1, 1)
-		label.BackgroundTransparency = 1
-		label.TextScaled = true
-		label.Font = Enum.Font.LuckiestGuy
-		label.TextColor3 = Color3.new(1, 1, 1)
-		label.TextStrokeTransparency = 0
-		label.Text = text
-		label.Parent = gui
-	end
-end
-
 -- The long corridor: a floor for the Safe Zone, tall two-tone walls on both sides with a grass lip, a back wall and an end
 -- cap. The terrain floors themselves are built by Wilds.
 local function buildCorridor(map: Instance)
@@ -418,7 +388,6 @@ local function buildCorridor(map: Instance)
 		map
 	).Material =
 		Enum.Material.Neon
-	buildGate(map)
 end
 
 function World.build(): { plots: { Plot } }

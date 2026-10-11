@@ -80,7 +80,7 @@ for r in sorted(data["rects"], key=lambda q: q["depth"]):
             d.rounded_rectangle(box, radius=rad, outline=tuple(r["strokeColor"]) + (255,), width=int(r["stroke"] * SS))
     if r["text"]:
         f = font(r["textSize"])
-        tw = d.textlength(r["text"], font=f)
+        tw = max(d.textlength(line, font=f) for line in r["text"].split("\n"))
         if r["align"] == "Left":
             tx = x0 + (6 + r.get("padLeft", 0)) * SS
         elif r["align"] == "Right":

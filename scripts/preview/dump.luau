@@ -35,7 +35,7 @@ end
 -- where the brick models stand (the fake world has none), for scripts/preview/compose.py to stamp into the picture
 local Layout = require("../../src/shared/Game/Layout")
 local Zones = require("../../src/shared/Game/Zones")
-local SCENERY = { Meadow = "Tree", Dune = "Cactus", Volcano = "LavaRock", Frost = "IcePine", Cosmic = "Crystal" }
+local SCENERY = Layout.SceneryModel
 local models = {}
 for _, zone in Zones.List do
 	local nests = Layout.nests(zone)

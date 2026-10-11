@@ -203,26 +203,40 @@ def cloud_puff(g):
 
 
 def toy_blocks(g):
-    cols = [rgb("e8262a"), rgb("2f6cf0"), rgb("ffd21f"), rgb("2fb84a")]
-    for k, (x, y, z) in enumerate(((-1.1, 0.9, 0), (1.1, 0.9, 0.2), (0, 2.7, 0.1), (-0.2, 0.9, 1.8))):
-        c = cols[k % 4]
-        g.box((x, y, z), (1.9, 1.8, 1.9), c)
-        for dx in (-0.45, 0.45):
-            for dz in (-0.45, 0.45):
-                g.cylinder((x + dx, y + 1.0, z + dz), 0.28, 0.3, c)
-    g.box((0, 4.5, 0.1), (1.8, 1.8, 1.8), cols[1])
-    return 5.6
+    # a toppled pile of alphabet blocks, studs on top and a letter panel on the front of each
+    cols = [rgb("e8262a"), rgb("2f6cf0"), rgb("ffd21f"), rgb("2fb84a"), rgb("ff7a1f")]
+    spots = ((-2.2, 1.2, 0.0), (0.2, 1.2, -0.3), (2.5, 1.2, 0.4), (-1.0, 3.6, 0.1), (1.4, 3.6, 0.0), (0.2, 6.0, 0.2))
+    for k, (x, y, z) in enumerate(spots):
+        c = cols[k % len(cols)]
+        g.box((x, y, z), (2.3, 2.3, 2.3), c)
+        for dx in (-0.55, 0.55):
+            for dz in (-0.55, 0.55):
+                g.cylinder((x + dx, y + 1.3, z + dz), 0.36, 0.34, shade(c, 1.15))
+        g.box((x, y, z - 1.2), (1.6, 1.6, 0.14), rgb("fff6dc"))  # letter panel
+        g.box((x, y + 0.3, z - 1.3), (0.9, 0.3, 0.12), cols[(k + 2) % len(cols)])  # a chunky letter
+        g.box((x - 0.3, y - 0.2, z - 1.3), (0.3, 0.9, 0.12), cols[(k + 2) % len(cols)])
+    g.box((3.6, 0.5, -1.9), (1.0, 1.0, 1.0), cols[1])  # a stray block
+    return 7.6
 
 
 def palm_tree(g):
-    trunk, leaf = rgb("9a6a3a"), rgb("2fa84a")
-    for k in range(6):
-        g.cylinder((0.18 * k, 0.9 + k * 1.1, 0), 0.5 - k * 0.03, 1.2, trunk)
-    for a in range(0, 360, 60):
-        x, z = math.cos(math.radians(a)) * 1.7, math.sin(math.radians(a)) * 1.7
-        g.ellipsoid((1.0 + x, 7.0, z), (1.8, 0.28, 0.55), leaf)
-    g.ellipsoid((1.0, 6.7, 0.4), (0.4, 0.4, 0.4), rgb("6a4a2a"))
-    return 7.6
+    # a leaning ringed trunk, drooping fronds and coconuts, like a beach island palm
+    trunk, ring, leaf, leaf2 = rgb("9a6a3a"), rgb("7a5028"), rgb("2fa84a"), rgb("4fcb5a")
+    for k in range(10):
+        r = 0.85 - k * 0.04
+        g.cylinder((0.22 * k, 0.6 + k * 1.05, 0), r, 1.1, trunk if k % 2 else ring)
+    top = (2.2, 11.0, 0.0)
+    for a in range(0, 360, 45):
+        ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
+        for t in range(1, 15):
+            d = t * 0.32
+            droop = 0.06 * d * d  # the frond arcs out and down
+            w = 0.85 - t * 0.035
+            g.ellipsoid((top[0] + ca * d, top[1] + 0.4 - droop, top[2] + sa * d), (w, 0.32, w), leaf if (t // 3) % 2 else leaf2)
+    for x, z in ((0.6, 0.6), (-0.5, 0.5), (0.1, -0.7)):
+        g.ellipsoid((top[0] + x, top[1] - 0.8, top[2] + z), (0.55, 0.55, 0.55), rgb("6a4a2a"))  # coconuts
+    g.ellipsoid(top, (0.9, 0.6, 0.9), leaf)
+    return 12.0
 
 
 def gear_tower(g):
@@ -238,26 +252,39 @@ def gear_tower(g):
 
 
 def jungle_vine(g):
-    stone, moss, vine = rgb("a89a78"), rgb("3e8a3e"), rgb("2f6a34")
-    g.box((0, 2.4, 0), (2.4, 4.8, 2.4), stone)
-    g.box((0, 5.1, 0), (3.0, 0.7, 3.0), stone)
-    for x, z, h in ((1.4, 0.8, 4.2), (-1.4, -0.6, 3.6), (0.6, -1.4, 3.0), (-0.8, 1.4, 4.4)):
-        g.cylinder((x, 5.4 - h / 2, z), 0.2, h, vine)
-    g.ellipsoid((0, 5.8, 0), (2.4, 0.9, 2.4), moss)
-    g.ellipsoid((0.8, 6.5, 0.2), (1.4, 0.7, 1.4), rgb("62b862"))
-    return 7.0
+    # a broken temple column wrapped in vines, a fallen block beside it and a canopy of leaves
+    stone, dark, moss, vine = rgb("a89a78"), rgb("8a7c5c"), rgb("3e8a3e"), rgb("2f6a34")
+    g.box((0, 0.5, 0), (4.0, 1.0, 4.0), dark)
+    for k in range(4):
+        g.box((0.1 * (k % 2), 1.0 + 1.0 + k * 1.9, 0), (2.8, 1.8, 2.8), stone if k % 2 else dark)
+    g.box((2.8, 0.8, -1.4), (2.2, 1.6, 1.8), stone)  # the fallen block
+    g.ellipsoid((2.8, 1.7, -1.4), (1.1, 0.4, 0.9), moss)
+    for k in range(14):  # a vine winding up the column
+        a = k * 0.9
+        g.box((math.cos(a) * 1.55, 1.2 + k * 0.62, math.sin(a) * 1.55), (0.45, 0.7, 0.45), vine)
+    g.ellipsoid((0, 9.6, 0), (3.2, 1.2, 3.2), moss)
+    g.ellipsoid((0.9, 10.5, 0.3), (2.0, 0.9, 2.0), rgb("62b862"))
+    for x, z in ((2.4, 0.8), (-2.2, -1.0), (0.6, -2.4)):
+        g.cylinder((x, 8.2, z), 0.22, 2.6, vine)  # hanging vines
+    return 11.4
 
 
 def gold_pillar(g):
-    gold, hi, jewel = rgb("ffd54a"), rgb("fff3a0"), rgb("e8262a")
-    g.box((0, 0.4, 0), (3.2, 0.8, 3.2), gold)
-    g.cylinder((0, 3.4, 0), 1.0, 5.4, gold)
-    g.box((-0.35, 3.4, -0.9), (0.25, 4.6, 0.2), hi)
-    g.box((0, 6.5, 0), (2.8, 0.7, 2.8), gold)
-    g.ellipsoid((0, 7.4, 0), (0.65, 0.65, 0.65), jewel)
-    for s in (-1, 1):
-        g.ellipsoid((s * 1.2, 6.9, 0), (0.3, 0.3, 0.3), rgb("62e0ff"))
-    return 8.0
+    # a fluted throne-room column on a stepped base, jewel and capital on top
+    gold, hi, dark, jewel = rgb("ffd54a"), rgb("fff3a0"), rgb("c89a1e"), rgb("e8262a")
+    g.box((0, 0.5, 0), (4.6, 1.0, 4.6), dark)
+    g.box((0, 1.3, 0), (3.8, 0.6, 3.8), gold)
+    g.cylinder((0, 5.4, 0), 1.35, 7.6, gold)
+    for a in range(0, 360, 45):
+        x, z = math.cos(math.radians(a)) * 1.35, math.sin(math.radians(a)) * 1.35
+        g.box((x, 5.4, z), (0.35, 7.4, 0.35), hi if a % 90 == 0 else dark)  # fluting
+    g.box((0, 9.5, 0), (3.6, 0.7, 3.6), gold)
+    g.box((0, 10.1, 0), (4.2, 0.5, 4.2), dark)
+    g.ellipsoid((0, 11.0, 0), (0.9, 0.9, 0.9), jewel)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 1.6, 10.6, 0), (0.4, 0.4, 0.4), rgb("62e0ff"))
+        g.ellipsoid((0, 10.6, s2 * 1.6), (0.4, 0.4, 0.4), rgb("62e0ff"))
+    return 11.9
 
 
 RECIPES = {"ToyBlocks": toy_blocks, "PalmTree": palm_tree, "GearTower": gear_tower, "JungleVine": jungle_vine, "GoldPillar": gold_pillar, "SwampTree": swamp_tree, "CandyCane": candy_cane, "NeonPylon": neon_pylon, "Tombstone": tombstone, "CloudPuff": cloud_puff, "BearTrap": bear_trap, "Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
