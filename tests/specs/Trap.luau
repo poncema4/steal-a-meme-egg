@@ -27,17 +27,24 @@ return function(t)
 	t.equal("two in range: the closer springs", Trap.hit(n, 3.5, 0), 2)
 	t.equal("the edge of the radius counts", Trap.hit(n, -Trap.RADIUS, 0), 1)
 
-	-- they rot away
+	-- unused traps stay (Steal an Egg): only something stepping on one frees the slot
 	local r = Trap.new()
 	Trap.place(r, 0, 0, 0)
-	t.equal("a trap lasts a while", Trap.prune(r, Trap.LIFETIME - 1), 0)
-	t.equal("then it is gone", Trap.prune(r, Trap.LIFETIME), 1)
-	t.equal("and the place is free", Trap.count(r), 0)
+	t.equal("an untouched trap stays down", Trap.prune(r, 1e6), 0)
 	local full = Trap.new()
 	for i = 1, 3 do
-		Trap.place(full, i, i, i * 3)
+		Trap.place(full, i * 20, 0, i * 3)
 	end
-	t.check("when old traps rot, placing works again", Trap.place(full, 9, 9, Trap.LIFETIME + 10))
+	t.check("with 3 out, a 4th is refused however long you wait", not Trap.place(full, 99, 0, 1e6))
+	-- a player steps on one: it holds them for HOLD seconds, then goes back to its owner
+	local index = Trap.hit(full, 20, 0) :: number
+	Trap.spring(full, index, 100)
+	t.equal("a trap holding someone still counts", Trap.count(full), 3)
+	t.equal("and cannot catch a second player", Trap.hit(full, 20, 0), nil)
+	t.equal("it holds for the whole 10 seconds", #Trap.release(full, 100 + Trap.HOLD - 0.1), 0)
+	t.equal("then it opens", #Trap.release(full, 100 + Trap.HOLD), 1)
+	t.equal("and the owner has a trap to set again", Trap.count(full), 2)
+	t.check("so placing works again", Trap.place(full, 99, 0, 200))
 
 	-- hostile input
 	local bad = Trap.new()

@@ -1,5 +1,6 @@
 --!strict
--- Traps on the real server: placing, the limit of 3, springing on a guardian, rotting away, and cleaning up after a player.
+-- Traps on the real server: placing, the limit of 3, the Trap item leaving and coming back, springing on a guardian, holding
+-- another player for 10 seconds, and cleaning up after a player.
 local Fake = require("../fake/Roblox")
 local Guardian = require("../../src/shared/Game/Guardian")
 local Trap = require("../../src/shared/Game/Trap")
@@ -43,6 +44,11 @@ return function(t)
 		place:FireServer()
 	end
 	t.equal("three traps are down", ana:GetAttribute("TrapsPlaced"), 3)
+	local function trapItem(p: Player): boolean
+		local backpack = p:FindFirstChildOfClass("Backpack") :: Instance
+		return backpack:FindFirstChild("Trap") ~= nil or (p.Character :: Model):FindFirstChild("Trap") ~= nil
+	end
+	t.check("with all 3 out, the Trap item leaves the inventory", not trapItem(ana))
 	world.advance(Trap.COOLDOWN + 0.1)
 	root.Position = V3.new(meadow.startX + 150, 3, 0)
 	place:FireServer()
@@ -69,15 +75,43 @@ return function(t)
 	world.advance(Trap.STUN + 1)
 	t.check("then it moves again (or heads home)", g.state ~= "Chase" or g.x ~= x0)
 
-	-- rotting
-	world.advance(Trap.LIFETIME + 1)
-	t.equal("untouched traps rot away", ana:GetAttribute("TrapsPlaced"), 0)
-	t.equal("and their parts go too", #folder:GetChildren(), 0)
+	t.check("a trap used on a guardian gives the Trap item back", trapItem(ana))
+
+	-- another player steps on one: held still for 10 seconds, then Ana gets that trap back
+	local ben = world.addPlayer("Ben", 62)
+	world.spawnCharacter(ben)
+	world.advance(0.6)
+	local benRoot = world.root(ben)
+	local trapPart = folder:GetChildren()[1] :: BasePart
+	local before = ana:GetAttribute("TrapsPlaced") :: number
+	benRoot.Position = V3.new(trapPart.Position.X, 3, trapPart.Position.Z)
+	world.advance(0.2)
+	t.check("Ben is held still", benRoot.Anchored == true)
+	t.check("and knows for how long", ben:GetAttribute("TrappedUntil") ~= nil)
+	t.equal("the trap still counts while it holds him", ana:GetAttribute("TrapsPlaced"), before)
+	world.advance(Trap.HOLD - 1)
+	t.check("he is still held after 9 seconds", benRoot.Anchored == true)
+	world.advance(1.5)
+	t.check("after 10 seconds he can move", benRoot.Anchored == false and ben:GetAttribute("TrappedUntil") == nil)
+	t.check("and Ana has that trap back", (ana:GetAttribute("TrapsPlaced") :: number) < before)
+	benRoot.Position = V3.new(trapPart.Position.X, 3, trapPart.Position.Z + 200)
+	world.removePlayer(ben)
+	-- clear the rest so the next part starts empty
+	for _ = 1, 3 do
+		local left = folder:GetChildren()[1] :: BasePart?
+		if left then
+			g.state, g.stun = "Idle", 0
+			g.x, g.z = left.Position.X, left.Position.Z
+			Guardian.alert(g, 12)
+			world.advance(Trap.STUN + 1)
+		end
+	end
+	t.equal("guardians clear the last trap", ana:GetAttribute("TrapsPlaced"), 0)
 
 	-- a fresh one, then the player leaves
 	root.Position = V3.new(meadow.startX + 60, 3, 0)
 	place:FireServer()
-	t.equal("a new trap goes down after the old ones rot", #folder:GetChildren(), 1)
+	t.equal("a new trap goes down once there is room", #folder:GetChildren(), 1)
 	world.removePlayer(ana)
 	world.advance(0.2)
 	t.equal("a leaving player's traps are removed", #folder:GetChildren(), 0)

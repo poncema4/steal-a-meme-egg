@@ -6,6 +6,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local Config = require(ReplicatedStorage.Shared.Config)
 local Guardian = require(ReplicatedStorage.Shared.Game.Guardian)
 local Trap = require(ReplicatedStorage.Shared.Game.Trap)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
@@ -28,9 +29,72 @@ local folder: Folder? = nil
 local notify: (Player, string) -> () = function(_player: Player, _text: string) end
 local sfx: (Player, string) -> () = function(_player: Player, _name: string) end
 
+-- who is held by a trap right now, and the root part that was anchored to hold them
+local held: { [Player]: { root: BasePart, untilAt: number } } = {}
+
+local function limitOf(player: Player): number
+	return Session.perks(player).trapMax
+end
+
+local function toolsOf(player: Player): { Tool }
+	local out = {}
+	for _, holder in { player:FindFirstChildOfClass("Backpack") :: Instance?, player.Character :: Instance? } do
+		if holder then
+			for _, child in holder:GetChildren() do
+				if child:IsA("Tool") and child.Name == "Trap" then
+					table.insert(out, child)
+				end
+			end
+		end
+	end
+	return out
+end
+
+-- The Trap item: hold it and click to set a bear trap where you stand.
+local function buildTool(player: Player): Tool
+	local tool = Instance.new("Tool")
+	tool.Name = "Trap"
+	tool.ToolTip = "Bear Trap: click to set one"
+	tool.TextureId = Config.Icons.trap
+	tool.CanBeDropped = false
+	tool.RequiresHandle = false
+	tool.Activated:Connect(function()
+		local ok, message = Traps.place(player)
+		notify(player, message)
+		if ok then
+			sfx(player, "click")
+		end
+	end)
+	return tool
+end
+
+-- The Trap item is in your backpack while you still have a trap to set, and leaves it once all of yours are out; it comes
+-- back when one is free again (sprung on a guardian, or done holding a player).
+function Traps.syncTool(player: Player)
+	local backpack = player:FindFirstChildOfClass("Backpack")
+	if not backpack or not player.Character then
+		return
+	end
+	local state = states[player]
+	local out = if state then Trap.count(state) else 0
+	local left = limitOf(player) - out
+	local tools = toolsOf(player)
+	if left <= 0 then
+		for _, tool in tools do
+			tool:Destroy()
+		end
+	elseif #tools == 0 then
+		buildTool(player).Parent = backpack
+	end
+	for _, tool in toolsOf(player) do
+		tool.ToolTip = `Bear Trap: click to set one ({left} left)`
+	end
+end
+
 local function publish(player: Player)
 	local state = states[player]
 	player:SetAttribute("TrapsPlaced", if state then Trap.count(state) else 0)
+	Traps.syncTool(player)
 	-- when the next trap is ready, in server time (the client cannot read the server's os.clock)
 	local wait = if state then math.max(0, state.lastPlaced + Trap.COOLDOWN - os.clock()) else 0
 	player:SetAttribute("TrapReadyAt", workspace:GetServerTimeNow() + wait)
@@ -107,7 +171,7 @@ function Traps.place(player: Player): (boolean, string)
 	end
 	pieces[state.spots[#state.spots]] = build(x, z)
 	publish(player)
-	return true, `Trap set ({Trap.count(state)}/{Trap.MAX})`
+	return true, `Trap set ({Trap.count(state)}/{perks.trapMax})`
 end
 
 function Traps.count(player: Player): number
@@ -136,6 +200,7 @@ function Traps.start(remotes: Instance, notifyFn: (Player, string) -> (), sfxFn:
 		publish(player)
 	end
 	Players.PlayerRemoving:Connect(function(player)
+		held[player] = nil
 		local state = states[player]
 		if state then
 			for _, spot in state.spots do
@@ -146,6 +211,13 @@ function Traps.start(remotes: Instance, notifyFn: (Player, string) -> (), sfxFn:
 	end)
 	RunService.Heartbeat:Connect(function()
 		local now = os.clock()
+		for victim, hold in held do
+			if now >= hold.untilAt or not hold.root.Parent then
+				hold.root.Anchored = false
+				victim:SetAttribute("TrappedUntil", nil)
+				held[victim] = nil
+			end
+		end
 		for player, state in states do
 			local changed = false
 			-- rotten traps disappear
@@ -156,6 +228,31 @@ function Traps.start(remotes: Instance, notifyFn: (Player, string) -> (), sfxFn:
 				end
 			end
 			Trap.prune(state, now)
+			-- another player who steps on this player's trap is held still; when the hold is over the trap goes back
+			for _, spot in Trap.release(state, now) do
+				remove(spot)
+				changed = true
+			end
+			for _, victim in Players:GetPlayers() do
+				if victim ~= player and not held[victim] then
+					local root = victim.Character and victim.Character:FindFirstChild("HumanoidRootPart") :: BasePart?
+					local index = root and Trap.hit(state, root.Position.X, root.Position.Z)
+					if root and index then
+						local untilAt = Trap.spring(state, index, now)
+						held[victim] = { root = root, untilAt = untilAt }
+						root.Anchored = true
+						victim:SetAttribute("TrappedUntil", workspace:GetServerTimeNow() + Trap.HOLD)
+						notify(victim, `You stepped in {player.Name}'s trap! Held for {Trap.HOLD} seconds.`)
+						notify(player, `Your trap caught {victim.Name}!`)
+						sfx(victim, "caught")
+						sfx(player, "caught")
+						for _, fn in springListeners do
+							fn(player)
+						end
+						changed = true
+					end
+				end
+			end
 			-- a guardian that is on the move and runs onto a trap is held
 			for _, entry in Wilds.entries() do
 				local g = entry.guardian
