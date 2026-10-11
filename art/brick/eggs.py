@@ -1,4 +1,4 @@
-"""The eleven egg tiers as brick models, like the big voxel eggs in the reference: each a brick-built egg with its own pattern."""
+"""The sixteen egg tiers as brick models, like the big voxel eggs in the reference: each a brick-built egg with its own pattern."""
 import math
 from kit import Grid, rgb, shade
 
@@ -84,6 +84,16 @@ def build(tier):
         f = stars(rgb("2a1a3a"), rgb("6bff6b"), 13)
     elif tier == "Cloud":
         f = band(rgb("ffffff"), rgb("ffd54a"), 2.5, 3.0, spots(rgb("ffffff"), rgb("bfe3ff"), 0.08, 0.55, 17))
+    elif tier == "Toy":
+        f = tiles(rgb("e8262a"), rgb("2f6cf0"), rgb("ffd21f"))
+    elif tier == "Pirate":
+        f = band(rgb("8a5a2c"), rgb("e8e0c8"), 2.3, 2.9, stars(rgb("8a5a2c"), rgb("5a3a1c"), 21))
+    elif tier == "Robot":
+        f = tiles(rgb("9aa2b8"), rgb("6a7088"), rgb("38f2ff"))
+    elif tier == "Jungle":
+        f = spots(rgb("3e9a46"), rgb("ffb21e"), 0.09, 0.55, 23)
+    elif tier == "Throne":
+        f = band(rgb("ffd54a"), rgb("e8262a"), 2.4, 3.0, spots(rgb("ffd54a"), rgb("62e0ff"), 0.07, 0.45, 29))
     else:  # Divine
         f = band(rgb("fffbe8"), rgb("ffd54a"), 2.4, 3.0, spots(rgb("fffbe8"), rgb("ffeaa8"), 0.05, 0.4, 7))
     g.egg((0, cy, 0), R, H, f)
@@ -102,4 +112,5 @@ def build(tier):
     return g
 
 
-TIERS = ["Soggy", "Disco", "Spicy", "Golden", "Cosmic", "Divine", "Slime", "Candy", "Neon", "Cursed", "Cloud"]
+TIERS = ["Soggy", "Disco", "Spicy", "Golden", "Cosmic", "Divine", "Slime", "Candy", "Neon", "Cursed", "Cloud",
+         "Toy", "Pirate", "Robot", "Jungle", "Throne"]

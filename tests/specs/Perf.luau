@@ -17,9 +17,14 @@ local SCENERY = {
 	Neon = "NeonPylon",
 	Haunted = "Tombstone",
 	Sky = "CloudPuff",
+	Toy = "ToyBlocks",
+	Pirate = "PalmTree",
+	Robot = "GearTower",
+	Jungle = "JungleVine",
+	Throne = "GoldPillar",
 }
 local MAX_PER_TERRAIN = 3500
-local MAX_TOTAL = 27000 -- ten terrains; streaming means a phone only ever holds the few around it
+local MAX_TOTAL = 40000 -- ten terrains; streaming means a phone only ever holds the few around it
 
 local function parts(folder: string, name: string): number
 	local text = fs.readFile(`src/models/{folder}/{name}.rbxmx`)

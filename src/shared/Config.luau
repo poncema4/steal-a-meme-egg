@@ -69,7 +69,7 @@ return table.freeze({
 	Wilds = table.freeze({
 		ChaseSeconds = 60, -- a boss gives up after this long (enough to chase a thief from the deepest terrain all the way back)
 		CatchRadius = 4.5, -- studs: close enough to take the egg back
-		Leash = 3000, -- studs from its nest before it gives up: longer than the whole map, so a boss follows you through every terrain
+		Leash = 4500, -- studs from its nest before it gives up: longer than the whole map, so a boss follows you through every terrain
 		NestRespawnSeconds = 25, -- a stolen nest grows a new egg after this
 		StealHoldSeconds = 1.5,
 		ZoneLabelSeconds = 0.5, -- how often the server updates which terrain each player is in (the HUD's zone banner)
@@ -253,6 +253,21 @@ return table.freeze({
 		VaporVulture = "rbxassetid://101615996677197",
 		VolcanoVicar = "rbxassetid://76040536489956",
 		ZeusZucchini = "rbxassetid://123182217096686",
+		BrickBuddy = "rbxassetid://77004614276752",
+		WobblyWindup = "rbxassetid://119952426768063",
+		RubberDuckLord = "rbxassetid://137585351693708",
+		CaptainCrouton = "rbxassetid://83467608410008",
+		KrakenKebab = "rbxassetid://95899730095630",
+		DavyJonesDonut = "rbxassetid://108940594180876",
+		ToasterTron = "rbxassetid://86227444263660",
+		MicrowaveMike = "rbxassetid://135559393039119",
+		OmniOven = "rbxassetid://106004376654266",
+		BananaBandit = "rbxassetid://89711601881275",
+		TikiTaco = "rbxassetid://120573546059116",
+		TempleTofu = "rbxassetid://93788271500272",
+		CrownCookie = "rbxassetid://115447098167831",
+		RoyalRamen = "rbxassetid://88871242705215",
+		EmperorEggplant = "rbxassetid://112593189665742",
 	}),
 	-- egg pictures, one per egg tier
 	EggIcons = table.freeze({
@@ -267,6 +282,11 @@ return table.freeze({
 		Slime = "rbxassetid://84356014695029",
 		Soggy = "rbxassetid://92800554938569",
 		Spicy = "rbxassetid://104423055775057",
+		Toy = "rbxassetid://77494638421799",
+		Pirate = "rbxassetid://78107776877089",
+		Robot = "rbxassetid://132972271904835",
+		Jungle = "rbxassetid://91022935794343",
+		Throne = "rbxassetid://136063886269390",
 	}),
 	-- the picture on each shop card (and on its Creator Hub page): art/ui/make_passes.py
 	ShopArt = table.freeze({

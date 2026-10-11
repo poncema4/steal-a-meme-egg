@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Renders every character, egg and HUD icon as a sticker icon into art/ui/<kind>/<Name>.png (512 px, transparent).
-# Usage: art/ui/make_all.sh        (needs Blender at ~/tools/blender-4.5.14-linux-x64 and the models built: python3 art/brick/build.py)
+# Usage: art/ui/make_all.sh [Name ...]   (no names = everything; needs Blender at ~/tools/blender-4.5.14-linux-x64 and the models built: python3 art/brick/build.py)
 set -u
 cd "$(dirname "$0")/../.."
 B=~/tools/blender-4.5.14-linux-x64/blender
@@ -14,6 +14,7 @@ for n in eggs.TIERS: print("Eggs", n)
 for n in icons.RECIPES: print("Icons", n)
 PY
 while read kind name; do
+  if [ $# -gt 0 ] && ! printf '%s\n' "$@" | grep -qx "$name"; then continue; fi
   mkdir -p art/ui/$kind
   [ -f art/renders/models/$name.json ] || { echo "no model $name"; continue; }
   nice -n 12 $B -b -P scripts/preview/portrait.py -- art/renders/models/$name.json $TMP/$name.png 20 12 768 >/dev/null 2>&1
