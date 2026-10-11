@@ -346,6 +346,15 @@ function Ui.panel(screen: ScreenGui, title: string, width: number, height: numbe
 	local limit = Instance.new("UISizeConstraint")
 	limit.MaxSize = Vector2.new(width, height)
 	limit.Parent = frame
+	-- the panel is drawn a little smaller than designed (and on a phone small enough to leave the world and controls visible)
+	local camera = workspace.CurrentCamera
+	local view = if camera then camera.ViewportSize else Vector2.new(1280, 720)
+	local touch = Ui.isTouch()
+	local designHeight = view.Y / UiScale.factor(view.X, view.Y, touch)
+	local panelScale = Instance.new("UIScale")
+	panelScale.Name = "PanelScale"
+	panelScale.Scale = UiScale.panelScale(height, designHeight, touch)
+	panelScale.Parent = frame
 	frame.BackgroundColor3 = Ui.PANEL
 	frame.BorderSizePixel = 0
 	frame.Visible = false

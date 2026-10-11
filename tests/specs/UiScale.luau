@@ -2,8 +2,24 @@
 local UiScale = require("../../src/shared/Game/UiScale")
 
 return function(t)
-	t.equal("a 720p monitor is the design size", UiScale.factor(1280, 720, false), 1)
-	t.equal("a 1080p monitor scales up 1.5x", UiScale.factor(1920, 1080, false), 1.5)
+	t.check(
+		"a 720p monitor draws the UI a little smaller than designed",
+		math.abs(UiScale.factor(1280, 720, false) - 1280 / 1440) < 1e-9
+	)
+	t.equal("the design screen itself is scale 1", UiScale.factor(1440, 810, false), 1)
+	t.check("a 1080p monitor scales up a third", math.abs(UiScale.factor(1920, 1080, false) - 4 / 3) < 1e-9)
+	-- panels: a little smaller everywhere, and on a phone they leave most of the world and the controls visible
+	t.equal("a panel on a monitor is drawn at 85%", UiScale.panelScale(520, 810, false), UiScale.PANEL)
+	local phoneDesign = 390 / UiScale.factor(844, 390, true)
+	for _, h in { 460, 520, 540 } do
+		local shown = math.min(h, phoneDesign * 0.88) * UiScale.panelScale(h, phoneDesign, true)
+		t.check(
+			`a {h} tall panel covers at most 72% of a phone's height`,
+			shown / phoneDesign <= UiScale.PHONE_SHARE + 1e-9,
+			tostring(shown / phoneDesign)
+		)
+	end
+	t.equal("a broken size falls back", UiScale.panelScale(0 / 0, 640, true), UiScale.PANEL)
 	t.equal("a 4K screen is capped", UiScale.factor(3840, 2160, false), UiScale.MAX)
 	t.check("a phone held sideways gets a real scale", UiScale.factor(844, 390, true) > 0.6)
 	-- not too big on a phone (Marco): a 176 px button takes about the same share of a phone's width as of a monitor's
