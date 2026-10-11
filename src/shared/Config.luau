@@ -206,7 +206,8 @@ return table.freeze({
 		paw = "rbxassetid://104733613065962",
 		potion = "rbxassetid://92228450259238",
 		shoe = "rbxassetid://139495518818150",
-		trap = "rbxassetid://113526955618400",
+		trap = "rbxassetid://110889935273799",
+		bat = "rbxassetid://126221350566211",
 		trophy = "rbxassetid://124314879033798",
 	}),
 	-- character portraits: a sticker render of each character's brick model (art/ui/make_all.sh), one Image id each; a character without one shows a letter tile

@@ -86,15 +86,28 @@ return function(t)
 	t.check("B closes it", not shopPanel.Visible)
 	t.check("and stops listening", world.actions["ClosePanel_SHOP"] == nil)
 
-	-- the hotbar: three trap slots, keys 1-3, at most 3 traps out
+	-- the hotbar: two items only (Marco): 1 = the bat, 2 = the traps with how many are left
 	local world_ = world
-	for i = 1, 3 do
-		t.check(`the hotbar has slot {i}`, find(gui, `TrapSlot_{i}`) ~= nil)
+	local hotbar = find(gui, "Hotbar") :: Instance
+	local items = 0
+	for _, child in hotbar:GetChildren() do
+		if child:IsA("TextButton") then
+			items += 1
+		end
 	end
-	t.check("the trap art is on the slots", find(find(gui, "TrapSlot_1") :: Instance, "Icon") ~= nil)
-	t.check("keys 1-3 and the gamepad X are bound to placing a trap", world_.actions["PlaceTrap"] ~= nil)
-	local slotOne = find(gui, "TrapSlot_1") :: TextButton
-	local slotTwo = find(gui, "TrapSlot_2") :: TextButton
+	t.equal("the hotbar holds exactly two items", items, 2)
+	t.check("slot 1 is the bat", find(gui, "BatSlot") ~= nil and (find(gui, "BatSlot") :: TextButton).LayoutOrder == 1)
+	t.check(
+		"slot 2 is the traps",
+		find(gui, "TrapSlot") ~= nil and (find(gui, "TrapSlot") :: TextButton).LayoutOrder == 2
+	)
+	t.check("the trap art is on its slot", find(find(gui, "TrapSlot") :: Instance, "Icon") ~= nil)
+	t.check("key 1 swings the bat", world_.actions["SwingBat"] ~= nil)
+	t.check("key 2 and the gamepad X set a trap", world_.actions["PlaceTrap"] ~= nil)
+	local slotOne = find(gui, "TrapSlot") :: TextButton
+	local slotTwo = slotOne
+	world.advance(0.3)
+	t.equal("the trap slot says how many are left", (find(slotOne, "Count") :: TextLabel).Text, "x3")
 	slotOne.Activated:Fire()
 	world.advance(0.3)
 	t.equal("a trap cannot be set in the Safe Zone", ana:GetAttribute("TrapsPlaced"), 0)
@@ -108,6 +121,8 @@ return function(t)
 	world.actions["PlaceTrap"]("PlaceTrap", world.enum.UserInputState.Begin)
 	world.advance(0.3)
 	t.equal("pressing a key sets another", ana:GetAttribute("TrapsPlaced"), 2)
+	world.advance(0.3)
+	t.equal("and the count goes down", (find(slotOne, "Count") :: TextLabel).Text, "x1")
 	world.root(ana).Position = V3.new(world.root(ana).Position.X, 3, 0)
 
 	-- Slow Mode

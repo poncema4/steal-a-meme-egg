@@ -130,22 +130,26 @@ def treadmill_topper(g):
 
 
 def bear_trap(g):
-    """A steel bear trap lying open on the ground: a plate, a spring bar, two jaws ringed with teeth and a red trigger plate."""
-    steel, dark, tooth, red = rgb("9aa2b8"), rgb("3a3d4a"), rgb("e8ecf5"), rgb("e8342a")
-    g.box((0, 0.25, 0), (6.2, 0.5, 5.0), dark)
-    g.box((0, 0.6, 0), (1.0, 0.45, 4.6), steel)
+    """A steel bear trap lying open: ONE ring of two half jaws hinged on a spring bar, teeth all round, a pan in the middle,
+    a short chain to a stake (two separate rings read as goggles in the hotbar)."""
+    steel, dark, tooth, pan, red = rgb("a8b0c4"), rgb("3a3d4a"), rgb("f2f4fa"), rgb("ffd21f"), rgb("e8342a")
+    g.box((0, 0.2, 0), (8.6, 0.4, 0.9), dark)  # the spring bar the jaws are hinged on
     for sx in (-1, 1):
-        g.torus((sx * 1.7, 0.8, 0), 1.9, 0.38, steel, axis="y")
+        g.torus((sx * 3.8, 0.55, 0), 0.55, 0.22, dark, axis="z")  # the coiled springs at both ends
+    g.torus((0, 0.55, 0), 2.5, 0.32, steel, axis="y")  # the two jaws, lying open as one ring
     for sx in (-1, 1):
-        for k in range(8):
-            a = math.radians(k * 45 + 22)
-            x = sx * 1.7 + math.cos(a) * 1.9
-            z = math.sin(a) * 1.9
-            if abs(x) < 0.7:
-                continue
-            g.cone((x, 1.5, z), 0.3, 0.0, 1.1, tooth)
-    g.cylinder((0, 0.75, 0), 0.5, 0.5, red)
-    return 2.4
+        g.box((sx * 2.5, 0.6, 0), (0.7, 0.6, 0.7), dark)  # the hinges
+    for k in range(18):  # teeth all round the inside edge, pointing up
+        a = math.radians(k * 20 + 10)
+        if abs(math.cos(a)) > 0.94:
+            continue  # no teeth on the hinges
+        g.cone((math.cos(a) * 2.15, 1.1, math.sin(a) * 2.15), 0.26, 0.0, 0.9, tooth)
+    g.cylinder((0, 0.45, 0), 1.15, 0.3, pan)  # the pressure pan
+    g.cylinder((0, 0.65, 0), 0.45, 0.2, red)  # its trigger
+    for k in range(3):  # a short chain to a stake
+        g.torus((0.0, 0.3, 2.9 + k * 0.6), 0.28, 0.1, steel, axis="x" if k % 2 else "z")
+    g.cylinder((0.0, 0.6, 4.7), 0.22, 1.2, dark)
+    return 2.0
 
 
 def swamp_tree(g):
