@@ -256,8 +256,10 @@ function Hud.start(player: Player, actions: Actions?)
 	-- while you are locked on the treadmill: a big way off (jumping works too)
 	local leaveRemote = remotes:WaitForChild("LeaveTreadmill") :: RemoteEvent
 	local leave = Ui.button(gui, "LeaveButton", "Jump off", Ui.Palettes.Green, UDim2.fromOffset(190, Ui.tap(gui, 56)))
-	leave.AnchorPoint = Vector2.new(0.5, 1)
-	leave.Position = UDim2.new(0.5, 0, 1, -96)
+	-- bottom right above the event clock: world prompts (like "Upgrade treadmill") show near the middle of the screen, and a
+	-- button there ended up under them
+	leave.AnchorPoint = Vector2.new(1, 1)
+	leave.Position = UDim2.new(1, -16, 1, -84)
 	leave.Visible = false
 	leave.TextSize = 26
 	leave.Activated:Connect(function()

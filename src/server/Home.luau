@@ -140,7 +140,6 @@ end
 function Home.start(plots: { World.Plot })
 	for _, plot in plots do
 		local speed = addPrompt(plot.treadmill, "Upgrade treadmill", "", 0.4)
-		speed.UIOffset = Vector2.new(0, -110) -- shown above the "Jump off" button while you run, not on top of it
 		speed.Triggered:Connect(function(who)
 			if Plots.of(who) ~= plot then
 				return
