@@ -71,6 +71,20 @@ return function(t)
 		end
 	end
 	t.equal("the three passes and two hatch packs are listed", rows, 5)
+	-- each is a card with a picture, a name, what it does and its price on the buy button
+	for _, key in { "coins2x", "luck2x", "train2x", "hatch1", "hatch5" } do
+		local card = find(gui, `Card_{key}`)
+		t.check(`{key}: has a card`, card ~= nil)
+		if card then
+			t.check(`{key}: with an icon`, find(card, "Icon") ~= nil)
+			t.check(
+				`{key}: with its price`,
+				string.find((find(card, `Row_{key}`) :: TextButton).Text, "R$", 1, true) ~= nil
+			)
+		end
+	end
+	t.check("a pass says what it does", (find(find(gui, "Card_luck2x") :: Instance, "Blurb") :: TextLabel).Text ~= "")
+	t.check("the limited egg has its own banner", find(gui, "LimitedCard") ~= nil)
 
 	-- buying with coins from the screen
 	local coinsButton = find(gui, "LimitedCoins") :: TextButton
