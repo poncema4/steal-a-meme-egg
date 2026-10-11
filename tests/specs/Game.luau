@@ -35,6 +35,30 @@ return function(t)
 	end
 	t.check("the corridor has walls along both sides", walls[-1] > 10 and walls[1] > 10)
 	t.check("and a wall at each end", (map :: Instance):FindFirstChild("EndWall") ~= nil)
+	-- every terrain's walls wear its own theme (Marco: "the side of the walls should fit the theme of each world")
+	local themed = 0
+	for _, zone in Zones.List do
+		local theme = Zones.WallTheme[zone.id]
+		local mid = zone.startX + zone.length / 2
+		for _, w in (map :: Instance):GetChildren() do
+			if w.Name == "Wall" and math.abs((w :: Part).Position.X - mid) < 10 then
+				local c = (w :: Part).Color
+				local want = theme and theme.wall
+				if
+					want
+					and (
+						math.abs(c.R * 255 - want[1]) < 25
+						and math.abs(c.G * 255 - want[2]) < 25
+						and math.abs(c.B * 255 - want[3]) < 25
+					)
+				then
+					themed += 1
+					break
+				end
+			end
+		end
+	end
+	t.equal("each of the 15 terrains has walls in its own theme", themed, #Zones.List)
 	local line = (map :: Instance):FindFirstChild("RedLine") :: Part
 	t.check("a red line marks the edge of the Safe Zone", line ~= nil)
 	-- no big boards over the red line (Marco: only a small recommended-speed sign by each boss)
