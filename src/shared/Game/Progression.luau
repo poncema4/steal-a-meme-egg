@@ -9,7 +9,7 @@ Progression.SPEED_PER_LEVEL = 2.4 -- level 30 = 88 studs/s (5.5x the start), wel
 
 -- Training XP needed to go from `level` to `level + 1`.
 function Progression.xpForNext(level: number): number
-	return math.floor(30 * (level + 1) ^ 1.5)
+	return math.floor(30 * (level + 1) ^ 2.2)
 end
 
 -- The level reached with this much total training XP (and the XP left over inside it).

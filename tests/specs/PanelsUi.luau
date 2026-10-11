@@ -149,11 +149,8 @@ return function(t)
 			"shows the time left",
 			string.find((find(row, "Timer") :: TextLabel).Text, "hatching in", 1, true) ~= nil
 		)
-		t.check("and the Skip price", string.find((find(row, "Skip") :: TextButton).Text, "Skip", 1, true) ~= nil);
-		(find(row, "Skip") :: TextButton).Activated:Fire()
-		world.advance(1)
-		t.equal("pressing Skip hatches it", ana:GetAttribute("Characters"), 1)
-		t.check("and the row goes away", find(eggs, "EggRow_1") == nil)
+		t.check("there is no coin Skip button: only Robux speeds a hatch", find(row, "Skip") == nil)
+		t.check("an Instant button is there for tokens or Robux", find(row, "Instant") ~= nil)
 	end
 
 	-- B closes the open panel; the HUD keeps working

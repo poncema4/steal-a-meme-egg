@@ -244,26 +244,6 @@ function Session.grantEgg(player: Player, tier: string): boolean
 	return true
 end
 
--- Finishes a hatch right now for coins. Returns (ok, message).
-function Session.skipHatch(player: Player, slot: number): (boolean, string)
-	local state = states[player]
-	local item = state and state.base.slots[slot]
-	if not state or not item or item.kind ~= "egg" or not item.tier then
-		return false, "nothing to hatch"
-	end
-	local tier = Eggs.tier(item.tier)
-	if not tier then
-		return false, "unknown egg"
-	end
-	local cost = Economy.skipCost(tier.price, item.hatchLeft or 0, tier.hatchSeconds)
-	if not Session.spend(player, cost) then
-		return false, `skipping costs {Economy.format(cost)}`
-	end
-	item.hatchLeft = 0
-	Session.hatchNow(player)
-	return true, "hatched!"
-end
-
 function Session.hatchTokens(player: Player): number
 	local state = states[player]
 	return if state then state.purchases.hatchTokens else 0

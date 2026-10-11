@@ -6,7 +6,6 @@ local Prompts = {}
 
 -- which actions belong to the base's owner
 local OWNER_ONLY = {
-	["Skip hatch"] = true,
 	["Instant hatch"] = true,
 	["Upgrade treadmill"] = true,
 	["Buy slot"] = true,

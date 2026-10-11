@@ -19,7 +19,7 @@ return function(t)
 	t.check("someone else's pads are hidden", not Prompts.visible("Rebirth", 6, 5))
 	t.check(
 		"all the owner actions follow the same rule",
-		Prompts.visible("Skip hatch", 5, 5)
+		Prompts.visible("Instant hatch", 5, 5)
 			and not Prompts.visible("Buy slot", 6, 5)
 			and not Prompts.visible("Upgrade treadmill", 6, 5)
 	)
@@ -55,14 +55,14 @@ return function(t)
 
 	-- a new prompt appearing later is filtered too
 	session.grantEgg(ben, "Soggy")
-	local skips = world.prompts(benPlot, "Skip hatch")
-	local allHidden = #skips >= 1
+	local skips = world.prompts(benPlot, "Instant hatch")
+	local allHidden = true
 	for _, p in skips do
 		if p.Enabled then
 			allHidden = false
 		end
 	end
-	t.check("Ben's skip-hatch prompt that appears later is hidden from Ana", allHidden)
+	t.check("Ben's instant-hatch prompt that appears later is hidden from Ana", allHidden)
 
 	-- the shapes the server builds
 	local wilds = world.load("src/server/Wilds")

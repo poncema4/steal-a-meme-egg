@@ -527,17 +527,18 @@ function Wilds.start()
 					target = { x = root.Position.X, z = root.Position.Z }
 				end
 			end
-			-- a thief who has reached the Safe Zone (or any ground outside this terrain) is out of reach: the boss gives up
+			-- a boss follows a thief through every terrain, but a thief who has reached the Safe Zone is out of reach: it gives up
 			local zone = boss.zone
-			if target and (target.x < zone.startX or target.x > Zones.endX(zone)) then
+			local first = Zones.List[1]
+			if target and target.x < first.startX then
 				target = nil
 			end
 			local before = g.state
 			local caught = Guardian.step(g, dt, target, Config.Wilds.CatchRadius, Config.Wilds.Leash)
-			-- and it can never leave its own terrain, so no monster ever enters the Safe Zone
+			-- ...and no monster ever enters the Safe Zone: it stops at the first terrain's edge
 			Guardian.confine(
 				g,
-				zone.startX + BOSS_MARGIN,
+				first.startX + BOSS_MARGIN,
 				Zones.endX(zone) - BOSS_MARGIN,
 				-Zones.WIDTH / 2 + BOSS_MARGIN,
 				Zones.WIDTH / 2 - BOSS_MARGIN

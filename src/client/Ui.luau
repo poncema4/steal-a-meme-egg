@@ -208,7 +208,13 @@ end
 
 -- A 3D view of a brick model (the pet or egg itself, not a flat picture) filling `parent`, or nil when the client has no such model.
 -- Models face -Z, so the camera stands in front and a little to the side.
+-- The UI is flat: the Shop, Index, Pets and HUD show 2D pictures like the real game. Set this to true to bring the 3D views back.
+Ui.SHOW_3D_IN_UI = false
+
 function Ui.modelView(parent: GuiObject, kind: string, id: string): ViewportFrame?
+	if not Ui.SHOW_3D_IN_UI then
+		return nil
+	end
 	local models = ReplicatedStorage:FindFirstChild("Models")
 	local folder = models and models:FindFirstChild(kind)
 	local template = folder and folder:FindFirstChild(id)

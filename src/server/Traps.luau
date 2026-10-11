@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 local Guardian = require(ReplicatedStorage.Shared.Game.Guardian)
 local Trap = require(ReplicatedStorage.Shared.Game.Trap)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
+local Models = require(script.Parent.Models)
 local Wilds = require(script.Parent.Wilds)
 
 local Traps = {}
@@ -47,6 +48,15 @@ local function build(x: number, z: number): Part
 		spike.Parent = base
 	end
 	base.Parent = folder
+	-- the real model: a steel bear trap lying open; the plain plate and spikes stay as the fallback
+	if Models.place(base, "Props", "BearTrap", CFrame.new(x, 0, z), 0.9) then
+		base.Transparency = 1
+		for _, spike in base:GetChildren() do
+			if spike.Name == "Spike" then
+				spike:Destroy()
+			end
+		end
+	end
 	return base
 end
 

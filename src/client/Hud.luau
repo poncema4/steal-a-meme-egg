@@ -311,7 +311,7 @@ function Hud.start(player: Player, actions: Actions?)
 	board.Name = "Leaderboard"
 	board.AnchorPoint = Vector2.new(1, 0)
 	board.Position = UDim2.new(1, -12, 0, 12)
-	board.Size = UDim2.fromOffset(270, 24)
+	board.Size = UDim2.fromOffset(340, 24)
 	board.BackgroundColor3 = Color3.fromRGB(20, 22, 30)
 	board.BackgroundTransparency = 0.25
 	board.BorderSizePixel = 0
@@ -323,14 +323,17 @@ function Hud.start(player: Player, actions: Actions?)
 	local boardList = Instance.new("UIListLayout")
 	boardList.SortOrder = Enum.SortOrder.LayoutOrder
 	boardList.Parent = board
-	local function row(name: string, order: number, a: string, b: string, c: string, color: Color3): Frame
+	local function row(name: string, order: number, a: string, b: string, c: string, d: string, color: Color3): Frame
 		local r = Instance.new("Frame")
 		r.Name = name
 		r.LayoutOrder = order
 		r.Size = UDim2.new(1, 0, 0, 20)
 		r.BackgroundTransparency = 1
 		r.Parent = board
-		for i, text in { a, b, c } do
+		-- four columns that always fit: name (cut with ... if long), Speed, Money/s and Rebirths
+		local widths = { 0.31, 0.24, 0.25, 0.17 }
+		local lefts = { 0.02, 0.33, 0.57, 0.82 }
+		for i, text in { a, b, c, d } do
 			local l = Instance.new("TextLabel")
 			l.Name = `C{i}`
 			l.BackgroundTransparency = 1
@@ -338,9 +341,10 @@ function Hud.start(player: Player, actions: Actions?)
 			l.TextSize = if order == 0 then 12 else 14
 			l.TextColor3 = color
 			l.Text = text
+			l.TextTruncate = Enum.TextTruncate.AtEnd
 			l.TextXAlignment = if i == 1 then Enum.TextXAlignment.Left else Enum.TextXAlignment.Right
-			l.Size = UDim2.fromScale(if i == 1 then 0.44 else 0.28, 1)
-			l.Position = UDim2.fromScale(if i == 1 then 0.03 elseif i == 2 then 0.46 else 0.72, 0)
+			l.Size = UDim2.fromScale(widths[i], 1)
+			l.Position = UDim2.fromScale(lefts[i], 0)
 			l.Parent = r
 		end
 		return r
@@ -373,7 +377,7 @@ function Hud.start(player: Player, actions: Actions?)
 				child:Destroy()
 			end
 		end
-		row("Header", 0, "People", "Speed", "Money/s", Color3.fromRGB(170, 175, 190))
+		row("Header", 0, "People", "Speed", "Money/s", "Rebirths", Color3.fromRGB(170, 175, 190))
 		local people = Players:GetPlayers()
 		table.sort(people, function(a, b)
 			return number(a, "Income", 0) > number(b, "Income", 0)
@@ -388,15 +392,23 @@ function Hud.start(player: Player, actions: Actions?)
 				p.DisplayName,
 				Economy.full(number(p, "SpeedStat", Progression.SPEED_STAT_BASE)),
 				Economy.format(number(p, "Income", 0)),
+				tostring(number(p, "Rebirths", 0)),
 				if p == player then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1)
 			)
 		end
 	end
 
 	-- the numbers you watch: updated every frame, so your speed climbs in real time while you train
+	local shownCoins, coinsSince = -1, os.clock()
 	local function liveStats()
 		local rebirths = number(player, "Rebirths", 0)
-		money.Text = "$" .. Economy.format(number(player, "Coins", 0))
+		local coins = number(player, "Coins", 0)
+		if coins ~= shownCoins then
+			shownCoins, coinsSince = coins, os.clock()
+		end
+		-- the server adds income twice a second; between those the number climbs smoothly instead of jumping
+		local counting = math.min(os.clock() - coinsSince, 0.6) * number(player, "Income", 0)
+		money.Text = "$" .. Economy.format(coins + counting)
 		speed.Text = (if hasShoe then "" else "👟 ")
 			.. Economy.full(number(player, "SpeedStat", Progression.SPEED_STAT_BASE))
 			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")

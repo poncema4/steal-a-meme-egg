@@ -112,12 +112,10 @@ return function(t)
 	t.equal("junk requests change nothing", ana:GetAttribute("Characters"), 0)
 	t.equal("and cost nothing", ana:GetAttribute("Coins"), coins)
 	action:FireServer("skip", 1)
-	t.equal("Skip hatches the egg", ana:GetAttribute("Characters"), 1)
-	t.check("and it costs coins", (ana:GetAttribute("Coins") :: number) < coins)
-	t.check(
-		"the hatched character is in the base view",
-		string.find(tostring(ana:GetAttribute("BaseItems")), "1,c,", 1, true) ~= nil
-	)
+	t.equal("there is no coin skip: the egg is still hatching", ana:GetAttribute("Characters"), 0)
+	t.equal("and it cost nothing", ana:GetAttribute("Coins"), coins)
+	world.advance(10)
+	t.equal("it hatches on its own with time", ana:GetAttribute("Characters"), 1)
 	t.check("and in the Index", #tostring(ana:GetAttribute("Index")) > 0)
 	t.equal(
 		"the speed stat is published",

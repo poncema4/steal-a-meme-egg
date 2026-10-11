@@ -13,9 +13,9 @@ return table.freeze({
 	}),
 	-- The Wilds: guarded eggs out in themed terrains (see Shared/Game/Zones, Guardian, Nest, Progression).
 	Wilds = table.freeze({
-		ChaseSeconds = 12, -- a guardian gives up after this long
+		ChaseSeconds = 40, -- a boss gives up after this long (enough to chase a thief from the deepest terrain all the way back)
 		CatchRadius = 4.5, -- studs: close enough to take the egg back
-		Leash = 150, -- studs from its nest before it gives up
+		Leash = 1500, -- studs from its nest before it gives up: longer than the whole map, so a boss follows you through every terrain
 		NestRespawnSeconds = 25, -- a stolen nest grows a new egg after this
 		StealHoldSeconds = 1.5,
 		GatePushSeconds = 0.5, -- how often the server checks that nobody is somewhere they have not unlocked
