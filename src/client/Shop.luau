@@ -42,58 +42,140 @@ function Shop.start(player: Player)
 	Shop.toggle = panel.toggle
 	local body = panel.body
 
-	local function line(name: string, y: number, height: number, textSize: number, color: Color3?): TextLabel
-		local l = Ui.label(body, name, textSize, color)
-		l.Position = UDim2.fromOffset(0, y)
-		l.Size = UDim2.new(1, 0, 0, height)
+	local CARD = Color3.fromRGB(46, 46, 62)
+	local function round(inst: Instance, radius: number)
+		local c = Instance.new("UICorner")
+		c.CornerRadius = UDim.new(0, radius)
+		c.Parent = inst
+	end
+	local function outline(inst: Instance)
+		local st = Instance.new("UIStroke")
+		st.Thickness = 3
+		st.Color = Color3.new(0, 0, 0)
+		st.Parent = inst
+	end
+
+	-- everything scrolls, so a phone can reach every card
+	local list = Instance.new("ScrollingFrame")
+	list.Name = "List"
+	list.BackgroundTransparency = 1
+	list.BorderSizePixel = 0
+	list.Size = UDim2.fromScale(1, 1)
+	list.ScrollBarThickness = 6
+	list.Parent = body
+
+	-- the limited egg: a banner with the pet that hatches from it, the stock and the countdown
+	local banner = Instance.new("Frame")
+	banner.Name = "LimitedCard"
+	banner.Size = UDim2.new(1, -8, 0, 124)
+	banner.BackgroundColor3 = Color3.fromRGB(74, 52, 120)
+	banner.BorderSizePixel = 0
+	banner.Parent = list
+	round(banner, 14)
+	outline(banner)
+	local bannerArt = Ui.label(banner, "Art", 40)
+	bannerArt.Size = UDim2.fromOffset(100, 100)
+	bannerArt.Position = UDim2.fromOffset(10, 12)
+	bannerArt.Text = "?"
+	local bannerPet: ViewportFrame? = nil
+	local function line(
+		parent: Instance,
+		name: string,
+		x: number,
+		y: number,
+		w: number,
+		h: number,
+		size: number,
+		color: Color3?
+	)
+		local l = Ui.label(parent, name, size, color)
+		l.Position = UDim2.fromOffset(x, y)
+		l.Size = UDim2.fromOffset(w, h)
 		l.TextXAlignment = Enum.TextXAlignment.Left
 		return l
 	end
-
-	-- the limited egg card
-	local limitedTitle = line("LimitedTitle", 0, 30, 24, Color3.fromRGB(255, 221, 68))
-	local limitedInfo = line("LimitedInfo", 32, 24, 17)
-	local limitedCoins = Ui.button(body, "LimitedCoins", "", Ui.Palettes.Green, UDim2.fromOffset(250, Ui.tap(gui, 46)))
-	limitedCoins.Position = UDim2.fromOffset(0, 64)
-	local limitedRobux = Ui.button(body, "LimitedRobux", "", Ui.Palettes.Blue, UDim2.fromOffset(210, Ui.tap(gui, 46)))
-	limitedRobux.Position = UDim2.fromOffset(264, 64)
+	local limitedTitle = line(banner, "LimitedTitle", 120, 8, 400, 30, 24, Color3.fromRGB(255, 221, 68))
+	local limitedInfo = line(banner, "LimitedInfo", 120, 38, 400, 22, 16)
+	local limitedCoins =
+		Ui.button(banner, "LimitedCoins", "", Ui.Palettes.Green, UDim2.fromOffset(210, Ui.tap(gui, 42)))
+	limitedCoins.Position = UDim2.fromOffset(120, 72)
+	local limitedRobux = Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Blue, UDim2.fromOffset(150, Ui.tap(gui, 42)))
+	limitedRobux.Position = UDim2.fromOffset(340, 72)
 	limitedRobux.Visible = false
 
-	-- everything below is a list of rows built from the catalogue (only items with a real id)
+	-- the shop lists are grids of item cards built from the catalogue (only items with a real id): a picture, the name, what it
+	-- does and a buy button
 	local rows: { { key: string, kind: string, button: TextButton, name: string, robux: number } } = {}
-	local y = 128
+	local ICONS: { [string]: string } =
+		{ coins2x = "cash", luck2x = "potion", train2x = "shoe", hatch1 = "egg", hatch5 = "egg" }
+	local y = 124 + 14
+	local CARD_W, CARD_H, GAP = 166, 214, 10
 	local function section(title: string)
-		line("Section", y, 26, 20, Color3.fromRGB(150, 220, 255)).Text = title
-		y += 30
+		local l = line(list, "Section", 4, y, 400, 26, 20, Color3.fromRGB(150, 220, 255))
+		l.Text = title
+		y += 32
 	end
-	local function addRows(kind: string, map: { [string]: { id: number, name: string, robux: number } })
-		local any = false
+	local function addCards(
+		kind: string,
+		map: { [string]: { id: number, name: string, robux: number, blurb: string? } }
+	)
+		local keys = {}
 		for _, key in sortedKeys(map) do
-			local item = map[key]
-			if item.id ~= 0 then
-				if not any then
-					section(if kind == "pass" then "BOOSTS" else "INSTANT HATCH")
-					any = true
-				end
-				local b = Ui.button(body, `Row_{key}`, "", Ui.Palettes.Grey, UDim2.new(1, 0, 0, Ui.tap(gui, 44)))
-				b.Position = UDim2.fromOffset(0, y)
-				b.TextSize = 20
-				table.insert(rows, { key = key, kind = kind, button = b, name = item.name, robux = item.robux })
-				b.Activated:Connect(function()
-					buyKey:FireServer(kind, key)
-				end)
-				y += Ui.tap(gui, 44) + 8
+			if map[key].id ~= 0 then
+				table.insert(keys, key)
 			end
 		end
+		if #keys == 0 then
+			return
+		end
+		section(if kind == "pass" then "BOOSTS" else "INSTANT HATCH")
+		for i, key in keys do
+			local item = map[key]
+			local col, row = (i - 1) % 3, (i - 1) // 3
+			local card = Instance.new("Frame")
+			card.Name = `Card_{key}`
+			card.Size = UDim2.fromOffset(CARD_W, CARD_H)
+			card.Position = UDim2.fromOffset(col * (CARD_W + GAP), y + row * (CARD_H + GAP))
+			card.BackgroundColor3 = CARD
+			card.BorderSizePixel = 0
+			card.Parent = list
+			round(card, 14)
+			outline(card)
+			local art = Ui.label(card, "Art", 40)
+			art.Size = UDim2.fromOffset(86, 86)
+			art.Position = UDim2.new(0.5, -43, 0, 8)
+			Ui.addIcon(art, ICONS[key] or "egg", "center", "?")
+			local name = Ui.label(card, "Name", 20)
+			name.Size = UDim2.new(1, -8, 0, 26)
+			name.Position = UDim2.fromOffset(4, 98)
+			name.TextScaled = true
+			name.Text = item.name
+			local blurb = Ui.label(card, "Blurb", 14, Color3.fromRGB(200, 205, 225))
+			blurb.Size = UDim2.new(1, -12, 0, 40)
+			blurb.Position = UDim2.fromOffset(6, 126)
+			blurb.TextWrapped = true
+			blurb.TextYAlignment = Enum.TextYAlignment.Top
+			blurb.Text = item.blurb or ""
+			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(1, -16, 0, Ui.tap(gui, 38)))
+			b.AnchorPoint = Vector2.new(0.5, 1)
+			b.Position = UDim2.new(0.5, 0, 1, -8)
+			b.TextSize = 20
+			table.insert(rows, { key = key, kind = kind, button = b, name = item.name, robux = item.robux })
+			b.Activated:Connect(function()
+				buyKey:FireServer(kind, key)
+			end)
+		end
+		y += math.ceil(#keys / 3) * (CARD_H + GAP) + 6
 	end
-	addRows("pass", catalog.Passes :: any)
+	addCards("pass", catalog.Passes :: any)
 	local hatchOnly: { [string]: Store.Product } = {}
 	for key, product in catalog.Products do
 		if product.kind == "hatch" then
 			hatchOnly[key] = product
 		end
 	end
-	addRows("product", hatchOnly :: any)
+	addCards("product", hatchOnly :: any)
+	list.CanvasSize = UDim2.fromOffset(0, y)
 
 	limitedCoins.Activated:Connect(function()
 		buyLimited:FireServer()
@@ -117,6 +199,19 @@ function Shop.start(player: Player)
 			local left = (ReplicatedStorage:GetAttribute("LimitedLeft") :: number?) or 0
 			local ends = (ReplicatedStorage:GetAttribute("LimitedEnds") :: number?) or 0
 			limitedTitle.Text = `LIMITED: {tier.name}`
+			-- the banner shows the pet this egg hatches (its most common one), as a 3D model
+			if bannerPet and bannerPet:GetAttribute("For") ~= tier.id then
+				bannerPet:Destroy()
+				bannerPet = nil
+			end
+			if not bannerPet and tier.pool[1] then
+				local view = Ui.modelView(bannerArt, "Pets", tier.pool[1].id)
+				if view then
+					view:SetAttribute("For", tier.id)
+					bannerArt.Text = ""
+					bannerPet = view
+				end
+			end
 			limitedInfo.Text = `{left} left in the world, next egg in {clock(ends - workspace:GetServerTimeNow())}`
 			limitedCoins.Text = if left > 0 then `Buy: {Economy.format(tier.price)} coins` else "SOLD OUT"
 			Ui.setPalette(limitedCoins, if left > 0 then Ui.Palettes.Green else Ui.Palettes.Grey)
@@ -131,7 +226,7 @@ function Shop.start(player: Player)
 		local owned = "," .. tostring(player:GetAttribute("Passes") or "") .. ","
 		for _, row in rows do
 			local own = row.kind == "pass" and string.find(owned, "," .. row.key .. ",", 1, true) ~= nil
-			row.button.Text = if own then `{row.name}: OWNED` else `{row.name}  R${row.robux}`
+			row.button.Text = if own then "OWNED" else `R$ {row.robux}`
 			Ui.setPalette(row.button, if own then Ui.Palettes.Green else Ui.Palettes.Purple)
 		end
 	end
