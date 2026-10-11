@@ -9,6 +9,8 @@ local RunService = game:GetService("RunService")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local Base = require(ReplicatedStorage.Shared.Game.Base)
+local Bats = require(ReplicatedStorage.Shared.Game.Bats)
+local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
@@ -28,6 +30,8 @@ export type State = {
 	mp: number, -- Meme Points: decide how far into the Wilds you may go
 	speedXp: number, -- total speed XP earned by running
 	treadmill: number, -- treadmill upgrade level
+	claims: { [string]: boolean }, -- the worlds whose Index is complete and rewarded (their ids)
+	pendingWorlds: { Zones.Zone }, -- worlds finished since the last publish (listeners are told after)
 	collection: Collection.Collection, -- the Index: every character (and mutation) ever seen in this player's base
 	carry: string?, -- the egg tier being carried back from the Wilds
 	carryFrom: string?, -- which nest it came from (so a catch can put it back)
@@ -85,6 +89,12 @@ function Session.onChanged(fn: (Player) -> ())
 end
 
 local deliverListeners: { (Player, string) -> () } = {}
+local worldListeners: { (Player, Zones.Zone) -> () } = {}
+
+-- Called when a player finishes a world's Index (the reward has just been paid).
+function Session.onWorldComplete(fn: (Player, Zones.Zone) -> ())
+	table.insert(worldListeners, fn)
+end
 
 -- Called when a player brings a stolen egg home (the egg's tier).
 function Session.onDelivered(fn: (Player, string) -> ())
@@ -124,6 +134,32 @@ local function publish(state: State)
 	state.player:SetAttribute("TrapsMax", Store.perks(catalog, state.purchases).trapMax)
 	Collection.record(state.collection, state.base)
 	state.player:SetAttribute("Index", Collection.encode(state.collection))
+	-- finishing a world's Index pays a reward and unlocks the next bat
+	for _, zone in Zones.List do
+		if not state.claims[zone.id] and Collection.worldComplete(state.collection, zone.id) then
+			state.claims[zone.id] = true
+			local tier = Eggs.tier(zone.eggs[1])
+			state.coins += if tier then tier.price * Config.Index.RewardEggs else 0
+			state.pendingWorlds[#state.pendingWorlds + 1] = zone
+		end
+	end
+	local claimed = {}
+	for _, zone in Zones.List do
+		if state.claims[zone.id] then
+			table.insert(claimed, zone.id)
+		end
+	end
+	state.player:SetAttribute("IndexClaims", table.concat(claimed, ","))
+	state.player:SetAttribute("BatTier", Bats.tierFor(#claimed))
+	local finished = state.pendingWorlds
+	if #finished > 0 then
+		state.pendingWorlds = {}
+		for _, zone in finished do
+			for _, fn in worldListeners do
+				fn(state.player, zone)
+			end
+		end
+	end
 	state.player:SetAttribute("BaseItems", BaseView.encode(state.base))
 	local level, left = Progression.levelFor(state.speedXp)
 	state.player:SetAttribute("MemePoints", state.mp)
@@ -358,6 +394,7 @@ function Session.resetProgress(player: Player): (boolean, string)
 	state.rebirths = 0
 	state.base = Base.new(Config.Economy.StartSlots)
 	state.collection = Collection.new()
+	state.claims = {}
 	Session.applySpeed(player)
 	Session.changed(player)
 	task.spawn(Session.save, player)
@@ -532,6 +569,14 @@ local function serialise(state: State): { [string]: any }
 		speedXp = state.speedXp,
 		treadmill = state.treadmill,
 		index = Collection.encode(state.collection),
+		claims = (function()
+			local list = {}
+			for id in state.claims do
+				table.insert(list, id)
+			end
+			table.sort(list)
+			return table.concat(list, ",")
+		end)(),
 		passes = state.purchases.passes,
 		receipts = state.purchases.receiptOrder,
 		hatchTokens = state.purchases.hatchTokens,
@@ -553,9 +598,15 @@ local function sane(value: any, default: number, lo: number, hi: number): number
 end
 
 local function restore(state: State, saved: { [string]: any })
-	state.coins = sane(saved.coins, Config.Economy.StartCoins, 0, 1e18)
+	state.coins = sane(saved.coins, Config.Economy.StartCoins, 0, 1e36)
 	state.mp = sane(saved.mp, 0, 0, 1e15)
-	state.speedXp = sane(saved.speedXp, 0, 0, 1e12)
+	state.speedXp = sane(saved.speedXp, 0, 0, 1e30)
+	state.claims = {}
+	for id in string.gmatch(if type(saved.claims) == "string" then string.sub(saved.claims, 1, 400) else "", "[^,]+") do
+		if Zones.get(id) then
+			state.claims[id] = true
+		end
+	end
 	state.treadmill = math.floor(sane(saved.treadmill, 0, 0, Progression.MAX_TREADMILL))
 	state.collection =
 		Collection.decode(if typeof(saved.index) == "string" then string.sub(saved.index, 1, 4000) else "")
@@ -663,6 +714,8 @@ local function add(player: Player, onJoin: (Player) -> ())
 		speedXp = 0,
 		treadmill = 0,
 		collection = Collection.new(),
+		claims = {},
+		pendingWorlds = {},
 		purchases = Store.new(),
 		rebirths = 0,
 		dailyStreak = 0,

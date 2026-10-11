@@ -402,7 +402,9 @@ end
 -- The default Roblox player list is replaced by our own leaderboard, so hide it (leaderstats still exist for other tools).
 function Ui.hideDefaultList()
 	local ok = pcall(function()
+		-- the bat is always in hand, so Roblox's own tool bar (and its number keys, which place traps here) is hidden too
 		game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+		game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
 	end)
 	return ok
 end
