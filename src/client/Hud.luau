@@ -62,7 +62,7 @@ function Hud.start(player: Player, actions: Actions?)
 
 	-- left column: Shop, Index, Slow Mode
 	local tapHeight = Ui.tap(gui, 52)
-	local left = box(gui, "Left", UDim2.fromOffset(170, 190), UDim2.new(0, 14, 0.34, 0), Vector2.new(0, 0))
+	local left = box(gui, "Left", UDim2.fromOffset(190, 200), UDim2.new(0, 14, 0.34, 0), Vector2.new(0, 0))
 	local list = Instance.new("UIListLayout")
 	list.Padding = UDim.new(0, 10)
 	list.SortOrder = Enum.SortOrder.LayoutOrder
@@ -75,8 +75,11 @@ function Hud.start(player: Player, actions: Actions?)
 		order: number,
 		handler: () -> ()
 	)
-		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(150, tapHeight))
+		-- like the reference: the picture on the left, the word big and bold right next to it, nothing cut off
+		local b = Ui.button(left, name, text, palette, UDim2.fromOffset(176, tapHeight))
 		Ui.addIcon(b, icon, "left", "", tapHeight + 8, tapHeight - 6)
+		b.TextSize = 28
+		b.TextXAlignment = Enum.TextXAlignment.Left
 		b.LayoutOrder = order
 		b.Activated:Connect(handler)
 		return b
@@ -91,7 +94,7 @@ function Hud.start(player: Player, actions: Actions?)
 	local slow = Instance.new("TextButton")
 	slow.Name = "SlowToggle"
 	slow.LayoutOrder = 3
-	slow.Size = UDim2.fromOffset(150, Ui.tap(gui, 40))
+	slow.Size = UDim2.fromOffset(176, Ui.tap(gui, 40))
 	slow.BackgroundTransparency = 1
 	slow.AutoButtonColor = false
 	slow.Selectable = true
@@ -107,7 +110,9 @@ function Hud.start(player: Player, actions: Actions?)
 	local slowTrack = Instance.new("Frame")
 	slowTrack.Name = "Track"
 	slowTrack.Size = UDim2.fromOffset(52, 28)
-	slowTrack.Position = UDim2.fromOffset(-62, 6) -- the label's padding insets its children too: step back out of it
+	-- centred on the label's line (the label's padding insets its children too: step back out of it)
+	slowTrack.AnchorPoint = Vector2.new(0, 0.5)
+	slowTrack.Position = UDim2.new(0, -62, 0.5, 0)
 	slowTrack.BackgroundColor3 = Color3.fromRGB(70, 60, 58)
 	slowTrack.BorderSizePixel = 0
 	slowTrack.Parent = slow
@@ -312,8 +317,9 @@ function Hud.start(player: Player, actions: Actions?)
 		r.BackgroundTransparency = 1
 		r.Parent = board
 		-- four columns that always fit: name (cut with ... if long), Speed, Money/s and Rebirths
-		local widths = { 0.31, 0.24, 0.25, 0.17 }
-		local lefts = { 0.02, 0.33, 0.57, 0.82 }
+		-- a 4% margin on both sides so the last column ("Rebirths") never touches the edge
+		local widths = { 0.30, 0.22, 0.24, 0.18 }
+		local lefts = { 0.04, 0.34, 0.56, 0.78 }
 		for i, text in { a, b, c, d } do
 			local l = Instance.new("TextLabel")
 			l.Name = `C{i}`
@@ -421,6 +427,7 @@ function Hud.start(player: Player, actions: Actions?)
 			mp = mp,
 			speedLevel = level,
 			canRebirth = Rebirth.can(rebirths, coins),
+			zone = tostring(player:GetAttribute("Zone") or ""),
 		})
 		local def = if carrying ~= "" then Eggs.tier(carrying) else nil
 		run.Visible = def ~= nil

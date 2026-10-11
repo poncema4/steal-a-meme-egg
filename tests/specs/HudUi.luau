@@ -109,6 +109,19 @@ return function(t)
 	t.check("the trap goes back in the backpack when put away", trapTool.Parent == ana.Backpack)
 	world.root(ana).Position = V3.new(world.root(ana).Position.X, 3, 0)
 
+	-- nothing cut off: the switch sits on its label's line, the leaderboard keeps a margin on the right
+	local track = find(find(gui, "SlowToggle") :: Instance, "Track") :: Frame
+	t.check(
+		"the Slow Mode switch is centred on its label",
+		track.AnchorPoint.Y == 0.5 and track.Position.Y.Scale == 0.5
+	)
+	local header = find(gui, "Header") :: Frame
+	local last = header and header:FindFirstChild("C4") :: TextLabel
+	t.check(
+		"the leaderboard's last column keeps off the edge",
+		last ~= nil and last.Position.X.Scale + last.Size.X.Scale <= 0.97
+	)
+
 	-- Slow Mode
 	session.addSpeedXp(ana, 5000)
 	world.advance(0.6)

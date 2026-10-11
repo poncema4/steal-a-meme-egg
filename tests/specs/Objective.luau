@@ -12,6 +12,18 @@ local function facts(over: { [string]: any }): Objective.Facts
 end
 
 return function(t)
+	-- Marco saw "Walk east to the Meadow" while standing in the Meadow
+	t.check(
+		"a new player in the Safe Zone is told where to go",
+		string.find(Objective.hint(facts({ zone = "Safe Zone" })), "Walk east", 1, true) ~= nil
+	)
+	local there = Objective.hint(facts({ zone = "Meme Meadow" }))
+	t.check("out in the Wilds it does not say walk there", string.find(there, "Walk east", 1, true) == nil, there)
+	t.check("it says how to steal", string.find(there, "Hold E", 1, true) ~= nil)
+	t.check(
+		"no hint offers a coin skip (hatching is only skipped with Robux)",
+		string.find(Objective.hint(facts({ eggs = 1, mp = 1e9, speedLevel = 100 })), "coins", 1, true) == nil
+	)
 	t.check(
 		"a brand new player is told to steal an egg",
 		string.find(Objective.hint(facts({})), "steal", 1, true) ~= nil

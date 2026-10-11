@@ -16,6 +16,7 @@ export type Facts = {
 	mp: number, -- Meme Points
 	speedLevel: number,
 	canRebirth: boolean?, -- coins have reached the cost of the next rebirth
+	zone: string?, -- the terrain you stand in ("Safe Zone" or nil when you are not out in the Wilds)
 }
 
 -- The speed level you need to outrun the guardians of the furthest terrain you have unlocked, while carrying an egg.
@@ -36,7 +37,11 @@ function Objective.hint(f: Facts): string
 	if f.canRebirth then
 		return "You can REBIRTH! Hold E on the purple pad at the left of your base for a permanent coin boost."
 	end
+	local outside = f.zone ~= nil and f.zone ~= "" and f.zone ~= "Safe Zone"
 	if f.eggs == 0 and f.characters == 0 then
+		if outside then
+			return "Hold E on a guardian's egg to steal it, then run it home!"
+		end
 		return "Walk east to the Meadow and hold E on a guardian's egg to steal it!"
 	end
 	if f.freeSlots == 0 then
@@ -51,7 +56,7 @@ function Objective.hint(f: Facts): string
 		return `Train on the treadmill: recommended speed {Zones.speedLabel(nextZone)} for {nextZone.name}.`
 	end
 	if f.eggs > 0 and f.characters == 0 then
-		return "Your egg is hatching. Hold E on it to skip the wait with coins."
+		return "Your egg is hatching in your base. Steal another one while you wait!"
 	end
 	return "Keep stealing the best eggs and grow your meme collection!"
 end
