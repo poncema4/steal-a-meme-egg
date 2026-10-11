@@ -13,6 +13,7 @@ local function rig(world, kind: string)
 		local m = Instance.new("Motor6D")
 		m.Name = name
 		m.Transform = world.CFrame.new(0, 0, 0)
+		m.C0 = world.CFrame.new(0, 0, 0)
 		m.Parent = parent
 		return m
 	end
@@ -25,6 +26,9 @@ end
 return function(t)
 	local world = Fake.world()
 	local CarryPose = world.load("src/client/CarryPose")
+	local function raised(m: any): boolean
+		return m.C0.LookVector.Z > -0.5 or m.C0.UpVector.Y < 0
+	end
 	for _, kind in { "R15", "R6" } do
 		local character, right, left = rig(world, kind)
 		t.equal(`{kind}: both shoulders are found`, #CarryPose.joints(character), 2)
@@ -32,16 +36,16 @@ return function(t)
 		ana.Character = character
 		CarryPose.start()
 		world.advance(0.1)
-		t.check(
-			`{kind}: arms hang normally with empty hands`,
-			right.Transform.Position.Magnitude == 0 and right.Transform.LookVector.Z < -0.99
-		)
+		local restC0 = right.C0
+		t.check(`{kind}: arms hang normally with empty hands`, not raised(right))
 		ana:SetAttribute("Carrying", "Soggy")
 		world.advance(0.1)
-		t.check(
-			`{kind}: carrying an egg raises the right arm`,
-			right.Transform.LookVector.Z > -0.5 or right.Transform.UpVector.Y < 0
-		)
-		t.check(`{kind}: and the left arm`, left.Transform.LookVector.Z > -0.5 or left.Transform.UpVector.Y < 0)
+		t.check(`{kind}: carrying an egg raises the right arm`, raised(right))
+		t.check(`{kind}: and the left arm`, raised(left))
+		world.advance(1)
+		t.check(`{kind}: it stays raised (the pose is not stacked every frame)`, raised(right))
+		ana:SetAttribute("Carrying", "")
+		world.advance(0.1)
+		t.check(`{kind}: the arms come down after the egg is delivered`, right.C0 == restC0 and not raised(right))
 	end
 end
