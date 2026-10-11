@@ -17,8 +17,25 @@ local function rig(world, kind: string)
 		m.Parent = parent
 		return m
 	end
+	-- Roblox's avatar joint upgrade: the joint is an AnimationConstraint between two attachments
+	local function constraint(parentName: string, name: string)
+		local parent = Instance.new("Part")
+		parent.Name = parentName
+		parent.Parent = character
+		local a0 = Instance.new("Attachment")
+		a0.Name = `{name}RigAttachment`
+		a0.CFrame = world.CFrame.new(0, 0, 0)
+		a0.Parent = character
+		local c = Instance.new("AnimationConstraint")
+		c.Name = name
+		c.Attachment0 = a0
+		c.Parent = parent
+		return a0
+	end
 	if kind == "R15" then
 		return character, motor("RightUpperArm", "RightShoulder"), motor("LeftUpperArm", "LeftShoulder")
+	elseif kind == "Upgraded" then
+		return character, constraint("RightUpperArm", "RightShoulder"), constraint("LeftUpperArm", "LeftShoulder")
 	end
 	return character, motor("Torso", "Right Shoulder"), motor("Torso", "Left Shoulder")
 end
@@ -26,17 +43,20 @@ end
 return function(t)
 	local world = Fake.world()
 	local CarryPose = world.load("src/client/CarryPose")
-	local function raised(m: any): boolean
-		return m.C0.LookVector.Z > -0.5 or m.C0.UpVector.Y < 0
+	local function frame(m: any): any
+		return if m:IsA("Motor6D") then m.C0 else m.CFrame
 	end
-	for _, kind in { "R15", "R6" } do
+	local function raised(m: any): boolean
+		return frame(m).LookVector.Z > -0.5 or frame(m).UpVector.Y < 0
+	end
+	for _, kind in { "R15", "R6", "Upgraded" } do
 		local character, right, left = rig(world, kind)
 		t.equal(`{kind}: both shoulders are found`, #CarryPose.joints(character), 2)
-		local ana = world.addPlayer(`Ana{kind}`, if kind == "R15" then 81 else 82)
+		local ana = world.addPlayer(`Ana{kind}`, if kind == "R15" then 81 elseif kind == "R6" then 82 else 83)
 		ana.Character = character
 		CarryPose.start()
 		world.advance(0.1)
-		local restC0 = right.C0
+		local restC0 = frame(right)
 		t.check(`{kind}: arms hang normally with empty hands`, not raised(right))
 		ana:SetAttribute("Carrying", "Soggy")
 		world.advance(0.1)
@@ -46,6 +66,6 @@ return function(t)
 		t.check(`{kind}: it stays raised (the pose is not stacked every frame)`, raised(right))
 		ana:SetAttribute("Carrying", "")
 		world.advance(0.1)
-		t.check(`{kind}: the arms come down after the egg is delivered`, right.C0 == restC0 and not raised(right))
+		t.check(`{kind}: the arms come down after the egg is delivered`, frame(right) == restC0 and not raised(right))
 	end
 end
