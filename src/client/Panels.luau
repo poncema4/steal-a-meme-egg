@@ -206,21 +206,21 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			total = #section.characters,
 		}
 		local grid = Instance.new("UIGridLayout")
-		grid.CellSize = UDim2.fromOffset(150, 168)
+		grid.CellSize = UDim2.fromOffset(118, 136) -- compact cards (Marco: the inside of the panels should be smaller)
 		grid.CellPadding = UDim2.fromOffset(10, 10)
 		grid.SortOrder = Enum.SortOrder.LayoutOrder
 		grid.Parent = gridFrame
 		for _, c in section.characters do
 			order += 1
-			local root = frame(gridFrame, `Card_{c.id}`, UDim2.fromOffset(150, 168))
+			local root = frame(gridFrame, `Card_{c.id}`, UDim2.fromOffset(118, 136))
 			root.LayoutOrder = order
 			corner(root, 10)
 			local portrait =
-				frame(root, "Portrait", UDim2.fromOffset(78, 78), RARITY_COLORS[c.rarity] or RARITY_COLORS.Common)
+				frame(root, "Portrait", UDim2.fromOffset(60, 60), RARITY_COLORS[c.rarity] or RARITY_COLORS.Common)
 			portrait.AnchorPoint = Vector2.new(0.5, 0)
-			portrait.Position = UDim2.new(0.5, 0, 0, 8)
+			portrait.Position = UDim2.new(0.5, 0, 0, 6)
 			corner(portrait, 12)
-			local letter = Ui.label(portrait, "Letter", 44)
+			local letter = Ui.label(portrait, "Letter", 34)
 			letter.Size = UDim2.fromScale(1, 1)
 			-- the portrait: a rendered picture where we have one (a black silhouette until discovered), else the letter tile
 			local picture: ImageLabel? = nil
@@ -241,18 +241,18 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 				letter.Visible = false
 				picture = image
 			end
-			local name = Ui.label(root, "Name", 17)
-			name.Position = UDim2.fromOffset(0, 90)
-			name.Size = UDim2.new(1, 0, 0, 22)
+			local name = Ui.label(root, "Name", 15)
+			name.Position = UDim2.fromOffset(4, 70)
+			name.Size = UDim2.new(1, -8, 0, 20)
 			name.TextScaled = true
-			local income = Ui.label(root, "Income", 16, Color3.fromRGB(80, 255, 90))
-			income.Position = UDim2.fromOffset(0, 114)
-			income.Size = UDim2.new(1, 0, 0, 20)
+			local income = Ui.label(root, "Income", 14, Color3.fromRGB(80, 255, 90))
+			income.Position = UDim2.fromOffset(0, 92)
+			income.Size = UDim2.new(1, 0, 0, 18)
 			local chips: { [string]: TextLabel } = {}
 			for i, mutation in { "Gold", "Rainbow" } do
-				local chip = Ui.label(root, `Chip_{mutation}`, 13, MUTATION_COLORS[mutation])
-				chip.Size = UDim2.fromOffset(66, 18)
-				chip.Position = UDim2.fromOffset(6 + (i - 1) * 72, 140)
+				local chip = Ui.label(root, `Chip_{mutation}`, 11, MUTATION_COLORS[mutation])
+				chip.Size = UDim2.fromOffset(52, 16)
+				chip.Position = UDim2.fromOffset(5 + (i - 1) * 56, 114)
 				chips[mutation] = chip
 			end
 			table.insert(cardList, {
@@ -348,29 +348,29 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	end
 
 	local function newEggRow(slot: number): EggRow
-		local root = frame(eggList, `EggRow_{slot}`, UDim2.new(1, -8, 0, Ui.tap(gui, 64)))
+		local root = frame(eggList, `EggRow_{slot}`, UDim2.new(1, -8, 0, Ui.tap(gui, 52)))
 		root.LayoutOrder = slot
 		corner(root, 10)
 		-- the egg's own picture on the left
 		local picture = Instance.new("ImageLabel")
 		picture.Name = "Picture"
 		picture.BackgroundTransparency = 1
-		picture.Size = UDim2.fromOffset(52, 52)
+		picture.Size = UDim2.fromOffset(42, 42)
 		picture.Position = UDim2.fromOffset(8, 6)
 		picture.ScaleType = Enum.ScaleType.Fit
 		picture.Parent = root
-		local title = Ui.label(root, "Title", 22)
+		local title = Ui.label(root, "Title", 18)
 		title.Position = UDim2.fromOffset(68, 4)
 		title.Size = UDim2.new(0.4, 0, 0, 28)
 		title.TextXAlignment = Enum.TextXAlignment.Left
-		local timer = Ui.label(root, "Timer", 17, Color3.fromRGB(170, 220, 255))
+		local timer = Ui.label(root, "Timer", 15, Color3.fromRGB(170, 220, 255))
 		timer.Position = UDim2.fromOffset(68, 32)
 		timer.Size = UDim2.new(0.45, 0, 0, 24)
 		timer.TextXAlignment = Enum.TextXAlignment.Left
 		local instant = Ui.button(root, "Instant", "Instant", Ui.Palettes.Gold, UDim2.fromOffset(110, Ui.tap(gui, 36)))
 		instant.AnchorPoint = Vector2.new(1, 0.5)
 		instant.Position = UDim2.new(1, -10, 0.5, 0)
-		instant.TextSize = 18
+		instant.TextSize = 16
 		instant.Activated:Connect(function()
 			action:FireServer("instant", slot)
 		end)
@@ -436,7 +436,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 				seen[row.slot] = true
 				local entry = petRows[row.slot]
 				if not entry then
-					local root = frame(petList, `PetRow_{row.slot}`, UDim2.new(1, -8, 0, Ui.tap(gui, 56)))
+					local root = frame(petList, `PetRow_{row.slot}`, UDim2.new(1, -8, 0, Ui.tap(gui, 46)))
 					root.LayoutOrder = row.slot
 					corner(root, 10)
 					local picture = Instance.new("ImageLabel")
@@ -453,7 +453,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 					if view then
 						picture.Visible = false
 					end
-					local title = Ui.label(root, "Title", 22)
+					local title = Ui.label(root, "Title", 18)
 					title.Position = UDim2.fromOffset(64, 0)
 					title.Size = UDim2.fromScale(0.55, 1)
 					title.TextXAlignment = Enum.TextXAlignment.Left
@@ -511,7 +511,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			local r = frame(
 				trophyList,
 				name,
-				UDim2.new(1, -8, 0, Ui.tap(gui, 40)),
+				UDim2.new(1, -8, 0, Ui.tap(gui, 34)),
 				if place == 0 then Color3.fromRGB(30, 30, 42) else nil
 			)
 			r.LayoutOrder = place

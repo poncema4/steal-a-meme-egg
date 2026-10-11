@@ -73,8 +73,8 @@ function Shop.start(player: Player)
 	round(banner, 14)
 	outline(banner)
 	local bannerArt = Ui.label(banner, "Art", 40)
-	bannerArt.Size = UDim2.fromOffset(100, 100)
-	bannerArt.Position = UDim2.fromOffset(10, 12)
+	bannerArt.Size = UDim2.fromOffset(90, 90)
+	bannerArt.Position = UDim2.fromOffset(12, 12)
 	bannerArt.Text = ""
 	local bannerPicture = Instance.new("ImageLabel")
 	bannerPicture.Name = "Picture"
@@ -126,7 +126,7 @@ function Shop.start(player: Player)
 		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(150, Ui.tap(gui, 34)))
 	limitedRobux.Position = UDim2.fromOffset(120, PET_Y + PET_H + 10)
 	limitedRobux.TextSize = 19
-	local BANNER_H = math.max(12 + 100, PET_Y + PET_H + 10 + limitedRobux.Size.Y.Offset) + 12
+	local BANNER_H = math.max(12 + 90, PET_Y + PET_H + 10 + limitedRobux.Size.Y.Offset) + 12
 	banner.Size = UDim2.new(1, -8, 0, BANNER_H)
 	local petButtons: { ImageButton } = {}
 	local shownTier = ""
@@ -146,7 +146,12 @@ function Shop.start(player: Player)
 		hatch5 = "egg",
 	}
 	local y = BANNER_H + 14
-	local CARD_W, CARD_H, GAP = 166, 268, 10 -- tall enough that the two-line blurb sits above the button, never under it
+	-- compact cards, four to a row (Marco: the things inside the shop should be smaller). The card's height follows its button's
+	-- real height (taller on a phone), so the blurb always sits above the button, never under it.
+	local COLS, CARD_W, GAP = 4, 124, 10
+	local BUTTON_H = Ui.tap(gui, 28)
+	local BLURB_Y, BLURB_H = 94, 42
+	local CARD_H = BLURB_Y + BLURB_H + 6 + BUTTON_H + 6
 	local function section(title: string)
 		local l = line(list, "Section", 4, y, 400, 26, 20, Color3.fromRGB(150, 220, 255))
 		l.Text = title
@@ -169,7 +174,7 @@ function Shop.start(player: Player)
 		section(title)
 		for i, key in keys do
 			local item = map[key]
-			local col, row = (i - 1) % 3, (i - 1) // 3
+			local col, row = (i - 1) % COLS, (i - 1) // COLS
 			local card = Instance.new("Frame")
 			card.Name = `Card_{key}`
 			card.Size = UDim2.fromOffset(CARD_W, CARD_H)
@@ -180,8 +185,8 @@ function Shop.start(player: Player)
 			round(card, 14)
 			outline(card)
 			local art = Ui.label(card, "Art", 40)
-			art.Size = UDim2.fromOffset(92, 92)
-			art.Position = UDim2.new(0.5, -46, 0, 6)
+			art.Size = UDim2.fromOffset(62, 62)
+			art.Position = UDim2.new(0.5, -31, 0, 6)
 			-- the card's own picture (a sticker with the pass's art), else a HUD icon
 			local pictureId = (Config.ShopArt :: { [string]: string })[key]
 			if pictureId then
@@ -196,27 +201,31 @@ function Shop.start(player: Player)
 			else
 				Ui.addIcon(art, ICONS[key] or "egg", "center", "?")
 			end
-			local name = Ui.label(card, "Name", 20)
-			name.Size = UDim2.new(1, -8, 0, 26)
-			name.Position = UDim2.fromOffset(4, 102)
+			local name = Ui.label(card, "Name", 17)
+			name.Size = UDim2.new(1, -8, 0, 22)
+			name.Position = UDim2.fromOffset(4, 70)
 			name.TextScaled = true
 			name.Text = item.name
-			local blurb = Ui.label(card, "Blurb", 13, Color3.fromRGB(200, 205, 225))
-			blurb.Size = UDim2.new(1, -12, 0, 64)
-			blurb.Position = UDim2.fromOffset(6, 130) -- ends at 194; the button starts at CARD_H - 8 - 38 = 222
+			local blurb = Ui.label(card, "Blurb", 12, Color3.fromRGB(200, 205, 225))
+			blurb.Size = UDim2.new(1, -10, 0, BLURB_H)
+			blurb.Position = UDim2.fromOffset(5, BLURB_Y)
 			blurb.TextWrapped = true
+			blurb.TextScaled = true -- a long blurb shrinks to fit its box instead of running under the button
+			local blurbMax = Instance.new("UITextSizeConstraint")
+			blurbMax.MaxTextSize = 12
+			blurbMax.Parent = blurb
 			blurb.TextYAlignment = Enum.TextYAlignment.Top
 			blurb.Text = item.blurb or ""
-			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(1, -16, 0, Ui.tap(gui, 32)))
+			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(1, -14, 0, BUTTON_H))
 			b.AnchorPoint = Vector2.new(0.5, 1)
-			b.Position = UDim2.new(0.5, 0, 1, -8)
-			b.TextSize = 20
+			b.Position = UDim2.new(0.5, 0, 1, -6)
+			b.TextSize = 16
 			table.insert(rows, { key = key, kind = kind, button = b, name = item.name, robux = item.robux })
 			b.Activated:Connect(function()
 				buyKey:FireServer(kind, key)
 			end)
 		end
-		y += math.ceil(#keys / 3) * (CARD_H + GAP) + 6
+		y += math.ceil(#keys / COLS) * (CARD_H + GAP) + 6
 	end
 	-- three sections of passes: boosts that multiply things, perks that change how you play
 	local boosts: { [string]: Store.Pass } = {}
