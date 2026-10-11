@@ -26,15 +26,15 @@ def chord(centre_y: int, height: int) -> int:
 
 # key: (picture, top line, bottom line, background top/bottom colours, text colours)
 ICONS = {
-    "coins2x": ("Icons/cash", "2X", "COINS", ((40, 190, 90), (10, 110, 50)), MONEY),
-    "luck2x": ("Icons/potion", "2X", "LUCK", ((150, 80, 255), (70, 20, 150)), RAINBOW),
-    "train2x": ("Icons/shoe", "2X", "TRAINING", ((255, 150, 30), (200, 60, 20)), RAINBOW),
-    "fastHatch": ("Eggs/Disco", "2X", "HATCH SPEED", ((255, 90, 170), (170, 20, 100)), RAINBOW),
-    "vip": ("Icons/trophy", "VIP", "+25% COINS", ((255, 205, 40), (200, 120, 10)), MONEY),
-    "trapMaster": ("Icons/trap", "TRAP", "MASTER", ((90, 110, 140), (30, 40, 70)), RAINBOW),
+    "coins2x": ("Cartoon/cash", "2X", "COINS", ((40, 190, 90), (10, 110, 50)), MONEY),
+    "luck2x": ("Cartoon/potion", "2X", "LUCK", ((150, 80, 255), (70, 20, 150)), RAINBOW),
+    "train2x": ("Cartoon/shoe", "2X", "TRAINING", ((255, 150, 30), (200, 60, 20)), RAINBOW),
+    "fastHatch": ("Cartoon/egg", "2X", "HATCH SPEED", ((255, 90, 170), (170, 20, 100)), RAINBOW),
+    "vip": ("Cartoon/trophy", "VIP", "+25% COINS", ((255, 205, 40), (200, 120, 10)), MONEY),
+    "trapMaster": ("Cartoon/trap", "TRAP", "MASTER", ((90, 110, 140), (30, 40, 70)), RAINBOW),
     "bossSlow": ("Pets/FinalBossHamster", "SLOW", "BOSSES", ((235, 40, 60), (120, 10, 30)), RAINBOW),
-    "hatch1": ("Eggs/Soggy", "HATCH", "NOW!", ((255, 90, 170), (170, 20, 100)), RAINBOW),
-    "hatch5": ("Eggs/Golden", "5X", "HATCH", ((255, 90, 170), (170, 20, 100)), RAINBOW),
+    "hatch1": ("Cartoon/egg", "HATCH", "NOW!", ((255, 90, 170), (170, 20, 100)), RAINBOW),
+    "hatch5": ("Cartoon/egg", "5X", "HATCH", ((255, 90, 170), (170, 20, 100)), RAINBOW),
     "limitedGoose": ("Pets/GoldenGoose", "LIMITED", "GOOSE", ((255, 205, 40), (200, 120, 10)), RAINBOW),
     "limitedCat": ("Pets/CosmicKitten", "LIMITED", "CAT", ((90, 80, 255), (30, 20, 140)), RAINBOW),
     "limitedLord": ("Pets/MemeLordPrime", "LIMITED", "LORD", ((235, 40, 60), (120, 10, 30)), RAINBOW),
