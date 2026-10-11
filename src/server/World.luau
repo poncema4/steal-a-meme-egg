@@ -168,6 +168,22 @@ local function buildTreadmill(model: Model, f: Frame, accent: Color3): (Part, Tr
 	local belt =
 		part("Treadmill", Vector3.new(6.4, 0.5, length), cf(f, 0, 0.65, ahead), Color3.fromRGB(30, 30, 36), model)
 	belt.Material = Enum.Material.SmoothPlastic
+	-- a lamp and a sparkle that the higher tiers switch on
+	local lamp = Instance.new("PointLight")
+	lamp.Name = "TierLight"
+	lamp.Range = 22
+	lamp.Brightness = 0
+	lamp.Parent = belt
+	local sparkles = Instance.new("ParticleEmitter")
+	sparkles.Name = "TierSparkles"
+	sparkles.Enabled = false
+	sparkles.Rate = 12
+	sparkles.Lifetime = NumberRange.new(0.8, 1.6)
+	sparkles.Speed = NumberRange.new(2, 6)
+	sparkles.SpreadAngle = Vector2.new(180, 180)
+	sparkles.Size = NumberSequence.new(0.5, 0)
+	sparkles.LightEmission = 1
+	sparkles.Parent = belt
 	belt:SetAttribute("Ridges", World.TREAD_RIDGES) -- the client waits until it has seen all of them (streaming)
 	for i = 0, World.TREAD_RIDGES - 1 do
 		local ridge = part(
@@ -182,6 +198,10 @@ local function buildTreadmill(model: Model, f: Frame, accent: Color3): (Part, Tr
 	end
 	for _, side in { -1, 1 } do
 		part("TreadRail", Vector3.new(0.9, 1.1, length + 0.6), cf(f, side * 3.85, 0.55, ahead), accent, model)
+		-- a strip of light along the top of each rail: invisible on a Rusty treadmill, brighter with every tier (see Home)
+		local strip = part("TierGlow", Vector3.new(0.5, 0.12, length), cf(f, side * 3.85, 1.16, ahead), accent, model)
+		strip.Transparency = 1
+		strip.CanCollide = false
 		-- the console legs and the handrail along each side
 		part("ConsoleLeg", Vector3.new(0.6, 4.4, 0.6), cf(f, side * 3.85, 3.3, ahead + length / 2 - 0.6), steel, model)
 		part("Handrail", Vector3.new(0.4, 0.4, 9), cf(f, side * 3.85, 3.7, ahead + length / 2 - 5.1), steel, model)
