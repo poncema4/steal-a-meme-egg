@@ -14,7 +14,7 @@ end
 
 local function count(root: Instance, prefix: string): number
 	local n = 0
-	for _, d in root:GetChildren() do
+	for _, d in root:GetDescendants() do
 		if string.sub(d.Name, 1, #prefix) == prefix then
 			n += 1
 		end
@@ -75,6 +75,11 @@ return function(t)
 		total += 1
 	end
 	t.equal("it has a card for every character", count(find(index, "Cards") :: Instance, "Card_"), total)
+	t.equal(
+		"grouped under a header for each world and the limited eggs",
+		count(find(index, "Cards") :: Instance, "World_"),
+		6
+	)
 	t.equal("it counts nothing discovered", (find(index, "Progress") :: TextLabel).Text, `Discovered 0 / {total}`)
 	t.equal(
 		"an unknown character is hidden",

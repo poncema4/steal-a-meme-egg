@@ -1,12 +1,15 @@
 --!strict
 -- The Wilds map: a long strip of themed terrains going east from the home bases. Each terrain has an unlock cost in Meme
--- Points, the eggs its guardians sit on, and how fast they chase. Pure data and lookups; the server builds the parts.
+-- Speed level, the eggs its guardians sit on, and how fast they chase. Pure data and lookups; the server builds the parts.
+local Economy = require("./Economy")
+local Progression = require("./Progression")
+
 local Zones = {}
 
 export type Zone = {
 	id: string,
 	name: string,
-	mp: number, -- Meme Points needed to enter
+	level: number, -- Speed level needed to enter: only how fast you run decides how far you may go
 	startX: number, -- the terrain covers startX to startX + length along the map
 	length: number,
 	nests: number, -- guarded eggs in this terrain
@@ -25,7 +28,7 @@ Zones.List = {
 		id = "Meadow",
 		boss = "SoggyToast",
 		name = "Meme Meadow",
-		mp = 0,
+		level = 0,
 		startX = 10,
 		length = 240,
 		nests = 5,
@@ -38,7 +41,7 @@ Zones.List = {
 		id = "Dune",
 		boss = "PharaohPancake",
 		name = "Dune Desert",
-		mp = 25,
+		level = 5,
 		startX = 250,
 		length = 240,
 		nests = 5,
@@ -51,7 +54,7 @@ Zones.List = {
 		id = "Volcano",
 		boss = "VolcanoVicar",
 		name = "Lava Lands",
-		mp = 250,
+		level = 10,
 		startX = 490,
 		length = 240,
 		nests = 5,
@@ -64,7 +67,7 @@ Zones.List = {
 		id = "Frost",
 		boss = "SleepySock",
 		name = "Frozen Peaks",
-		mp = 2500,
+		level = 16,
 		startX = 730,
 		length = 240,
 		nests = 5,
@@ -77,7 +80,7 @@ Zones.List = {
 		id = "Cosmic",
 		boss = "FinalBossHamster",
 		name = "Cosmic Void",
-		mp = 20000,
+		level = 23,
 		startX = 970,
 		length = 240,
 		nests = 5,
@@ -107,15 +110,15 @@ function Zones.at(x: number): Zone?
 	return nil
 end
 
-function Zones.unlocked(zone: Zone, mp: number): boolean
-	return mp >= zone.mp
+function Zones.unlocked(zone: Zone, level: number): boolean
+	return level >= zone.level
 end
 
--- The furthest terrain this many Meme Points reaches.
-function Zones.furthest(mp: number): Zone
+-- The furthest terrain this Speed level reaches.
+function Zones.furthest(level: number): Zone
 	local best = Zones.List[1]
 	for _, zone in Zones.List do
-		if mp >= zone.mp then
+		if level >= zone.level then
 			best = zone
 		end
 	end
@@ -123,13 +126,34 @@ function Zones.furthest(mp: number): Zone
 end
 
 -- The next terrain still locked, or nil if everything is open.
-function Zones.nextLocked(mp: number): Zone?
+function Zones.nextLocked(level: number): Zone?
 	for _, zone in Zones.List do
-		if mp < zone.mp then
+		if level < zone.level then
 			return zone
 		end
 	end
 	return nil
+end
+
+-- The world an egg tier belongs to (for the Index): the terrain where it is the common egg, else the first that grows it. Limited
+-- eggs belong to no terrain.
+function Zones.forTier(tierId: string): Zone?
+	for _, zone in Zones.List do
+		if zone.eggs[1] == tierId then
+			return zone
+		end
+	end
+	for _, zone in Zones.List do
+		if table.find(zone.eggs, tierId) then
+			return zone
+		end
+	end
+	return nil
+end
+
+-- The Speed number (as the HUD shows it, with commas) you reach at the level this terrain opens.
+function Zones.speedLabel(zone: Zone): string
+	return Economy.full(Progression.speedStat(zone.level))
 end
 
 -- Which egg a nest grows: the common one most of the time, the rarer one 1 time in 4.
@@ -144,9 +168,9 @@ end
 
 -- Where a player standing at x should be pushed back to if they are in a terrain they have not unlocked: just
 -- before that terrain's entrance. Returns nil if x is fine.
-function Zones.pushBack(x: number, mp: number): number?
+function Zones.pushBack(x: number, level: number): number?
 	local zone = Zones.at(x)
-	if zone and not Zones.unlocked(zone, mp) then
+	if zone and not Zones.unlocked(zone, level) then
 		return zone.startX - 4
 	end
 	return nil

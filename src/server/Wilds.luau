@@ -42,6 +42,7 @@ export type Entry = {
 -- the boss model's pivot is its body centre (14 studs tall), so its feet touch the ground when the pivot is this high
 local BOSS_HEIGHT = 14
 local BODY_Y = BOSS_HEIGHT / 2
+local BOSS_MARGIN = 6 -- how close to its terrain's edge a boss may stand
 
 local bosses: { Boss } = {}
 
@@ -378,7 +379,7 @@ function Wilds.build(): Folder
 		)
 		gate.Transparency = 0.7
 		gate.CanCollide = false
-		label(gate, { zone.name, if zone.mp > 0 then `{zone.mp} Meme Points` else "open" }, 14, 260)
+		label(gate, { zone.name, if zone.level > 0 then `Speed {Zones.speedLabel(zone)}` else "open" }, 14, 260)
 	end
 	return folder
 end
@@ -422,8 +423,8 @@ function Wilds.steal(player: Player, entry: Entry)
 		notify(player, "You are already carrying an egg!")
 		return
 	end
-	if not Zones.unlocked(entry.zone, state.mp) then
-		notify(player, `You need {entry.zone.mp} Meme Points for {entry.zone.name}`)
+	if not Zones.unlocked(entry.zone, Session.speedLevel(player)) then
+		notify(player, `You need Speed {Zones.speedLabel(entry.zone)} for {entry.zone.name}`)
 		return
 	end
 	local tier, mutation = Nest.take(entry.nest, Config.Wilds.NestRespawnSeconds)
@@ -526,8 +527,21 @@ function Wilds.start()
 					target = { x = root.Position.X, z = root.Position.Z }
 				end
 			end
+			-- a thief who has reached the Safe Zone (or any ground outside this terrain) is out of reach: the boss gives up
+			local zone = boss.zone
+			if target and (target.x < zone.startX or target.x > Zones.endX(zone)) then
+				target = nil
+			end
 			local before = g.state
 			local caught = Guardian.step(g, dt, target, Config.Wilds.CatchRadius, Config.Wilds.Leash)
+			-- and it can never leave its own terrain, so no monster ever enters the Safe Zone
+			Guardian.confine(
+				g,
+				zone.startX + BOSS_MARGIN,
+				Zones.endX(zone) - BOSS_MARGIN,
+				-Zones.WIDTH / 2 + BOSS_MARGIN,
+				Zones.WIDTH / 2 - BOSS_MARGIN
+			)
 			if caught and nearest then
 				recover(nearest, `{boss.name} caught you! The egg went back.`)
 				-- another thief of this terrain is still running: the boss goes after them next
@@ -566,14 +580,14 @@ function Wilds.start()
 				local state = Session.get(player)
 				if root and state then
 					local x = root.Position.X
-					local back = Zones.pushBack(x, state.mp)
+					local back = Zones.pushBack(x, Session.speedLevel(player))
 					if back then
 						root.CFrame = CFrame.new(back, root.Position.Y, root.Position.Z)
 						local zone = Zones.at(x) :: Zones.Zone
 						local now = os.clock()
 						if now - (lastWarn[player] or -10) > 3 then
 							lastWarn[player] = now
-							notify(player, `{zone.name} needs {zone.mp} Meme Points`)
+							notify(player, `{zone.name} needs Speed {Zones.speedLabel(zone)}`)
 						end
 						x = back
 					end

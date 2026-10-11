@@ -36,18 +36,19 @@ return function(t)
 		"a full base says to buy a slot",
 		string.find(Objective.hint(facts({ eggs = 2, characters = 4, freeSlots = 0 })), "slot", 1, true) ~= nil
 	)
+	local dune = Zones.List[2]
+	local next = Objective.hint(facts({ characters = 2, speedLevel = 0 }))
 	t.check(
-		"too slow for the terrain says to train",
-		string.find(Objective.hint(facts({ characters = 2, mp = 25, speedLevel = 0 })), "treadmill", 1, true) ~= nil
-	)
-	local need = Objective.speedNeeded(25)
-	local next = Objective.hint(facts({ characters = 2, mp = 25, speedLevel = need }))
-	t.check(
-		"fast enough and a terrain is locked: collect points for it",
-		string.find(next, "Meme Points", 1, true) ~= nil and string.find(next, "Lava Lands", 1, true) ~= nil,
+		"a locked terrain says to train on the treadmill for it",
+		string.find(next, "treadmill", 1, true) ~= nil and string.find(next, dune.name, 1, true) ~= nil,
 		next
 	)
-	t.check("the hint shows progress toward the next terrain", string.find(next, "25 of 250", 1, true) ~= nil, next)
+	t.check(
+		"the hint shows the Speed number the terrain opens at",
+		string.find(next, Zones.speedLabel(dune), 1, true) ~= nil,
+		next
+	)
+	t.check("Meme Points never gate a terrain", string.find(next, "Meme Points", 1, true) == nil, next)
 	t.check(
 		"a waiting egg with everything unlocked says hatching",
 		string.find(Objective.hint(facts({ eggs = 1, mp = 1e9, speedLevel = 30 })), "hatching", 1, true) ~= nil
@@ -59,7 +60,7 @@ return function(t)
 	local rising = true
 	local last = 0
 	for _, zone in Zones.List do
-		local n = Objective.speedNeeded(zone.mp)
+		local n = Objective.speedNeeded(zone.level)
 		if n < last or Progression.carrySpeed(Progression.walkSpeed(n), true) <= zone.guardianSpeed then
 			rising = false
 		end

@@ -95,4 +95,12 @@ return function(t)
 	Nest.take(n, 25)
 	Nest.giveBack(n, "Disco")
 	t.check("a recovered egg goes back and stops the timer", n.tier == "Disco" and n.regrow == 0)
+
+	-- a boss never leaves its own terrain
+	local out = Guardian.new(5, 0, 20)
+	out.x, out.z = -40, 500
+	t.check("a boss outside its box is pulled back", Guardian.confine(out, 16, 240, -150, 150))
+	t.check("to the nearest edge", out.x == 16 and out.z == 150)
+	local inside = Guardian.new(100, 0, 20)
+	t.check("a boss inside its box is left alone", not Guardian.confine(inside, 16, 240, -150, 150))
 end

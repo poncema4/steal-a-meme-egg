@@ -1,6 +1,7 @@
 --!strict
 -- Gives each player a base plot and keeps its parts in step with their Base state: eggs that count down, characters that
 -- glow by mutation. Visuals are plain parts (no meshes) so Rojo carries everything.
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -11,6 +12,8 @@ local Look = require(script.Parent.Look)
 local Models = require(script.Parent.Models)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
+
+local ROAM_RADIUS = 3 -- studs: how far a pet wanders from its pedestal (pedestals are 8.5 apart)
 
 local Plots = {}
 
@@ -160,6 +163,10 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 			Models.show(body, "Pets", item.id, mutation, plot.front)
 			body.Transparency = 1
 			tag(body, { label, `+{Economy.format(per)}/s` }, 7)
+			-- the pet walks around its patch of the pen (every client works out the same walk from the clock)
+			model:SetAttribute("RoamSeed", n + 13 * plot.index)
+			model:SetAttribute("RoamRadius", ROAM_RADIUS)
+			CollectionService:AddTag(model, "RoamPet")
 			model.Parent = pedestal
 			return
 		end
