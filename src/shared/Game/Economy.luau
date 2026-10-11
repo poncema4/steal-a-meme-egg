@@ -12,14 +12,6 @@ function Economy.offline(incomePerSecond: number, secondsAway: number, capSecond
 	return math.floor(incomePerSecond * math.clamp(secondsAway, 0, capSeconds))
 end
 
--- Coins to finish a hatch right now: 60% of the egg's price, scaled by how much of the wait is left.
-function Economy.skipCost(price: number, hatchLeft: number, hatchTotal: number): number
-	if hatchTotal <= 0 or hatchLeft <= 0 then
-		return 0
-	end
-	return math.max(1, math.ceil(price * 0.6 * math.min(hatchLeft / hatchTotal, 1)))
-end
-
 local SUFFIXES = { "", "K", "M", "B", "T", "Qa", "Qi" }
 
 -- 1234 -> "1.23K", 25000000 -> "25M", 999 -> "999"

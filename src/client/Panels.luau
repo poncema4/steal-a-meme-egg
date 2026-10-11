@@ -247,7 +247,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	eggLayout.Padding = UDim.new(0, 8)
 	eggLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	eggLayout.Parent = eggList
-	type EggRow = { root: Frame, title: TextLabel, timer: TextLabel, skip: TextButton, instant: TextButton }
+	type EggRow = { root: Frame, title: TextLabel, timer: TextLabel, instant: TextButton }
 	local eggRows: { [number]: EggRow } = {}
 	local hatchProducts = false
 	for _, product in (Config.Monetization :: any).Products :: { [string]: { kind: string, id: number } } do
@@ -268,21 +268,14 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		timer.Position = UDim2.fromOffset(12, 32)
 		timer.Size = UDim2.new(0.45, 0, 0, 24)
 		timer.TextXAlignment = Enum.TextXAlignment.Left
-		local skip = Ui.button(root, "Skip", "", Ui.Palettes.Green, UDim2.fromOffset(120, Ui.tap(gui, 44)))
-		skip.AnchorPoint = Vector2.new(1, 0.5)
-		skip.Position = UDim2.new(1, -140, 0.5, 0)
-		skip.TextSize = 18
 		local instant = Ui.button(root, "Instant", "Instant", Ui.Palettes.Gold, UDim2.fromOffset(120, Ui.tap(gui, 44)))
 		instant.AnchorPoint = Vector2.new(1, 0.5)
 		instant.Position = UDim2.new(1, -10, 0.5, 0)
 		instant.TextSize = 18
-		skip.Activated:Connect(function()
-			action:FireServer("skip", slot)
-		end)
 		instant.Activated:Connect(function()
 			action:FireServer("instant", slot)
 		end)
-		return { root = root, title = title, timer = timer, skip = skip, instant = instant }
+		return { root = root, title = title, timer = timer, instant = instant }
 	end
 
 	local function refreshEggs()
@@ -306,9 +299,6 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 				entry.title.TextColor3 = (if row.mutation then MUTATION_COLORS[row.mutation] else nil)
 					or Color3.new(1, 1, 1)
 				entry.timer.Text = `hatching in {left}s`
-				entry.skip.Text = if tier
-					then `Skip {Economy.format(Economy.skipCost(tier.price, left, tier.hatchSeconds))}`
-					else "Skip"
 				entry.instant.Visible = tokens > 0 or hatchProducts
 				entry.instant.Text = if tokens > 0 then `Instant ({tokens})` else "Instant"
 			end

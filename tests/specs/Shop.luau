@@ -73,17 +73,13 @@ return function(t)
 	end
 	anaState.base.slots[1] = { kind = "egg", tier = "Disco", hatchLeft = 15 }
 	session.changed(ana)
-	local skips = world.prompts(plot.model, "Skip hatch")
-	t.equal("a hatching egg has a skip prompt", #skips, 1)
-	session.add(ana, -(ana:GetAttribute("Coins") :: number)) -- broke
-	skips[1].Triggered:Fire(ana)
-	t.equal("a player without the coins cannot skip", anaState.base.slots[1].kind, "egg")
+	t.equal(
+		"a hatching egg has no coin-skip prompt: only Robux speeds it up",
+		#world.prompts(plot.model, "Skip hatch"),
+		0
+	)
+	local coinsBefore = ana:GetAttribute("Coins") :: number
 	session.add(ana, 100000)
-	local richer = ana:GetAttribute("Coins") :: number
-	skips[1].Triggered:Fire(ben)
-	t.equal("nobody else can skip your egg", anaState.base.slots[1].kind, "egg")
-	skips[1].Triggered:Fire(ana)
-	t.equal("paying hatches it at once", anaState.base.slots[1].kind, "char")
-	local paid = richer - (ana:GetAttribute("Coins") :: number)
-	t.check("for the skip price (60% of a 1,000-coin egg)", math.abs(paid - 600) < 50, tostring(paid))
+	t.equal("coins cannot hatch an egg", anaState.base.slots[1].kind, "egg")
+	t.check("and nothing was charged", (ana:GetAttribute("Coins") :: number) >= coinsBefore)
 end

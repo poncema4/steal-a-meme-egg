@@ -13,7 +13,8 @@ local Models = require(script.Parent.Models)
 local Session = require(script.Parent.Session)
 local World = require(script.Parent.World)
 
-local ROAM_RADIUS = 3 -- studs: how far a pet wanders from its pedestal (pedestals are 8.5 apart)
+local ROAM_RADIUS = 12 -- studs: pets roam the whole pen (it is 40 across; the front strip holds the pads and the spawn)
+local ROAM_CENTRE_FRONT = -3 -- the roaming area's centre, a little behind the middle of the pen
 
 local Plots = {}
 
@@ -27,7 +28,6 @@ local RARITY_COLORS: { [string]: Color3 } = {
 
 local plots: { World.Plot } = {}
 local owned: { [Player]: World.Plot } = {}
-local onNotice: (Player, string) -> () = function(_player: Player, _text: string) end
 local onInstant: (Player, number) -> () = function(_player: Player, _slot: number) end
 local instantAvailable: (Player) -> boolean = function(_player: Player)
 	return false
@@ -36,10 +36,6 @@ end
 function Plots.setInstant(handler: (Player, number) -> (), available: (Player) -> boolean)
 	onInstant = handler
 	instantAvailable = available
-end
-
-function Plots.setNotify(fn: (Player, string) -> ())
-	onNotice = fn
 end
 
 function Plots.of(player: Player): World.Plot?
@@ -85,6 +81,7 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		return
 	end
 	pedestal.Transparency = if n > state.base.size then 0.8 else 0
+	pedestal.CanCollide = true
 	local item = state.base.slots[n]
 	if not item then
 		return
@@ -114,21 +111,6 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 			`hatching {math.ceil(item.hatchLeft or 0)}s`,
 		}, 3.4)
 		if tier then
-			local skip = Instance.new("ProximityPrompt")
-			skip.Name = "SkipPrompt"
-			skip.ActionText = "Skip hatch"
-			skip.ObjectText =
-				`{Economy.format(Economy.skipCost(tier.price, item.hatchLeft or 0, tier.hatchSeconds))} coins`
-			skip.HoldDuration = 0.4
-			skip.MaxActivationDistance = 10
-			skip.RequiresLineOfSight = false
-			skip.Parent = body
-			skip.Triggered:Connect(function(who)
-				if who == owner then
-					local _, message = Session.skipHatch(owner, n)
-					onNotice(owner, message)
-				end
-			end)
 			if instantAvailable(owner) then
 				local instant = Instance.new("ProximityPrompt")
 				instant.ActionText = "Instant hatch"
@@ -159,15 +141,20 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		body.CFrame = pedestal.CFrame + Vector3.new(0, 3.2, 0)
 		body.Parent = model
 		if item.id and Models.has("Pets", item.id) then
-			body.CFrame = pedestal.CFrame + Vector3.new(0, 2.75, 0)
+			-- a pet is not tied to its pedestal: the pedestal disappears and the pet walks around the whole pen, standing on the
+			-- grass (the pedestal top is a stud above the floor)
+			pedestal.Transparency = 1
+			pedestal.CanCollide = false
+			body.CFrame = pedestal.CFrame + Vector3.new(0, 1.75, 0)
 			Models.show(body, "Pets", item.id, mutation, plot.front)
 			body.Transparency = 1
 			tag(body, { label, `+{Economy.format(per)}/s` }, 7)
-			-- the pet walks around its patch of the pen (every client works out the same walk from the clock)
+			-- every client works out the same walk from the shared clock (see client/Roam)
 			model:SetAttribute("RoamSeed", n + 13 * plot.index)
 			model:SetAttribute("RoamRadius", ROAM_RADIUS)
-			CollectionService:AddTag(model, "RoamPet")
+			model:SetAttribute("RoamCentre", plot.center + plot.front * ROAM_CENTRE_FRONT)
 			model.Parent = pedestal
+			CollectionService:AddTag(model, "RoamPet") -- tagged once it is in the world, so the client never sees it at the origin
 			return
 		end
 		if art then
@@ -303,12 +290,6 @@ function Plots.updateTimers(player: Player)
 			local label = tagGui and tagGui:FindFirstChild("L2")
 			if label and label:IsA("TextLabel") then
 				label.Text = `hatching {math.ceil(item.hatchLeft or 0)}s`
-			end
-			local skip = body and body:FindFirstChild("SkipPrompt")
-			local def = if item.tier then Eggs.tier(item.tier) else nil
-			if skip and skip:IsA("ProximityPrompt") and def then
-				skip.ObjectText =
-					`{Economy.format(Economy.skipCost(def.price, item.hatchLeft or 0, def.hatchSeconds))} coins`
 			end
 		end
 	end

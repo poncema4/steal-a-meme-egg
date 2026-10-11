@@ -159,7 +159,7 @@ return function(t)
 	root.Position = V3.new(entry.egg.Position.X - 7, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
 	t.check("a thief is out with the egg", ana:GetAttribute("Carrying") ~= "")
-	root.Position = V3.new(entry.egg.Position.X, 3, 150) -- far from the boss out by the wall, not home yet
+	root.Position = V3.new(Zones.List[1].startX - 5, 3, 150) -- in the Safe Zone out by the wall: out of the boss's reach, not home yet
 	world.advance(40)
 	t.check("the thief still has the egg after 40 seconds", ana:GetAttribute("Carrying") ~= "")
 	t.check("so the nest has not grown a new one", not entry.prompt.Enabled)
@@ -211,7 +211,7 @@ return function(t)
 		"and Meme Points alone do not open it",
 		(session.addPoints(ana, 1e6) :: any) == nil and Zones.pushBack(duneX + 60, session.speedLevel(ana)) ~= nil
 	)
-	session.addSpeedXp(ana, 1000) -- training to speed level 5 opens it
+	session.addSpeedXp(ana, 3000) -- training to speed level 5 opens it
 	root.Position = V3.new(duneX + 60, 3, 0)
 	world.advance(0.7)
 	t.check("once fast enough they can stay", root.Position.X >= duneX + 60)

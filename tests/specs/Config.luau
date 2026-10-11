@@ -1,5 +1,6 @@
 --!strict
 local Config = require("../../src/shared/Config")
+local Zones = require("../../src/shared/Game/Zones")
 local Eggs = require("../../src/shared/Game/Eggs")
 
 return function(t)
@@ -68,5 +69,8 @@ return function(t)
 	t.equal("the studio group id", Config.GroupId, 749648777)
 	t.check("the save store has a name", #Config.Save.StoreName > 0)
 	t.check("a nest regrows in under a minute", Config.Wilds.NestRespawnSeconds < 60)
-	t.check("a guardian gives up before its leash would carry it across the map", Config.Wilds.Leash < 400)
+	t.check(
+		"a boss can follow a thief from the deepest terrain all the way back to the Safe Zone",
+		Config.Wilds.Leash >= Zones.endX(Zones.List[#Zones.List]) - Zones.List[1].startX
+	)
 end

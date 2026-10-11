@@ -129,11 +129,30 @@ def treadmill_topper(g):
     return 4.6
 
 
-RECIPES = {"Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
+def bear_trap(g):
+    """A steel bear trap lying open on the ground: a plate, a spring bar, two jaws ringed with teeth and a red trigger plate."""
+    steel, dark, tooth, red = rgb("9aa2b8"), rgb("3a3d4a"), rgb("e8ecf5"), rgb("e8342a")
+    g.box((0, 0.25, 0), (6.2, 0.5, 5.0), dark)
+    g.box((0, 0.6, 0), (1.0, 0.45, 4.6), steel)
+    for sx in (-1, 1):
+        g.torus((sx * 1.7, 0.8, 0), 1.9, 0.38, steel, axis="y")
+    for sx in (-1, 1):
+        for k in range(8):
+            a = math.radians(k * 45 + 22)
+            x = sx * 1.7 + math.cos(a) * 1.9
+            z = math.sin(a) * 1.9
+            if abs(x) < 0.7:
+                continue
+            g.cone((x, 1.5, z), 0.3, 0.0, 1.1, tooth)
+    g.cylinder((0, 0.75, 0), 0.5, 0.5, red)
+    return 2.4
+
+
+RECIPES = {"BearTrap": bear_trap, "Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
 
 
 # the big, round props use bigger bricks: far fewer parts (there are about thirty of each in a terrain) and a chunkier toy look
-UNITS = {"Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
+UNITS = {"BearTrap": 0.3, "Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
 
 
 def build(name):

@@ -80,4 +80,20 @@ return function(t)
 	end
 	t.check("every egg gives points and rarer eggs give more", worth)
 	t.equal("an unknown egg gives nothing", Progression.pointsForEgg("Nope"), 0)
+
+	-- speed is slow to build: the first level is quick, the top takes real effort even on a strong treadmill
+	t.check(
+		"the first level takes about 15 seconds on a new treadmill",
+		Progression.xpForNext(0) / Progression.trainRate(0, 1) <= 20
+	)
+	local total = 0
+	for step = 0, Progression.MAX_LEVEL - 1 do
+		total += Progression.xpForNext(step)
+	end
+	t.check("reaching the top speed needs hundreds of thousands of training XP", total >= 300000, tostring(total))
+	t.check(
+		"and more than ten minutes even on the best treadmill",
+		total / Progression.trainRate(Progression.MAX_TREADMILL, 1) >= 600,
+		tostring(total / Progression.trainRate(Progression.MAX_TREADMILL, 1))
+	)
 end

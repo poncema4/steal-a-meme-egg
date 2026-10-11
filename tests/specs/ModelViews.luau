@@ -1,5 +1,5 @@
 --!nocheck
--- The Index and Pets panels show the actual 3D models (in ViewportFrames) when the client has them: black until discovered.
+-- The UI is flat: the Index, Pets, Shop and HUD show 2D pictures (black silhouettes until discovered), never 3D views.
 local Fake = require("../fake/Roblox")
 
 local function find(root, name)
@@ -80,33 +80,37 @@ return function(t)
 	world.advance(1)
 	local bonk = find(screen, "Card_BonkBean")
 	local sock = find(screen, "Card_SleepySock")
-	t.check("a card shows the 3D model", find(bonk, "Model3D") ~= nil and find(bonk, "Model3D"):IsA("ViewportFrame"))
-	t.check("with a camera that looks at it", find(bonk, "Model3D").CurrentCamera ~= nil)
+	-- the UI is flat, like the real game: pictures, never 3D views, even when the client has the 3D models
 	t.check(
-		"a character without a model keeps the letter or portrait",
-		find(find(screen, "Card_BonkBean"), "Letter") ~= nil
+		"an Index card is a flat picture, not a 3D view",
+		find(bonk, "Model3D") == nil and find(bonk, "Picture") ~= nil
 	)
-	local function blobOf(card)
-		return find(find(card, "Model3D"), "Blob")
-	end
-	t.check("a discovered character keeps its colours", blobOf(bonk).Color == Color3.fromRGB(200, 90, 40))
-	t.check("an undiscovered one is a black silhouette", blobOf(sock).Color == Color3.new(0, 0, 0))
-	t.check("the portrait letter is hidden behind the model", find(bonk, "Letter").Visible == false)
+	t.check("the portrait letter is hidden behind the picture", find(bonk, "Letter").Visible == false)
+	t.check("an undiscovered one is a black silhouette", find(sock, "Picture").ImageColor3 == Color3.new(0, 0, 0))
 	api.pets()
 	world.advance(1)
-	t.check("and the pet row shows the model too", find(find(screen, "PetRow_1"), "Model3D") ~= nil)
+	t.check("the pet row is a flat picture too", find(find(screen, "PetRow_1"), "Model3D") == nil)
+	local anyViewport = false
+	for _, d in screen:GetDescendants() do
+		if d:IsA("ViewportFrame") then
+			anyViewport = true
+		end
+	end
+	t.check("no panel uses a 3D view", not anyViewport)
 
-	-- the HUD icons are 3D models too (a decal-only icon would be blank while Roblox moderates it)
+	-- the HUD icons are flat pictures too
 	local hud = world.load("src/client/Hud")
 	hud.start(ana, { shop = function() end, index = function() end })
 	local hudGui = ana.PlayerGui:FindFirstChild("Hud")
 	local shopButton = find(hudGui, "ShopButton")
-	t.check("the Shop button's cart is a 3D model", find(shopButton, "Model3D") ~= nil)
-	local stats = find(hudGui, "Stats")
-	t.check("so is the speed shoe", find(find(stats, "Speed"), "Model3D") ~= nil)
 	t.check(
-		"an icon without a model keeps its picture or glyph",
-		find(find(hudGui, "Left"), "IndexButton") ~= nil and find(find(hudGui, "IndexButton"), "Model3D") == nil
+		"the Shop button's cart is a picture",
+		find(shopButton, "Icon") ~= nil and find(shopButton, "Model3D") == nil
+	)
+	local stats = find(hudGui, "Stats")
+	t.check(
+		"so is the speed shoe",
+		find(find(stats, "Speed"), "Icon") ~= nil and find(find(stats, "Speed"), "Model3D") == nil
 	)
 	-- Roblox rules the real Studio run showed: padding insets children (so the icon steps back out of it) and a square icon is
 	-- sized from its height, not its width

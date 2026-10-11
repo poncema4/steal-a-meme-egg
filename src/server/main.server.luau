@@ -37,7 +37,7 @@ local slowRemote = Instance.new("RemoteEvent")
 slowRemote.Name = "SlowMode"
 slowRemote.Parent = remotes
 
--- the Eggs panel's Skip / Instant buttons (the same actions as the prompts on the eggs themselves)
+-- the Eggs panel's Instant button (the same action as the prompt on the egg itself)
 local baseRemote = Instance.new("RemoteEvent")
 baseRemote.Name = "BaseAction"
 baseRemote.Parent = remotes
@@ -74,7 +74,6 @@ Home.setHooks(notify, sfx, function(player)
 	return train
 end)
 Home.start(world.plots)
-Plots.setNotify(notify)
 Wilds.setNestRate(LiveOps.nestRate)
 Traps.start(remotes, notify, sfx)
 Carry.start()
@@ -85,10 +84,8 @@ baseRemote.OnServerEvent:Connect(function(player: Player, kind: any, slot: any)
 	if typeof(slot) ~= "number" or slot ~= slot or slot % 1 ~= 0 or slot < 1 or slot > 12 then
 		return
 	end
-	if kind == "skip" then
-		local _, message = Session.skipHatch(player, slot)
-		notify(player, message)
-	elseif kind == "instant" then
+	-- hatching can only be sped up with Robux (an Instant hatch, or a hatch token bought with them): never with coins
+	if kind == "instant" then
 		PurchaseService.instantHatch(player, slot)
 	end
 end)

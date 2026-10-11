@@ -1,5 +1,4 @@
 --!strict
-local Economy = require("../../src/shared/Game/Economy")
 local Eggs = require("../../src/shared/Game/Eggs")
 local Limited = require("../../src/shared/Game/Limited")
 local Zones = require("../../src/shared/Game/Zones")
@@ -77,12 +76,4 @@ return function(t)
 		end
 		t.check(`{tier.name} is not a Wilds egg`, not inWilds)
 	end
-
-	-- skipping a hatch
-	t.equal("a finished hatch costs nothing", Economy.skipCost(1000, 0, 15), 0)
-	t.equal("a full wait costs 60% of the price", Economy.skipCost(1000, 15, 15), 600)
-	t.equal("half the wait costs half of that", Economy.skipCost(1000, 7.5, 15), 300)
-	t.equal("the cost never goes below 1", Economy.skipCost(1, 0.001, 100), 1)
-	t.equal("a corrupt total costs nothing", Economy.skipCost(1000, 5, 0), 0)
-	t.check("skipping is always cheaper than the egg", Economy.skipCost(1000, 15, 15) < 1000)
 end
