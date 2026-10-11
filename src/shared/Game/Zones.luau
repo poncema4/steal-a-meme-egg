@@ -22,7 +22,7 @@ export type Zone = {
 
 Zones.WIDTH = 320 -- every terrain is this wide (z from -WIDTH/2 to WIDTH/2)
 
--- Ten worlds, each 240 studs long, going east from the Safe Zone. Everyone may walk into any of them; the deeper ones simply have
+-- Fifteen worlds, each 240 studs long, going east from the Safe Zone. Everyone may walk into any of them; the deeper ones simply have
 -- bosses you can only outrun with a lot of speed, so the game does not end quickly.
 Zones.List = {
 	{
@@ -154,6 +154,71 @@ Zones.List = {
 		eggs = { "Cloud", "Cloud" },
 		ground = { 244, 250, 255 },
 		sky = { 140, 200, 255 },
+	},
+	{
+		id = "Toy",
+		boss = "RubberDuckLord",
+		name = "Toy Town",
+		level = 68,
+		startX = 2410,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 77,
+		eggs = { "Toy", "Pirate" },
+		ground = { 250, 96, 96 },
+		sky = { 255, 230, 170 },
+	},
+	{
+		id = "Pirate",
+		boss = "DavyJonesDonut",
+		name = "Pirate Cove",
+		level = 73,
+		startX = 2650,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 77.4,
+		eggs = { "Pirate", "Robot" },
+		ground = { 214, 188, 120 },
+		sky = { 120, 200, 240 },
+	},
+	{
+		id = "Robot",
+		boss = "OmniOven",
+		name = "Robot Factory",
+		level = 80,
+		startX = 2890,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 77.9,
+		eggs = { "Robot", "Jungle" },
+		ground = { 112, 118, 134 },
+		sky = { 150, 160, 184 },
+	},
+	{
+		id = "Jungle",
+		boss = "TempleTofu",
+		name = "Jungle Ruins",
+		level = 87,
+		startX = 3130,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 78.3,
+		eggs = { "Jungle", "Throne" },
+		ground = { 42, 124, 62 },
+		sky = { 110, 172, 122 },
+	},
+	{
+		id = "Throne",
+		boss = "EmperorEggplant",
+		name = "Meme Throne",
+		level = 96,
+		startX = 3370,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 78.6,
+		eggs = { "Throne", "Throne" },
+		ground = { 255, 214, 92 },
+		sky = { 255, 236, 172 },
 	},
 } :: { Zone }
 

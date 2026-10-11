@@ -684,6 +684,232 @@ def zeus_zucchini(g):
     return 5.6
 
 
+# ------------------------------------------------------------------ worlds 11 to 15: toys, pirates, robots, the jungle and the throne
+def brick_buddy(g):
+    red, blue, yellow = rgb("e8262a"), rgb("2f6cf0"), rgb("ffd21f")
+    g.box((0, 1.0, 0), (3.2, 2.0, 2.4), blue)  # a body built of blocks
+    g.box((0, 2.9, -0.1), (2.8, 1.8, 2.2), red)  # the head
+    for x in (-0.8, 0.8):
+        for z in (-0.5, 0.5):
+            g.cylinder((x, 4.0, z), 0.4, 0.4, red)  # studs on top
+    for s2 in (-1, 1):
+        g.box((s2 * 2.1, 1.0, 0), (0.9, 1.8, 1.2), yellow)  # arms
+    eyes(g, 3.0, -1.2, 0.6, "happy", 0.5)
+    smile(g, 2.35, -1.2, 1.0)
+    g.box((0, 0.15, -0.4), (2.4, 0.3, 1.6), yellow)  # feet
+    return 4.4
+
+
+def wobbly_windup(g):
+    tin, trim, key = rgb("9ab8e8"), rgb("5a78b8"), rgb("ffd21f")
+    blob_body(g, (0, 2.0, 0), (1.8, 1.8, 1.6), tin, rgb("d8e8ff"))
+    g.torus((0, 2.0, 0), 1.85, 0.14, trim, axis="y")
+    eyes(g, 2.5, -1.5, 0.65, "happy", 0.46)
+    smile(g, 1.6, -1.55, 0.9)
+    g.cylinder((0, 2.2, 1.9), 0.18, 0.9, key, axis="z")  # the winding key
+    g.torus((0, 2.2, 2.4), 0.55, 0.14, key, axis="z")
+    for s2 in (-1, 1):
+        g.box((s2 * 0.85, 0.2, -0.3), (0.9, 0.4, 1.3), trim)  # wind-up feet
+        g.ellipsoid((s2 * 2.05, 2.0, 0), (0.3, 0.7, 0.4), trim)
+    g.cylinder((0, 4.0, 0), 0.5, 0.35, trim)
+    return 4.4
+
+
+def rubber_duck_lord(g):
+    yellow, beak, white = rgb("ffd21f"), rgb("ff8a1e"), rgb("ffffff")
+    g.ellipsoid((0, 1.7, 0.2), (1.9, 1.6, 2.2), yellow)  # the body
+    g.ellipsoid((0, 3.4, -0.9), (1.2, 1.15, 1.2), yellow)  # the head
+    g.ellipsoid((0, 3.15, -2.0), (0.75, 0.3, 0.7), beak)
+    eyes(g, 3.65, -1.95, 0.5, "shades", 0.4)
+    g.ellipsoid((0, 2.0, 2.3), (0.5, 0.6, 0.5), yellow)  # a tail
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 1.9, 1.9, 0.2), (0.3, 0.9, 1.0), yellow)
+    crown(g, 4.5, GOLD, rgb("62e0ff"))
+    for x, y, z in ((1.6, 0.6, -1.0), (-1.7, 0.4, -0.5), (1.9, 1.2, -1.6)):
+        g.ellipsoid((x, y, z), (0.3, 0.3, 0.3), white)  # bath bubbles
+    return 5.8
+
+
+def captain_crouton(g):
+    crust, inner, hat, gold = rgb("c8843a"), rgb("e8b868"), rgb("1c1c26"), rgb("ffd21f")
+    g.box((0, 1.7, 0), (3.2, 3.2, 2.8), crust)
+    g.box((0, 1.7, -1.42), (2.6, 2.6, 0.2), inner)
+    g.box((0, 3.7, 0), (4.4, 0.5, 2.6), hat)  # a pirate hat
+    g.box((0, 4.3, 0), (2.8, 0.9, 2.4), hat)
+    g.box((0, 4.35, -1.25), (0.8, 0.6, 0.2), rgb("f4f4f0"))  # a little skull
+    eyes(g, 2.3, -1.55, 0.7, "angry", 0.45)
+    g.box((0.7, 2.35, -1.6), (0.8, 0.8, 0.15), BLACK)  # an eyepatch
+    g.box((0, 1.1, -1.55), (1.4, 0.26, 0.2), BLACK)
+    g.box((2.1, 1.6, -0.6), (0.2, 2.6, 0.2), rgb("c8ccd8"))  # a cutlass
+    g.box((2.1, 0.3, -0.6), (0.8, 0.2, 0.3), gold)
+    return 4.8
+
+
+def kraken_kebab(g):
+    meat, veg, stick = rgb("b8482c"), rgb("5ccf48"), rgb("d8c898")
+    g.cylinder((0, 3.0, 0), 0.14, 6.0, stick)  # the skewer
+    for y, c in ((0.9, meat), (1.7, veg), (2.5, meat), (3.3, veg)):
+        g.ellipsoid((0, y, 0), (1.1, 0.45, 1.1), c)
+    g.ellipsoid((0, 4.4, 0), (1.5, 1.2, 1.4), rgb("8a3a9a"))  # a kraken head on top
+    eyes(g, 4.5, -1.2, 0.6, "angry", 0.42)
+    for k in range(6):
+        a = k * math.tau / 6
+        g.cylinder((math.cos(a) * 1.5, 4.2 - 0.9, math.sin(a) * 1.5), 0.2, 2.0, rgb("a84ab8"))
+    return 5.8
+
+
+def davy_jones_donut(g):
+    dough, icing, hat = rgb("2a7a8a"), rgb("5fd8c8"), rgb("1c1c26")
+    g.torus((0, 2.7, 0), 1.7, 0.95, dough, axis="z")
+    g.torus((0, 2.85, -0.15), 1.7, 0.75, icing, axis="z")
+    eyes(g, 3.0, -1.15, 1.0, "angry", 0.46)
+    for k in range(6):  # a tentacle beard
+        g.cylinder((-1.0 + k * 0.4, 0.7, -0.6), 0.18, 1.4, rgb("3a9a6a"))
+    g.box((0, 4.65, 0), (3.6, 0.4, 2.0), hat)
+    g.box((0, 5.2, 0), (2.4, 0.9, 1.8), hat)
+    g.box((0, 5.2, -0.95), (0.7, 0.5, 0.15), rgb("f4f4f0"))
+    for x, y in ((1.7, 3.8), (-1.9, 3.1), (1.6, 1.6)):
+        g.ellipsoid((x, y, 0), (0.3, 0.25, 0.3), rgb("e8e0c8"))  # barnacles
+    return 5.7
+
+
+def toaster_tron(g):
+    chrome, dark, bread = rgb("c8ccd8"), rgb("4a5068"), rgb("e8b868")
+    g.box((0, 1.5, 0), (3.8, 3.0, 2.4), chrome)
+    g.box((0, 3.05, 0), (3.2, 0.2, 1.6), dark)
+    for x in (-0.8, 0.8):
+        g.box((x, 3.2, 0), (1.1, 0.3, 0.3), dark)  # the slots
+        g.box((x, 3.7, 0), (1.0, 1.0, 0.25), bread)  # toast popping up
+    eyes(g, 1.9, -1.25, 0.8, "angry", 0.5)
+    g.box((0, 1.0, -1.25), (1.4, 0.26, 0.2), BLACK)
+    g.cylinder((1.4, 3.6, 0.8), 0.07, 1.4, dark)  # an antenna
+    g.ellipsoid((1.4, 4.4, 0.8), (0.2, 0.2, 0.2), rgb("ff3a3a"))
+    g.cylinder((-1.9, 1.2, 0.0), 0.3, 1.2, dark, axis="x")  # a side lever
+    for s2 in (-1, 1):
+        g.box((s2 * 1.2, 0.15, 0), (0.8, 0.3, 1.4), dark)
+    return 4.6
+
+
+def microwave_mike(g):
+    white, dark, glow = rgb("f2f2f8"), rgb("2a2c36"), rgb("ffb21e")
+    g.box((0, 1.6, 0), (4.0, 3.0, 2.6), white)
+    g.box((-0.5, 1.7, -1.35), (2.4, 2.0, 0.2), dark)  # the window
+    g.box((-0.5, 1.7, -1.5), (2.0, 1.6, 0.15), glow)
+    eyes(g, 1.9, -1.65, 0.55, "angry", 0.42)
+    for k in range(3):
+        g.cylinder((1.55, 2.5 - k * 0.7, -1.4), 0.22, 0.2, rgb("6a6e88"), axis="z")  # buttons
+    g.box((1.55, 0.7, -1.4), (0.8, 0.4, 0.2), glow)
+    for s2 in (-1, 1):
+        g.box((s2 * 1.4, 0.15, 0), (0.9, 0.3, 1.8), dark)
+    g.box((0, 3.2, 0), (1.6, 0.25, 1.0), rgb("c8ccd8"))
+    return 3.4
+
+
+def omni_oven(g):
+    iron, dark, glow = rgb("3a3e52"), rgb("1c1e2a"), rgb("ff7a1e")
+    g.box((0, 2.0, 0), (4.4, 4.0, 3.0), iron)
+    g.box((0, 1.8, -1.55), (3.0, 2.0, 0.2), dark)  # the oven door
+    g.box((0, 1.8, -1.7), (2.6, 1.6, 0.15), glow)
+    for x in (-1.2, 1.2):
+        for z in (-0.5, 0.6):
+            g.torus((x, 4.1, z), 0.45, 0.1, glow, axis="y")  # burners
+    eyes(g, 3.3, -1.55, 0.9, "angry", 0.55)
+    for s2 in (-1, 1):
+        g.box((s2 * 2.8, 2.4, 0), (1.0, 0.7, 0.8), dark)  # robot arms
+        g.box((s2 * 3.5, 1.4, 0), (0.7, 1.7, 0.7), dark)
+    crown(g, 4.4, rgb("a86aff"), glow)
+    return 5.6
+
+
+def banana_bandit(g):
+    peel, mask, scarf = rgb("ffe04a"), rgb("1c1c26"), rgb("e8262a")
+    for x, y, r in ((-0.5, 1.2, 1.0), (-0.2, 2.4, 1.1), (0.3, 3.6, 1.05)):
+        g.ellipsoid((x, y, 0), (r, 0.75, r * 0.9), peel)
+    g.ellipsoid((0.5, 4.4, 0), (0.35, 0.3, 0.35), rgb("6a4a2a"))
+    g.box((-0.1, 2.9, -0.95), (2.2, 0.7, 0.3), mask)  # the bandit mask
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.55 - 0.1, 2.9, -1.2), (0.28, 0.2, 0.1), WHITE)
+    g.box((-0.1, 1.9, -0.9), (1.8, 0.3, 0.25), scarf)
+    g.box((0.6, 1.5, -0.9), (0.4, 1.0, 0.25), scarf)
+    smile(g, 2.3, -1.05, 0.7)
+    g.box((-0.5, 0.2, -0.3), (0.8, 0.4, 1.0), mask)
+    return 5.0
+
+
+def tiki_taco(g):
+    shell, wood, feather = rgb("f0c870"), rgb("7a4a28"), rgb("ff5a3a")
+    g.ellipsoid((0, 1.9, 0), (2.1, 1.9, 1.3), shell)
+    g.box((0, 2.0, -1.1), (2.0, 2.6, 0.4), wood)  # a carved tiki mask
+    eyes(g, 2.6, -1.35, 0.6, "angry", 0.5)
+    g.box((0, 1.6, -1.35), (1.0, 0.5, 0.2), BLACK)
+    for x in (-0.35, 0, 0.35):
+        g.box((x, 1.45, -1.45), (0.14, 0.3, 0.1), WHITE)
+    for k, c in enumerate((feather, rgb("ffd21f"), rgb("5ccf48"), feather, rgb("2f8cff"))):
+        g.cone((-1.2 + k * 0.6, 3.5 + (0.3 if k % 2 else 0), 0), 0.25, 0.0, 1.4, c)  # a feather headdress
+    g.ellipsoid((1.3, 1.3, -0.4), (0.5, 0.35, 0.3), rgb("5ccf48"))  # lettuce
+    return 5.0
+
+
+def temple_tofu(g):
+    stone, moss, rune = rgb("d8d4c0"), rgb("4a8a3e"), rgb("5fffd8")
+    g.box((0, 1.7, 0), (3.4, 3.4, 3.0), stone)
+    g.box((0, 3.5, 0), (3.6, 0.3, 3.2), moss)
+    for x, z in ((-1.2, 0.8), (1.0, -0.3), (0.2, 1.2)):
+        g.ellipsoid((x, 3.7, z), (0.5, 0.3, 0.5), moss)
+    eyes(g, 2.4, -1.55, 0.8, "sleepy", 0.5)
+    for k in range(3):
+        g.box((-0.9 + k * 0.9, 1.2, -1.55), (0.3, 0.7, 0.1), rune)  # glowing runes
+    g.box((-1.6, 2.2, -1.55), (0.3, 0.3, 0.1), rune)
+    g.box((1.6, 1.0, -1.55), (0.3, 0.3, 0.1), rune)
+    g.box((0, 0.15, 0), (3.8, 0.3, 3.4), rgb("a8a490"))
+    return 4.2
+
+
+def crown_cookie(g):
+    dough, chip = rgb("e8b868"), rgb("5a3a24")
+    g.cylinder((0, 2.0, 0), 2.0, 1.4, dough, axis="z")
+    for x, y in ((-1.0, 2.5), (1.2, 1.9), (-0.3, 1.3), (0.6, 2.8), (-1.4, 1.6)):
+        g.ellipsoid((x, y, -0.78), (0.28, 0.22, 0.1), chip)
+    eyes(g, 2.2, -0.8, 0.6, "happy", 0.46)
+    smile(g, 1.55, -0.8, 0.9)
+    crown(g, 3.85, GOLD, rgb("ff4a7a"))
+    g.box((-0.8, 0.2, -0.2), (0.8, 0.4, 1.0), dough)
+    g.box((0.8, 0.2, -0.2), (0.8, 0.4, 1.0), dough)
+    return 5.3
+
+
+def royal_ramen(g):
+    bowl, rim, noodle, broth = rgb("e8262a"), rgb("ffd21f"), rgb("f8e8a0"), rgb("c8782e")
+    g.cylinder((0, 1.0, 0), 1.8, 2.0, bowl)
+    g.torus((0, 2.05, 0), 1.85, 0.16, rim, axis="y")
+    g.cylinder((0, 2.0, 0), 1.7, 0.3, broth)
+    for k in range(7):
+        a = k * math.tau / 7
+        g.ellipsoid((math.cos(a) * 0.9, 2.5, math.sin(a) * 0.9), (0.35, 0.45, 0.35), noodle)  # noodle curls
+    g.ellipsoid((0, 2.8, 0), (0.55, 0.4, 0.55), rgb("fff6e0"))  # an egg half
+    eyes(g, 1.3, -1.7, 0.65, "happy", 0.46)
+    smile(g, 0.6, -1.75, 0.8)
+    crown(g, 3.1, GOLD, rgb("62e0ff"))
+    for k in range(3):
+        g.cylinder((-0.5 + k * 0.5, 4.2 + k * 0.2, 0), 0.1, 0.5, rgb("ffffff"))  # steam
+    return 5.2
+
+
+def emperor_eggplant(g):
+    skin, cap, cape, gold = rgb("6a2a9a"), rgb("3e8a3e"), rgb("c8283a"), GOLD
+    g.egg((0, 2.4, 0), 1.7, 4.6, skin)
+    g.ellipsoid((0, 4.8, 0), (1.1, 0.5, 1.1), cap)
+    g.cylinder((0, 5.3, 0), 0.25, 0.5, cap)
+    g.box((0, 2.6, 1.7), (3.4, 3.8, 0.3), cape)  # a royal cape
+    g.box((0, 4.5, 1.55), (3.6, 0.4, 0.4), rgb("f4f4f0"))
+    eyes(g, 3.0, -1.55, 0.7, "angry", 0.5)
+    g.box((0, 1.9, -1.6), (1.4, 0.28, 0.2), BLACK)
+    crown(g, 5.0, gold, rgb("62e0ff"))
+    g.cylinder((2.2, 2.4, -0.4), 0.14, 4.4, gold)  # a sceptre
+    g.ellipsoid((2.2, 4.8, -0.4), (0.4, 0.4, 0.4), rgb("ff4a7a"))
+    return 6.6
+
+
 RECIPES = {
     "SoggyToast": soggy_toast, "BonkBean": bonk_bean, "SleepySock": sleepy_sock, "DiscoPickle": disco_pickle,
     "GigachadGoose": gigachad_goose, "MoonwalkMoth": moonwalk_moth, "ChiliChihuahua": chili_chihuahua, "LavaLatte": lava_latte,
@@ -697,6 +923,11 @@ RECIPES = {
     "GummyGolem": gummy_golem, "TaffyTitan": taffy_titan, "PixelPigeon": pixel_pigeon, "SynthSquid": synth_squid,
     "VaporVulture": vapor_vulture, "BooBanana": boo_banana, "MummyMuffin": mummy_muffin, "LichLasagna": lich_lasagna,
     "NimbusNugget": nimbus_nugget, "StormSandwich": storm_sandwich, "ZeusZucchini": zeus_zucchini,
+    "BrickBuddy": brick_buddy, "WobblyWindup": wobbly_windup, "RubberDuckLord": rubber_duck_lord,
+    "CaptainCrouton": captain_crouton, "KrakenKebab": kraken_kebab, "DavyJonesDonut": davy_jones_donut,
+    "ToasterTron": toaster_tron, "MicrowaveMike": microwave_mike, "OmniOven": omni_oven,
+    "BananaBandit": banana_bandit, "TikiTaco": tiki_taco, "TempleTofu": temple_tofu,
+    "CrownCookie": crown_cookie, "RoyalRamen": royal_ramen, "EmperorEggplant": emperor_eggplant,
 }
 
 

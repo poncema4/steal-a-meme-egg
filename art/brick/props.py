@@ -202,11 +202,69 @@ def cloud_puff(g):
     return 6.0
 
 
-RECIPES = {"SwampTree": swamp_tree, "CandyCane": candy_cane, "NeonPylon": neon_pylon, "Tombstone": tombstone, "CloudPuff": cloud_puff, "BearTrap": bear_trap, "Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
+def toy_blocks(g):
+    cols = [rgb("e8262a"), rgb("2f6cf0"), rgb("ffd21f"), rgb("2fb84a")]
+    for k, (x, y, z) in enumerate(((-1.1, 0.9, 0), (1.1, 0.9, 0.2), (0, 2.7, 0.1), (-0.2, 0.9, 1.8))):
+        c = cols[k % 4]
+        g.box((x, y, z), (1.9, 1.8, 1.9), c)
+        for dx in (-0.45, 0.45):
+            for dz in (-0.45, 0.45):
+                g.cylinder((x + dx, y + 1.0, z + dz), 0.28, 0.3, c)
+    g.box((0, 4.5, 0.1), (1.8, 1.8, 1.8), cols[1])
+    return 5.6
+
+
+def palm_tree(g):
+    trunk, leaf = rgb("9a6a3a"), rgb("2fa84a")
+    for k in range(6):
+        g.cylinder((0.18 * k, 0.9 + k * 1.1, 0), 0.5 - k * 0.03, 1.2, trunk)
+    for a in range(0, 360, 60):
+        x, z = math.cos(math.radians(a)) * 1.7, math.sin(math.radians(a)) * 1.7
+        g.ellipsoid((1.0 + x, 7.0, z), (1.8, 0.28, 0.55), leaf)
+    g.ellipsoid((1.0, 6.7, 0.4), (0.4, 0.4, 0.4), rgb("6a4a2a"))
+    return 7.6
+
+
+def gear_tower(g):
+    steel, dark, glow = rgb("9aa2b8"), rgb("4a5068"), rgb("38f2ff")
+    g.cylinder((0, 3.0, 0), 1.0, 6.0, dark)
+    for y, r in ((1.6, 2.4), (4.2, 1.8)):
+        g.cylinder((0, y, 0), r, 0.8, steel)
+        for a in range(0, 360, 30):
+            g.box((math.cos(math.radians(a)) * (r + 0.3), y, math.sin(math.radians(a)) * (r + 0.3)), (0.5, 0.8, 0.5), steel)
+    g.cylinder((0, 1.6, 0), 0.5, 0.9, glow)
+    g.ellipsoid((0, 6.4, 0), (0.7, 0.7, 0.7), glow)
+    return 7.2
+
+
+def jungle_vine(g):
+    stone, moss, vine = rgb("a89a78"), rgb("3e8a3e"), rgb("2f6a34")
+    g.box((0, 2.4, 0), (2.4, 4.8, 2.4), stone)
+    g.box((0, 5.1, 0), (3.0, 0.7, 3.0), stone)
+    for x, z, h in ((1.4, 0.8, 4.2), (-1.4, -0.6, 3.6), (0.6, -1.4, 3.0), (-0.8, 1.4, 4.4)):
+        g.cylinder((x, 5.4 - h / 2, z), 0.2, h, vine)
+    g.ellipsoid((0, 5.8, 0), (2.4, 0.9, 2.4), moss)
+    g.ellipsoid((0.8, 6.5, 0.2), (1.4, 0.7, 1.4), rgb("62b862"))
+    return 7.0
+
+
+def gold_pillar(g):
+    gold, hi, jewel = rgb("ffd54a"), rgb("fff3a0"), rgb("e8262a")
+    g.box((0, 0.4, 0), (3.2, 0.8, 3.2), gold)
+    g.cylinder((0, 3.4, 0), 1.0, 5.4, gold)
+    g.box((-0.35, 3.4, -0.9), (0.25, 4.6, 0.2), hi)
+    g.box((0, 6.5, 0), (2.8, 0.7, 2.8), gold)
+    g.ellipsoid((0, 7.4, 0), (0.65, 0.65, 0.65), jewel)
+    for s in (-1, 1):
+        g.ellipsoid((s * 1.2, 6.9, 0), (0.3, 0.3, 0.3), rgb("62e0ff"))
+    return 8.0
+
+
+RECIPES = {"ToyBlocks": toy_blocks, "PalmTree": palm_tree, "GearTower": gear_tower, "JungleVine": jungle_vine, "GoldPillar": gold_pillar, "SwampTree": swamp_tree, "CandyCane": candy_cane, "NeonPylon": neon_pylon, "Tombstone": tombstone, "CloudPuff": cloud_puff, "BearTrap": bear_trap, "Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
 
 
 # the big, round props use bigger bricks: far fewer parts (there are about thirty of each in a terrain) and a chunkier toy look
-UNITS = {"BearTrap": 0.3, "SwampTree": 0.75, "CloudPuff": 0.6, "CandyCane": 0.5, "Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
+UNITS = {"BearTrap": 0.3, "ToyBlocks": 0.5, "PalmTree": 0.6, "GearTower": 0.6, "JungleVine": 0.6, "GoldPillar": 0.6, "SwampTree": 0.75, "CloudPuff": 0.6, "CandyCane": 0.5, "Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
 
 
 def build(name):

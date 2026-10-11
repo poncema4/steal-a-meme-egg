@@ -99,6 +99,11 @@ Progression.EggPoints = {
 	Neon = 10000000,
 	Cursed = 100000000,
 	Cloud = 1000000000,
+	Toy = 10000000000,
+	Pirate = 100000000000,
+	Robot = 1000000000000,
+	Jungle = 10000000000000,
+	Throne = 100000000000000,
 } :: { [string]: number }
 
 function Progression.pointsForEgg(tier: string): number

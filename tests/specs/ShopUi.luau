@@ -56,7 +56,7 @@ return function(t)
 	)
 	t.check(
 		"the coin button shows the price",
-		string.find((find(gui, "LimitedCoins") :: TextButton).Text, "10Qi", 1, true) ~= nil
+		string.find((find(gui, "LimitedCoins") :: TextButton).Text, "100Oc", 1, true) ~= nil
 	)
 	t.check(
 		"the Robux button shows now that the item exists in Creator Hub",

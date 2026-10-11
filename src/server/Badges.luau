@@ -85,7 +85,7 @@ function Badges.start()
 		if home and table.find(Zones.List, home) :: number >= Config.BadgeRules.BossEscapeZone then
 			Badges.give(player, "bossEscape")
 		end
-		if home and home.id == Zones.List[#Zones.List].id then
+		if home and home.id == "Sky" then
 			Badges.give(player, "deepDiver")
 		end
 	end)

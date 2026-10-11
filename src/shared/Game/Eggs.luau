@@ -132,6 +132,61 @@ Eggs.Tiers = {
 			{ id = "ZeusZucchini", weight = 10 },
 		},
 	},
+	{
+		id = "Toy",
+		name = "Toy Egg",
+		price = 100000000000000000000,
+		hatchSeconds = 660,
+		pool = {
+			{ id = "BrickBuddy", weight = 60 },
+			{ id = "WobblyWindup", weight = 30 },
+			{ id = "RubberDuckLord", weight = 10 },
+		},
+	},
+	{
+		id = "Pirate",
+		name = "Pirate Egg",
+		price = 10000000000000000000000,
+		hatchSeconds = 720,
+		pool = {
+			{ id = "CaptainCrouton", weight = 60 },
+			{ id = "KrakenKebab", weight = 30 },
+			{ id = "DavyJonesDonut", weight = 10 },
+		},
+	},
+	{
+		id = "Robot",
+		name = "Robot Egg",
+		price = 1000000000000000000000000,
+		hatchSeconds = 780,
+		pool = {
+			{ id = "ToasterTron", weight = 60 },
+			{ id = "MicrowaveMike", weight = 30 },
+			{ id = "OmniOven", weight = 10 },
+		},
+	},
+	{
+		id = "Jungle",
+		name = "Jungle Egg",
+		price = 100000000000000000000000000,
+		hatchSeconds = 840,
+		pool = {
+			{ id = "BananaBandit", weight = 60 },
+			{ id = "TikiTaco", weight = 30 },
+			{ id = "TempleTofu", weight = 10 },
+		},
+	},
+	{
+		id = "Throne",
+		name = "Throne Egg",
+		price = 10000000000000000000000000000,
+		hatchSeconds = 900,
+		pool = {
+			{ id = "CrownCookie", weight = 60 },
+			{ id = "RoyalRamen", weight = 30 },
+			{ id = "EmperorEggplant", weight = 10 },
+		},
+	},
 } :: { Tier }
 
 -- Limited eggs: not in the Wilds. One rotates in every half hour with a shared stock (Shared/Game/Limited).
@@ -139,7 +194,7 @@ Eggs.LimitedTiers = {
 	{
 		id = "GooseGold",
 		name = "Golden Goose Egg",
-		price = 10000000000000000000,
+		price = 100000000000000000000000000000,
 		hatchSeconds = 600,
 		pool = {
 			{ id = "GoldenGoose", weight = 60 },
@@ -150,7 +205,7 @@ Eggs.LimitedTiers = {
 	{
 		id = "CatCosmic",
 		name = "Cosmic Cat Egg",
-		price = 10000000000000000000,
+		price = 100000000000000000000000000000,
 		hatchSeconds = 600,
 		pool = {
 			{ id = "CosmicKitten", weight = 60 },
@@ -161,7 +216,7 @@ Eggs.LimitedTiers = {
 	{
 		id = "MemeLord",
 		name = "Meme Lord Egg",
-		price = 10000000000000000000,
+		price = 100000000000000000000000000000,
 		hatchSeconds = 600,
 		pool = {
 			{ id = "MemeLordJr", weight = 60 },
@@ -209,15 +264,30 @@ Eggs.Characters = {
 	NimbusNugget = char("NimbusNugget", "Nimbus Nugget", COMMON, 8000000000000000),
 	StormSandwich = char("StormSandwich", "Storm Sandwich", RARE, 24000000000000000),
 	ZeusZucchini = char("ZeusZucchini", "Zeus Zucchini", EPIC, 80000000000000000),
-	GoldenGoose = char("GoldenGoose", "Golden Goose", "Limited", 150000000000000000),
-	PlatinumGoose = char("PlatinumGoose", "Platinum Goose", "Limited", 300000000000000000),
-	MythicGoose = char("MythicGoose", "Mythic Goose", "Limited", 600000000000000000),
-	CosmicKitten = char("CosmicKitten", "Cosmic Kitten", "Limited", 180000000000000000),
-	NebulaCat = char("NebulaCat", "Nebula Cat", "Limited", 360000000000000000),
-	GalaxyTiger = char("GalaxyTiger", "Galaxy Tiger", "Limited", 700000000000000000),
-	MemeLordJr = char("MemeLordJr", "Meme Lord Jr", "Limited", 200000000000000000),
-	MemeLordPrime = char("MemeLordPrime", "Meme Lord Prime", "Limited", 400000000000000000),
-	MemeLordOmega = char("MemeLordOmega", "Meme Lord Omega", "Limited", 800000000000000000),
+	BrickBuddy = char("BrickBuddy", "Brick Buddy", COMMON, 800000000000000000),
+	WobblyWindup = char("WobblyWindup", "Wobbly Windup", RARE, 2400000000000000000),
+	RubberDuckLord = char("RubberDuckLord", "Rubber Duck Lord", EPIC, 8000000000000000000),
+	CaptainCrouton = char("CaptainCrouton", "Captain Crouton", COMMON, 80000000000000000000),
+	KrakenKebab = char("KrakenKebab", "Kraken Kebab", RARE, 240000000000000000000),
+	DavyJonesDonut = char("DavyJonesDonut", "Davy Jones Donut", EPIC, 800000000000000000000),
+	ToasterTron = char("ToasterTron", "Toaster Tron", COMMON, 8000000000000000000000),
+	MicrowaveMike = char("MicrowaveMike", "Microwave Mike", RARE, 24000000000000000000000),
+	OmniOven = char("OmniOven", "Omni Oven", EPIC, 80000000000000000000000),
+	BananaBandit = char("BananaBandit", "Banana Bandit", COMMON, 800000000000000000000000),
+	TikiTaco = char("TikiTaco", "Tiki Taco", RARE, 2400000000000000000000000),
+	TempleTofu = char("TempleTofu", "Temple Tofu", EPIC, 8000000000000000000000000),
+	CrownCookie = char("CrownCookie", "Crown Cookie", COMMON, 80000000000000000000000000),
+	RoyalRamen = char("RoyalRamen", "Royal Ramen", RARE, 240000000000000000000000000),
+	EmperorEggplant = char("EmperorEggplant", "Emperor Eggplant", EPIC, 800000000000000000000000000),
+	GoldenGoose = char("GoldenGoose", "Golden Goose", "Limited", 1500000000000000000000000000),
+	PlatinumGoose = char("PlatinumGoose", "Platinum Goose", "Limited", 3000000000000000000000000000),
+	MythicGoose = char("MythicGoose", "Mythic Goose", "Limited", 6000000000000000000000000000),
+	CosmicKitten = char("CosmicKitten", "Cosmic Kitten", "Limited", 1800000000000000000000000000),
+	NebulaCat = char("NebulaCat", "Nebula Cat", "Limited", 3600000000000000000000000000),
+	GalaxyTiger = char("GalaxyTiger", "Galaxy Tiger", "Limited", 7000000000000000000000000000),
+	MemeLordJr = char("MemeLordJr", "Meme Lord Jr", "Limited", 2000000000000000000000000000),
+	MemeLordPrime = char("MemeLordPrime", "Meme Lord Prime", "Limited", 4000000000000000000000000000),
+	MemeLordOmega = char("MemeLordOmega", "Meme Lord Omega", "Limited", 8000000000000000000000000000),
 } :: { [string]: Character }
 
 -- a mutated character earns more

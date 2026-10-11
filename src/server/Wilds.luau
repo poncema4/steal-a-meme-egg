@@ -146,6 +146,11 @@ local SCENERY = {
 	Neon = "NeonPylon",
 	Haunted = "Tombstone",
 	Sky = "CloudPuff",
+	Toy = "ToyBlocks",
+	Pirate = "PalmTree",
+	Robot = "GearTower",
+	Jungle = "JungleVine",
+	Throne = "GoldPillar",
 }
 
 -- Scenery per terrain: simple parts only (no meshes), seeded so every server builds the same map.

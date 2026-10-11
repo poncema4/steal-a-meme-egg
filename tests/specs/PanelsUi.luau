@@ -87,7 +87,7 @@ return function(t)
 		total += 1
 	end
 	t.equal("it has a card for every character", count(find(index, "Cards") :: Instance, "Card_"), total)
-	t.equal("one tab for each world and one for the limited eggs", count(find(index, "Tabs") :: Instance, "Tab_"), 11)
+	t.equal("one tab for each world and one for the limited eggs", count(find(index, "Tabs") :: Instance, "Tab_"), 16)
 	t.equal("it counts nothing discovered", (find(index, "Progress") :: TextLabel).Text, `Discovered 0 / {total}`)
 	-- the tabs: only the picked world's characters show, the tab says how many of its characters are found, and a reward is promised
 	local firstTab, secondTab = find(index, "Tab_1") :: TextButton, find(index, "Tab_2") :: TextButton
