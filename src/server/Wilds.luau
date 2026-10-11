@@ -27,7 +27,7 @@ export type Boss = {
 	name: string,
 }
 
-export type Dropped = { tier: string, mutation: string?, part: BasePart, expires: number }
+export type Dropped = { tier: string, mutation: string?, part: BasePart, holder: Model, expires: number }
 
 export type Entry = {
 	id: string,
@@ -510,7 +510,7 @@ local function returnDropped(entry: Entry)
 		return
 	end
 	entry.dropped = nil
-	dropped.part:Destroy()
+	dropped.holder:Destroy()
 	Nest.giveBack(entry.nest, dropped.tier, dropped.mutation)
 	setEgg(entry, dropped.tier, dropped.mutation)
 end
@@ -539,7 +539,7 @@ function Wilds.pickUp(player: Player, entry: Entry)
 		return
 	end
 	entry.dropped = nil
-	dropped.part:Destroy()
+	dropped.holder:Destroy()
 	entry.thief = player
 	Session.setCarry(player, dropped.tier, entry.id, dropped.mutation)
 	Guardian.alert(entry.guardian, Config.Wilds.ChaseSeconds)
@@ -562,8 +562,12 @@ function Wilds.drop(player: Player)
 			Session.setCarry(player, nil)
 			local x, z = root.Position.X, root.Position.Z
 			local y = groundAt(x, z, root.Position.Y, player.Character)
+			-- each dropped egg has its own holder: the stand-in part and the egg model shown on it live and die together
+			-- (the model must be shown AFTER the part is parented, or there is nothing to stand it in and the egg is invisible)
+			local holder = Instance.new("Model")
+			holder.Name = "DroppedEgg"
 			local part = Instance.new("Part")
-			part.Name = "DroppedEgg"
+			part.Name = "Egg"
 			part.Size = Vector3.new(4, 5, 4)
 			part.CFrame = CFrame.new(x, y + 2.5, z)
 			part.Anchored = true
@@ -572,9 +576,11 @@ function Wilds.drop(player: Player)
 			part.Color = Look.eggColor(tier, mutation)
 			local mutated = Look.isMutated(mutation)
 			part.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
-			if Models.has("Eggs", tier) then
-				part.Transparency = 1
-				Models.show(part, "Eggs", tier, mutation)
+			part.Parent = holder
+			holder.PrimaryPart = part
+			holder.Parent = entry.model.Parent
+			if Models.show(part, "Eggs", tier, mutation) then
+				part.Transparency = 1 -- the real egg model stands on it; without one the plain egg-coloured part shows
 			end
 			local prompt = Instance.new("ProximityPrompt")
 			prompt.ActionText = "Pick up egg"
@@ -588,9 +594,13 @@ function Wilds.drop(player: Player)
 			prompt.Triggered:Connect(function(who)
 				Wilds.pickUp(who, entry)
 			end)
-			part.Parent = entry.model.Parent
-			entry.dropped =
-				{ tier = tier, mutation = mutation, part = part :: BasePart, expires = os.clock() + DROP_SECONDS }
+			entry.dropped = {
+				tier = tier,
+				mutation = mutation,
+				part = part :: BasePart,
+				holder = holder,
+				expires = os.clock() + DROP_SECONDS,
+			}
 			notify(player, "You dropped the egg here. Pick it up again, or it goes back to its nest soon.")
 			return
 		end
