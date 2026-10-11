@@ -5,6 +5,7 @@ local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Config = require(ReplicatedStorage.Shared.Config)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
@@ -80,9 +81,13 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 	if not state then
 		return
 	end
-	pedestal.Transparency = if n > state.base.size then 0.8 else 0
-	pedestal.CanCollide = true
+	-- the pen is clear: the pedestal is only an invisible anchor, and an egg sits wherever it was put (a pet roams, see client/Roam)
+	pedestal.Transparency = 1
+	pedestal.CanCollide = false
 	local item = state.base.slots[n]
+	local spot = if item and item.at then item.at else Base.defaultSpot(n)
+	pedestal.CFrame = CFrame.new(plot.center + plot.right * spot.x + plot.front * spot.z + Vector3.new(0, 0.7, 0))
+		* pedestal.CFrame.Rotation
 	if not item then
 		return
 	end
@@ -98,10 +103,10 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		local mutated = Look.isMutated(item.eggMutation)
 		body.Color = Look.eggColor(item.tier, item.eggMutation)
 		body.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
-		body.CFrame = pedestal.CFrame + Vector3.new(0, 3.2, 0)
+		body.CFrame = pedestal.CFrame + Vector3.new(0, 2.2, 0)
 		body.Parent = model
 		if Models.has("Eggs", item.tier) then
-			body.CFrame = pedestal.CFrame + Vector3.new(0, 3, 0) -- the model stands right on the pedestal
+			body.CFrame = pedestal.CFrame + Vector3.new(0, 2, 0) -- the model stands on the grass
 			Models.show(body, "Eggs", item.tier, item.eggMutation, plot.front)
 			body.Transparency = 1
 		end

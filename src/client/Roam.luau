@@ -49,30 +49,38 @@ function Roam.start()
 		local eye = camera.CFrame.Position
 		local now = workspace:GetServerTimeNow()
 		for model, pet in pets do
-			if not model.Parent then
-				pets[model] = nil
-			elseif model:IsDescendantOf(workspace) then
-				local pivot = model:GetPivot()
-				if not pet.height then
-					-- the first time we see it in the world: its height and the way it faces are where the server put it
-					pet.height = pivot.Position.Y
-					local _, yaw, _ = pivot.Rotation:ToEulerAnglesYXZ()
-					pet.yaw = yaw
-				end
-				if (pet.centre - eye).Magnitude < NEAR then
-					local pose = Wander.pose(pet.seed, now, pet.radius)
-					if pose.walking then
-						local want = math.atan2(-pose.dirX, -pose.dirZ)
-						local diff = (want - pet.yaw + math.pi) % (2 * math.pi) - math.pi
-						pet.yaw += diff * math.min(1, TURN * dt)
+			-- one pet that cannot be moved must never stop the others (or the rest of the client): a failure is shown once and skipped
+			local ok, problem = pcall(function()
+				if not model.Parent then
+					pets[model] = nil
+				elseif model:IsDescendantOf(workspace) then
+					local pivot = model:GetPivot()
+					if not pet.height then
+						-- the first time we see it in the world: its height and the way it faces are where the server put it
+						pet.height = pivot.Position.Y
+						local _, yaw, _ = pivot.Rotation:ToEulerAnglesYXZ()
+						pet.yaw = yaw
 					end
-					-- a hop on each step; a slow breathing bob while it rests
-					local lift = if pose.walking
-						then math.abs(math.sin(pose.stride * math.pi)) * BOB
-						else (1 + math.sin(now * 2.2 + pet.seed)) * IDLE_BOB
-					local at = Vector3.new(pet.centre.X + pose.x, (pet.height :: number) + lift, pet.centre.Z + pose.z)
-					model:PivotTo(CFrame.new(at) * CFrame.Angles(0, pet.yaw, 0))
+					if (pet.centre - eye).Magnitude < NEAR then
+						local pose = Wander.pose(pet.seed, now, pet.radius)
+						if pose.walking then
+							local want = math.atan2(-pose.dirX, -pose.dirZ)
+							local diff = (want - pet.yaw + math.pi) % (2 * math.pi) - math.pi
+							pet.yaw += diff * math.min(1, TURN * dt)
+						end
+						-- a hop on each step; a slow breathing bob while it rests
+						local lift = if pose.walking
+							then math.abs(math.sin(pose.stride * math.pi)) * BOB
+							else (1 + math.sin(now * 2.2 + pet.seed)) * IDLE_BOB
+						local at =
+							Vector3.new(pet.centre.X + pose.x, (pet.height :: number) + lift, pet.centre.Z + pose.z)
+						model:PivotTo(CFrame.new(at) * CFrame.Angles(0, pet.yaw, 0))
+					end
 				end
+			end)
+			if not ok then
+				pets[model] = nil
+				warn(`pet could not roam: {problem}`)
 			end
 		end
 	end)

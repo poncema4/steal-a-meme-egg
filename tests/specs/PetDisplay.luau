@@ -72,4 +72,13 @@ return function(t)
 	session.changed(ana)
 	world.advance(0.2)
 	t.check("an emptied slot shows nothing", find(plot.slots[1], "Item") == nil)
+
+	-- the pen is clear: no grey platforms, whatever is in the slots
+	local solid = false
+	for n = 1, 12 do
+		if plot.slots[n].Transparency < 1 or plot.slots[n].CanCollide then
+			solid = true
+		end
+	end
+	t.check("there are no grey platforms in the pen", not solid)
 end

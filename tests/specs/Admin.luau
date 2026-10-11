@@ -42,4 +42,13 @@ return function(t)
 	t.equal("/clear stops events", (Admin.run("/clear", true).action :: any).kind, "clearEvents")
 	t.equal("/help answers", (Admin.run("/help", true).action :: any).kind, "help")
 	t.check("an unknown command is refused", not Admin.run("/nuke", true).ok)
+
+	t.check("a non-admin cannot reset themselves", not Admin.run("/resetme", false).ok)
+	local reset = Admin.run("/resetme", true)
+	t.check("an admin can", reset.ok and reset.action ~= nil and reset.action.kind == "resetMe")
+	local fields = 0
+	for _ in reset.action :: any do
+		fields += 1
+	end
+	t.check("and it carries no target: it can only mean the caller", fields == 1)
 end

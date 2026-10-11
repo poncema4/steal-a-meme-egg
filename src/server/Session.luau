@@ -326,6 +326,27 @@ function Session.rebirth(player: Player): (boolean, string)
 	return true, `REBORN! Rebirth {state.rebirths}: x{Rebirth.multiplier(state.rebirths)} coins`
 end
 
+-- Starts this player over, for the owner's testing: speed, treadmill, rebirths, coins, Meme Points, base and Index go back to the
+-- beginning. What they bought with Robux (passes, tokens) stays. Only ever called for the admin who typed /resetme, on themselves.
+function Session.resetProgress(player: Player): (boolean, string)
+	local state = states[player]
+	if not state then
+		return false, "not ready"
+	end
+	state.carry, state.carryFrom, state.carryMutation = nil, nil, "Normal"
+	state.coins = Config.Economy.StartCoins
+	state.mp = 0
+	state.speedXp = 0
+	state.treadmill = 0
+	state.rebirths = 0
+	state.base = Base.new(Config.Economy.StartSlots)
+	state.collection = Collection.new()
+	Session.applySpeed(player)
+	Session.changed(player)
+	task.spawn(Session.save, player)
+	return true, "You are back at the very start: speed level 0, treadmill 0, no rebirths."
+end
+
 local dailyListeners: { (Player, number, number, string?) -> () } = {}
 
 function Session.onDaily(fn: (Player, number, number, string?) -> ())
@@ -383,7 +404,7 @@ function Session.setCarry(player: Player, tier: string?, from: string?, mutation
 end
 
 -- Puts the carried egg in the player's base (it starts hatching) and pays Meme Points. Returns (ok, message).
-function Session.deliver(player: Player): (boolean, string)
+function Session.deliver(player: Player, at: Base.Spot?): (boolean, string)
 	local state = states[player]
 	if not state or not state.carry then
 		return false, "nothing to deliver"
@@ -404,7 +425,7 @@ function Session.deliver(player: Player): (boolean, string)
 		message =
 			`Base full! Sold the egg for {Economy.format(coins)} coins (+{points} Meme Points). Buy a slot to keep eggs!`
 	else
-		Base.placeEgg(state.base, tier, mutation)
+		Base.placeEgg(state.base, tier, mutation, at) -- the egg goes where the player stands in the pen
 	end
 	Session.applySpeed(player)
 	Session.changed(player)
@@ -475,6 +496,8 @@ local function serialise(state: State): { [string]: any }
 				tier = item.tier,
 				hatchLeft = item.hatchLeft,
 				eggMutation = item.eggMutation,
+				atX = if item.at then item.at.x else nil,
+				atZ = if item.at then item.at.z else nil,
 				id = item.id,
 				mutation = item.mutation,
 			}
@@ -552,6 +575,9 @@ local function restore(state: State, saved: { [string]: any })
 							and item.eggMutation ~= "Normal"
 							and Eggs.Mutations[item.eggMutation]
 						then item.eggMutation
+						else nil,
+					at = if type(item.atX) == "number" and type(item.atZ) == "number"
+						then Base.clampSpot(item.atX, item.atZ)
 						else nil,
 				}
 			elseif item.kind == "char" and type(item.id) == "string" and Eggs.character(item.id) then

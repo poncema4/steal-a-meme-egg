@@ -11,6 +11,7 @@ export type Action =
 	| { kind: "giveAll", coins: number }
 	| { kind: "announce", text: string }
 	| { kind: "clearEvents" }
+	| { kind: "resetMe" }
 	| { kind: "help" }
 export type Result = { ok: boolean, message: string, action: Action? }
 
@@ -79,12 +80,15 @@ function Admin.run(text: string, isAdmin: boolean): Result
 			return { ok = false, message = "usage: /announce <text up to 120 characters>" }
 		end
 		return { ok = true, message = "announcing", action = { kind = "announce", text = body } }
+	elseif name == "resetme" then
+		-- starts the caller over (speed, treadmill, rebirths, coins, base, Index); purchases are kept. It only ever touches whoever typed it.
+		return { ok = true, message = "resetting YOUR progress to the start", action = { kind = "resetMe" } }
 	elseif name == "clear" then
 		return { ok = true, message = "events cleared", action = { kind = "clearEvents" } }
 	elseif name == "help" then
 		return {
 			ok = true,
-			message = "/event <name> [seconds], /give <coins>, /giveall <coins>, /announce <text>, /clear",
+			message = "/event <name> [seconds], /give <coins>, /giveall <coins>, /announce <text>, /clear, /resetme (only you)",
 			action = { kind = "help" },
 		}
 	end

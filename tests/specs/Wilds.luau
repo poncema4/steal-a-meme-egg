@@ -143,6 +143,11 @@ return function(t)
 	t.equal("running home delivers the egg", ana:GetAttribute("Carrying"), "")
 	t.check("delivering plays the fanfare", table.find(heardNames(ana), "deliver") ~= nil)
 	t.check("it is hatching in the base", (session.get(ana).base.slots[1] or {}).kind == "egg")
+	local at = session.get(ana).base.slots[1].at
+	t.check(
+		"and it was put down where she stood: the middle of the pen",
+		at ~= nil and math.abs(at.x) < 1 and math.abs(at.z) < 1
+	)
 	t.check("delivering pays Meme Points", (ana:GetAttribute("MemePoints") :: number) >= 1)
 	local mp = ana:GetAttribute("MemePoints") :: number
 	t.equal("the delivered egg's tier is kept", session.get(ana).base.slots[1].tier, tierAtSteal)

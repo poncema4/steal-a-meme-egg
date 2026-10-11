@@ -9,6 +9,7 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 local Models = require(script.Parent.Models)
 
@@ -83,9 +84,8 @@ end
 
 -- Local position of base slot n inside a pen (4 columns x 3 rows): x is to the pen's right, z toward its front.
 function World.slotOffset(n: number): Vector3
-	local column = (n - 1) % 4
-	local row = (n - 1) // 4
-	return Vector3.new((column - 1.5) * 8.5, 0.5, (row - 1) * 10 - 2)
+	local spot = Base.defaultSpot(n)
+	return Vector3.new(spot.x, 0.5, spot.z)
 end
 
 type Frame = { center: Vector3, front: Vector3, right: Vector3 }
