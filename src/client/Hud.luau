@@ -286,6 +286,26 @@ function Hud.start(player: Player, actions: Actions?)
 		leaveRemote:FireServer()
 	end)
 
+	-- bottom right: the event clock (what is on now and how long it lasts, else what comes next and in how long)
+	local eventClock = Instance.new("Frame")
+	eventClock.Name = "EventClock"
+	eventClock.AnchorPoint = Vector2.new(1, 1)
+	eventClock.Position = UDim2.new(1, -16, 1, -12)
+	eventClock.Size = UDim2.fromOffset(380, 60)
+	eventClock.BackgroundTransparency = 1
+	eventClock.Parent = gui
+	local clockIcon = Ui.label(eventClock, "ClockIcon", 30)
+	clockIcon.AnchorPoint = Vector2.new(1, 0.5)
+	clockIcon.Position = UDim2.fromScale(1, 0.5)
+	clockIcon.Size = UDim2.fromOffset(56, 56)
+	Ui.addIcon(clockIcon, "clock", "center", "")
+	local clockText = Ui.label(eventClock, "ClockText", 34, Color3.new(1, 1, 1))
+	clockText.AnchorPoint = Vector2.new(1, 0.5)
+	clockText.Position = UDim2.new(1, -62, 0.5, 0)
+	clockText.Size = UDim2.new(1, -62, 1, 0)
+	clockText.TextXAlignment = Enum.TextXAlignment.Right
+	clockText.TextScaled = true
+
 	-- top right: who is fastest and richest
 	local board = Instance.new("Frame")
 	board.Name = "Leaderboard"
@@ -440,6 +460,17 @@ function Hud.start(player: Player, actions: Actions?)
 			end
 		end
 		banner.Text = table.concat(lines, "   ")
+		-- the clock: the event running now, else the next one
+		local nextId, nextAt =
+			string.match(tostring(ReplicatedStorage:GetAttribute("NextEvent") or ""), "^(%w+):(%d+%.?%d*)$")
+		local nextDef = nextId and Events.Defs[nextId]
+		if #lines > 0 then
+			clockText.Text = lines[1]
+		elseif nextDef and nextAt then
+			clockText.Text = `{nextDef.name} in {clock((tonumber(nextAt) :: number) - now)}`
+		else
+			clockText.Text = ""
+		end
 	end
 
 	task.spawn(function()

@@ -325,6 +325,52 @@ end
 -- Whoever joins first gets the middle of the arc, so a small server looks balanced instead of lopsided.
 local FILL_ORDER = { 4, 5, 3, 6, 2, 7, 1, 8 }
 
+-- A big tag floating over the base with the owner's round avatar headshot and name, readable from across the plaza.
+local function ownerTag(plot: World.Plot, player: Player)
+	local post = plot.model:FindFirstChild("SignPost")
+	if not post then
+		return
+	end
+	local old = post:FindFirstChild("OwnerTag")
+	if old then
+		old:Destroy()
+	end
+	local tagGui = Instance.new("BillboardGui")
+	tagGui.Name = "OwnerTag"
+	tagGui.Size = UDim2.fromScale(30, 18) -- studs, so it shrinks with distance like the rest of the world
+	tagGui.StudsOffset = Vector3.new(0, 11, 0)
+	tagGui.MaxDistance = 600
+	tagGui.Parent = post
+	local face = Instance.new("ImageLabel")
+	face.Name = "Headshot"
+	face.AnchorPoint = Vector2.new(0.5, 0)
+	face.Position = UDim2.fromScale(0.5, 0)
+	face.Size = UDim2.fromScale(0.5, 0.62)
+	face.SizeConstraint = Enum.SizeConstraint.RelativeYY
+	face.BackgroundColor3 = Color3.fromRGB(40, 40, 52)
+	face.Image = `rbxthumb://type=AvatarHeadShot&id={player.UserId}&w=150&h=150`
+	face.Parent = tagGui
+	local round = Instance.new("UICorner")
+	round.CornerRadius = UDim.new(1, 0)
+	round.Parent = face
+	local ring = Instance.new("UIStroke")
+	ring.Thickness = 5
+	ring.Color = Color3.new(0, 0, 0)
+	ring.Parent = face
+	local name = Instance.new("TextLabel")
+	name.Name = "Name"
+	name.AnchorPoint = Vector2.new(0.5, 1)
+	name.Position = UDim2.fromScale(0.5, 1)
+	name.Size = UDim2.fromScale(1, 0.34)
+	name.BackgroundTransparency = 1
+	name.Font = Enum.Font.FredokaOne
+	name.TextScaled = true
+	name.TextColor3 = Color3.new(1, 1, 1)
+	name.TextStrokeTransparency = 0
+	name.Text = player.DisplayName
+	name.Parent = tagGui
+end
+
 function Plots.assign(player: Player): World.Plot?
 	for _, index in FILL_ORDER do
 		local plot = plots[index]
@@ -334,6 +380,7 @@ function Plots.assign(player: Player): World.Plot?
 			plot.sign.Text = string.upper(player.DisplayName) .. "'S BASE"
 			owned[player] = plot
 			player.RespawnLocation = plot.spawn :: SpawnLocation
+			ownerTag(plot, player)
 			return plot
 		end
 	end
@@ -348,6 +395,11 @@ function Plots.release(player: Player)
 	owned[player] = nil
 	plot.model:SetAttribute("OwnerUserId", 0)
 	plot.sign.Text = "FREE BASE"
+	local post = plot.model:FindFirstChild("SignPost")
+	local tagGui = post and post:FindFirstChild("OwnerTag")
+	if tagGui then
+		tagGui:Destroy()
+	end
 	for n = 1, 12 do
 		clearSlot(plot.slots[n])
 	end

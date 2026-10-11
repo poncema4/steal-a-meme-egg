@@ -172,7 +172,27 @@ def trap(g):
     return 6.0
 
 
-RECIPES = {"cart": cart, "book": book, "shoe": shoe, "cash": cash, "egg": egg, "paw": paw, "trophy": trophy, "potion": potion, "trap": trap}
+def clock(g):
+    """An alarm clock for the event countdown: red bells, a white face with ticks and hands."""
+    red, white, dark, gold = rgb("e8342a"), rgb("fbfbff"), rgb("22222a"), rgb("ffc21a")
+    g.cylinder((0, 3.0, 0), 2.6, 1.4, red, axis="z")  # the case
+    g.cylinder((0, 3.0, -0.3), 2.1, 1.2, white, axis="z")  # the face (toward -Z)
+    for k in range(12):
+        a = math.radians(k * 30)
+        r = 1.7
+        big = k % 3 == 0
+        g.box((math.sin(a) * r, 3.0 + math.cos(a) * r, -0.95), (0.3 if big else 0.2, 0.3 if big else 0.2, 0.15), dark)
+    g.box((0, 3.45, -0.98), (0.26, 1.0, 0.15), dark)  # the long hand, up
+    g.box((0.5, 3.0, -0.98), (1.0, 0.26, 0.15), dark)  # the short hand, right
+    g.ellipsoid((0, 3.0, -1.0), (0.3, 0.3, 0.15), gold)
+    for sx in (-1, 1):
+        g.ellipsoid((sx * 1.55, 5.45, 0), (0.85, 0.75, 0.6), gold)  # the bells
+        g.box((sx * 1.9, 0.5, 0), (0.45, 1.0, 0.45), dark)  # the feet
+    g.box((0, 5.9, 0), (0.35, 0.7, 0.35), dark)
+    return 6.4
+
+
+RECIPES = {"cart": cart, "book": book, "shoe": shoe, "cash": cash, "egg": egg, "paw": paw, "trophy": trophy, "potion": potion, "trap": trap, "clock": clock}
 
 
 def build(name):
