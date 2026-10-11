@@ -54,9 +54,15 @@ return function(t)
 	local plot = world.load("src/server/Plots").of(ana)
 	world.root(ana).Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
+	world.load("src/server/Home").placeEgg(ana)
+	world.advance(0.2)
 	t.check("bringing it home gives Home Safe", table.find(given, "homeSafe") ~= nil)
 	t.check("a Meadow egg is not a Boss Escape", table.find(given, "bossEscape") == nil)
 	world.advance(10)
+	for slot = 1, 12 do -- the owner presses Hatch on every finished egg
+		world.load("src/server/Session").hatchSlot(ana, slot)
+	end
+	world.advance(0.2)
 	t.check("the first hatch gives Crack!", table.find(given, "firstHatch") ~= nil)
 
 	-- a boss escape needs an egg from the third terrain or deeper

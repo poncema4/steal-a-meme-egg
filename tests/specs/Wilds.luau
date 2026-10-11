@@ -161,7 +161,9 @@ return function(t)
 	t.check("and the guardian gave up", entry.guardian.state ~= "Chase")
 	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
-	t.equal("running home delivers the egg", ana:GetAttribute("Carrying"), "")
+	world.load("src/server/Home").placeEgg(ana) -- Place egg: you choose the spot
+	world.advance(0.2)
+	t.equal("running home and placing it delivers the egg", ana:GetAttribute("Carrying"), "")
 	t.check("delivering plays the fanfare", table.find(heardNames(ana), "deliver") ~= nil)
 	t.check("it is hatching in the base", (session.get(ana).base.slots[1] or {}).kind == "egg")
 	local at = session.get(ana).base.slots[1].at
@@ -192,6 +194,8 @@ return function(t)
 	t.equal("and still names them as the thief", entry.thief, ana)
 	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
+	world.load("src/server/Home").placeEgg(ana)
+	world.advance(0.2)
 	t.equal("once they deliver it", ana:GetAttribute("Carrying"), "")
 	world.advance(30)
 	t.check("the nest grows a new egg a little later", entry.prompt.Enabled)
@@ -215,6 +219,7 @@ return function(t)
 			full.base.slots[n] = { kind = "char", id = "SoggyToast", mutation = "Normal" }
 		end
 	end
+	local firstBefore = full.base.slots[1]
 	mp = ana:GetAttribute("MemePoints") :: number
 	local coinsBeforeFull = ana:GetAttribute("Coins") :: number
 	local fourth = entries[4]
@@ -222,10 +227,13 @@ return function(t)
 	fourth.prompt.Triggered:Fire(ana)
 	root.Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(0.6)
+	world.load("src/server/Home").placeEgg(ana)
+	world.advance(0.2)
 	t.equal("a full base never traps you carrying an egg", ana:GetAttribute("Carrying"), "")
 	t.check("the points still count", (ana:GetAttribute("MemePoints") :: number) > mp)
 	t.check("and the egg is sold for coins instead", (ana:GetAttribute("Coins") :: number) > coinsBeforeFull)
-	t.equal("nothing was added to the full base", full.base.slots[1].kind, "char")
+	local firstNow = full.base.slots[1]
+	t.check("nothing was added to the full base", firstNow == firstBefore)
 
 	-- 6) no gates: anyone may walk anywhere, the signs only recommend a speed
 	local duneX = Zones.List[2].startX

@@ -16,6 +16,7 @@ export type Facts = {
 	mp: number, -- Meme Points
 	speedLevel: number,
 	canRebirth: boolean?, -- coins have reached the cost of the next rebirth
+	inPen: boolean?, -- you stand in your own pen
 	zone: string?, -- the terrain you stand in ("Safe Zone" or nil when you are not out in the Wilds)
 }
 
@@ -31,6 +32,9 @@ function Objective.speedNeeded(reached: number): number
 end
 
 function Objective.hint(f: Facts): string
+	if f.carrying and f.inPen then
+		return "Click or tap a spot in your pen to put the egg down!"
+	end
 	if f.carrying then
 		return "RUN HOME with the egg before the guardian catches you!"
 	end

@@ -203,7 +203,7 @@ local function publish(state: State)
 	state.player:SetAttribute("RebirthCost", Rebirth.cost(state.rebirths))
 	state.player:SetAttribute("DailyStreak", state.dailyStreak)
 	-- the player list shows these next to every name: a cheap, constant reason to compare and compete
-	setStat(state.player, "Meme Pts", state.mp)
+	-- (Meme Points were a leftover of the old gates and meant nothing to players: they are no longer shown)
 	setStat(state.player, "Rebirths", state.rebirths)
 end
 
@@ -342,6 +342,27 @@ function Session.hatchNow(player: Player)
 	end
 end
 
+-- The owner pressed Hatch on a finished egg in `slot`: it becomes a character (luck and mutation as usual).
+function Session.hatchSlot(player: Player, slot: number): boolean
+	local state = states[player]
+	if not state then
+		return false
+	end
+	local luck = select(1, multipliers()) * select(1, Store.multipliers(catalog, state.purchases))
+	local ok = Base.hatchReady(state.base, slot, function(tier)
+		return Eggs.roll(tier, luck, math.random)
+	end, function()
+		return Eggs.mutation(luck, math.random)
+	end)
+	if ok then
+		for _, fn in hatchListeners do
+			fn(player, { slot })
+		end
+		Session.changed(player)
+	end
+	return ok
+end
+
 -- What this player's passes give besides multipliers (hatch speed, trap count, boss slowing).
 function Session.perks(player: Player): Store.Perks
 	local state = states[player]
@@ -470,14 +491,13 @@ function Session.deliver(player: Player, at: Base.Spot?): (boolean, string)
 	local points = Progression.pointsForEgg(tier) * worth
 	state.mp += points
 	state.carry, state.carryFrom, state.carryMutation = nil, nil, "Normal"
-	local message = `+{points} Meme Points!`
+	local message = "Egg placed! It is hatching."
 	if Base.firstFree(state.base) == nil then
 		-- a full base must never trap you carrying an egg you cannot drop: it is sold for half its price instead
 		local def = Eggs.tier(tier)
 		local coins = if def then math.floor(def.price * 0.5 * worth) else 0
 		state.coins += coins
-		message =
-			`Base full! Sold the egg for {Economy.format(coins)} coins (+{points} Meme Points). Buy a slot to keep eggs!`
+		message = `Base full! Sold the egg for {Economy.format(coins)} coins. Buy a slot to keep eggs!`
 	else
 		Base.placeEgg(state.base, tier, mutation, at) -- the egg goes where the player stands in the pen
 	end
@@ -777,19 +797,29 @@ function Session.start(onJoin: (Player) -> (), onLeave: (Player) -> ())
 		for player, state in states do
 			local passLuck, passIncome = Store.multipliers(catalog, state.purchases)
 			local myLuck = luck * passLuck
-			local hatched = Base.tick(state.base, step * Store.perks(catalog, state.purchases).hatch, function(tier)
+			-- eggs count down and then wait, READY, for their owner to press Hatch (Session.hatchSlot)
+			local readyBefore = 0
+			for slot = 1, state.base.size do
+				if Base.isReady(state.base, slot) then
+					readyBefore += 1
+				end
+			end
+			Base.tick(state.base, step * Store.perks(catalog, state.purchases).hatch, function(tier)
 				return Eggs.roll(tier, myLuck, rng)
 			end, function()
 				return Eggs.mutation(myLuck, rng)
-			end)
+			end, false)
+			local readyAfter = 0
+			for slot = 1, state.base.size do
+				if Base.isReady(state.base, slot) then
+					readyAfter += 1
+				end
+			end
+			if readyAfter ~= readyBefore then
+				Session.changed(player) -- an egg just became READY: the pen shows its Hatch prompt
+			end
 			state.coins += Base.income(state.base, income * passIncome * Rebirth.multiplier(state.rebirths)) * step
 			publish(state)
-			if #hatched > 0 then
-				for _, fn in hatchListeners do
-					fn(player, hatched)
-				end
-				Session.changed(player)
-			end
 		end
 		if sinceSave >= Config.Save.AutosaveSeconds then
 			sinceSave = 0

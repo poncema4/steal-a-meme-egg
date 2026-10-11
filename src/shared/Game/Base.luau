@@ -125,24 +125,40 @@ function Base.placeCharacter(base: Base, id: string, mutation: string?): number?
 	return slot
 end
 
--- Counts hatch timers down. Each egg that reaches zero becomes a character, chosen by `roll(tierId)` and
--- `mutate()`. Returns the slots that hatched, so the server can play the pop.
-function Base.tick(base: Base, dt: number, roll: (string) -> string, mutate: () -> string): { number }
+-- Counts hatch timers down. With `auto` (a paid instant hatch) each egg that reaches zero becomes a character at once, chosen
+-- by `roll(tierId)` and `mutate()`; otherwise a finished egg waits, READY, until its owner presses Hatch (Base.hatchReady).
+-- Returns the slots that hatched, so the server can play the pop.
+function Base.tick(base: Base, dt: number, roll: (string) -> string, mutate: () -> string, auto: boolean?): { number }
 	local hatched = {}
 	for i = 1, base.size do
 		local item = base.slots[i]
 		if item and item.kind == "egg" and item.tier then
-			local left = (item.hatchLeft or 0) - dt
-			if left <= 0 then
+			local left = math.max((item.hatchLeft or 0) - dt, 0)
+			item.hatchLeft = left
+			if left <= 0 and auto ~= false then
 				-- a mutated egg hatches into a pet with that mutation; otherwise the usual roll decides
 				base.slots[i] = { kind = "char", id = roll(item.tier), mutation = item.eggMutation or mutate() }
 				table.insert(hatched, i)
-			else
-				item.hatchLeft = left
 			end
 		end
 	end
 	return hatched
+end
+
+-- Is the egg in this slot done and waiting for its owner to hatch it?
+function Base.isReady(base: Base, slot: number): boolean
+	local item = base.slots[slot]
+	return item ~= nil and item.kind == "egg" and item.tier ~= nil and (item.hatchLeft or 0) <= 0
+end
+
+-- The owner pressed Hatch on a finished egg: it becomes a character. Returns true if it hatched.
+function Base.hatchReady(base: Base, slot: number, roll: (string) -> string, mutate: () -> string): boolean
+	if not Base.isReady(base, slot) then
+		return false
+	end
+	local item = base.slots[slot] :: Item
+	base.slots[slot] = { kind = "char", id = roll(item.tier :: string), mutation = item.eggMutation or mutate() }
+	return true
 end
 
 -- Coins per second from every character, times the global multiplier (events, passes).

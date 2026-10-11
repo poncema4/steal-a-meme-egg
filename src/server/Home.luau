@@ -40,12 +40,16 @@ local function onTreadmill(root: BasePart, plot: World.Plot): boolean
 end
 
 -- Is this player inside the walls of their own base?
-local function insidePlot(root: BasePart, plot: World.Plot): boolean
-	local d = root.Position - plot.center
+local function insidePen(position: Vector3, plot: World.Plot, margin: number): boolean
+	local d = position - plot.center
 	local across = d.X * plot.right.X + d.Z * plot.right.Z
 	local along = d.X * plot.front.X + d.Z * plot.front.Z
-	local half = World.PEN / 2 + 2
+	local half = World.PEN / 2 + margin
 	return math.abs(across) <= half and math.abs(along) <= half
+end
+
+local function insidePlot(root: BasePart, plot: World.Plot): boolean
+	return insidePen(root.Position, plot, 2)
 end
 
 local function addPrompt(parent: BasePart, action: string, object: string, hold: number): ProximityPrompt
@@ -225,18 +229,10 @@ function Home.start(plots: { World.Plot })
 					plot.treadmill.AssemblyLinearVelocity = Vector3.zero
 					plot.treadmill:SetAttribute("BeltSpeed", 0)
 				end
-				if Session.carrying(player) and insidePlot(root, plot) then
-					-- the egg is put down where you stand in your pen
-					local d = root.Position - plot.center
-					local ok, message = Session.deliver(player, {
-						x = d.X * plot.right.X + d.Z * plot.right.Z,
-						z = d.X * plot.front.X + d.Z * plot.front.Z,
-					})
-					notify(player, message)
-					if ok then
-						sfx(player, "deliver")
-						Session.changed(player)
-					end
+				-- in your own pen the egg is NOT put down by itself: you pick the spot and press Place egg (Home.placeEgg)
+				local inPen = insidePlot(root, plot)
+				if player:GetAttribute("InPen") ~= inPen then
+					player:SetAttribute("InPen", inPen)
 				end
 			end
 		end
@@ -245,6 +241,34 @@ function Home.start(plots: { World.Plot })
 		locked[player] = nil
 		freeUntil[player] = nil
 	end)
+end
+
+-- The player clicked or tapped a spot in their pen while carrying an egg (`at` is where the click hit the ground; nil means
+-- where they stand): the egg goes down there. Only inside their own pen and only while they are in it; eggs never overlap (a
+-- spot too close to another egg moves to the nearest clear one). Returns true if the egg was placed.
+function Home.placeEgg(player: Player, at: Vector3?): boolean
+	local plot = Plots.of(player)
+	local character = player.Character
+	local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not plot or not root or not Session.carrying(player) or not insidePlot(root, plot) then
+		return false
+	end
+	local point = at or root.Position
+	if not insidePen(point, plot, 0) then
+		notify(player, "Put the egg inside your pen!")
+		return false
+	end
+	local d = point - plot.center
+	local ok, message = Session.deliver(player, {
+		x = d.X * plot.right.X + d.Z * plot.right.Z,
+		z = d.X * plot.front.X + d.Z * plot.front.Z,
+	})
+	notify(player, message)
+	if ok then
+		sfx(player, "deliver")
+		Session.changed(player)
+	end
+	return ok
 end
 
 Home.onTreadmill = onTreadmill

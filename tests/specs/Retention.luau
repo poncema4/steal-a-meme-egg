@@ -78,7 +78,7 @@ return function(t)
 	session.addPoints(late, 12)
 	local board = late:FindFirstChild("leaderstats") :: Instance
 	t.check("a player has the scoreboard folder", board ~= nil)
-	t.equal("with their Meme Points", (board:FindFirstChild("Meme Pts") :: IntValue).Value, 12)
+	t.check("Meme Points are not shown any more (they meant nothing)", board:FindFirstChild("Meme Pts") == nil)
 	t.equal("and their Rebirths", (board:FindFirstChild("Rebirths") :: IntValue).Value, 0)
 
 	-- rebirth

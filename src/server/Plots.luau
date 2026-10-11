@@ -111,11 +111,28 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 			body.Transparency = 1
 		end
 		local tier = Eggs.tier(item.tier)
+		local ready = (item.hatchLeft or 0) <= 0
 		tag(body, {
 			(if mutated then `{item.eggMutation} ` else "") .. (if tier then tier.name else "Egg"),
-			`hatching {math.ceil(item.hatchLeft or 0)}s`,
+			if ready then "READY!" else `hatching {math.ceil(item.hatchLeft or 0)}s`,
 		}, 3.4)
-		if tier then
+		if ready then
+			-- a finished egg waits for its owner: E on a keyboard, a tap on a phone, X on a gamepad
+			local hatch = Instance.new("ProximityPrompt")
+			hatch.Name = "HatchPrompt"
+			hatch.ActionText = "Hatch"
+			hatch.ObjectText = if tier then tier.name else "Egg"
+			hatch.HoldDuration = 0.3
+			hatch.MaxActivationDistance = 12
+			hatch.RequiresLineOfSight = false
+			hatch.Parent = body
+			hatch.Triggered:Connect(function(who)
+				if who == owner then
+					Session.hatchSlot(owner, n)
+				end
+			end)
+		end
+		if tier and not ready then
 			if instantAvailable(owner) then
 				local instant = Instance.new("ProximityPrompt")
 				instant.ActionText = "Instant hatch"
