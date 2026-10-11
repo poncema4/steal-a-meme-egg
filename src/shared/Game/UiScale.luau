@@ -5,8 +5,8 @@
 -- phone), and no button may end up smaller than a fingertip. Pure maths, so it is tested exactly.
 local UiScale = {}
 
-UiScale.DESKTOP = { x = 1280, y = 720 }
-UiScale.TOUCH = { x = 1060, y = 560 }
+UiScale.DESKTOP = { x = 1440, y = 810 } -- Marco: the UI was too big; a bigger design screen draws everything ~11% smaller
+UiScale.TOUCH = { x = 1200, y = 640 }
 UiScale.MIN = 0.55
 UiScale.MAX = 1.6
 UiScale.MIN_TAP = 40 -- pixels: the smallest a touch target may render (still a comfortable thumb)
@@ -22,6 +22,22 @@ function UiScale.factor(viewportX: number, viewportY: number, touch: boolean): n
 	end
 	local design = if touch then UiScale.TOUCH else UiScale.DESKTOP
 	return math.clamp(math.min(viewportX / design.x, viewportY / design.y), UiScale.MIN, UiScale.MAX)
+end
+
+-- How much a panel (Shop, Index, Eggs...) is scaled down on top of the screen scale: a bit smaller than drawn on a monitor, and on
+-- a phone small enough to cover at most PHONE_SHARE of the screen's height, so players still see the world and their thumbs
+-- reach the joystick and jump button. `panelHeight` is the panel's design height, `designHeight` the design screen's.
+UiScale.PANEL = 0.85
+UiScale.PHONE_SHARE = 0.72
+function UiScale.panelScale(panelHeight: number, designHeight: number, touch: boolean): number
+	if not finite(panelHeight) or not finite(designHeight) or panelHeight <= 0 or designHeight <= 0 then
+		return UiScale.PANEL
+	end
+	local shown = math.min(panelHeight, designHeight * 0.88) -- a panel is never taller than 88% of the screen
+	if touch then
+		return math.min(UiScale.PANEL, UiScale.PHONE_SHARE * designHeight / shown)
+	end
+	return UiScale.PANEL
 end
 
 -- The design size a button needs so that it renders at least MIN_TAP pixels at this scale.

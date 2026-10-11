@@ -65,10 +65,8 @@ function Shop.start(player: Player)
 
 	-- the limited egg: sold for Robux only. A banner with the egg, its stock and countdown, one Robux button, and the pets it can
 	-- hatch: hover one (or tap it on a phone) to see its stats
-	local BANNER_H = 176
 	local banner = Instance.new("Frame")
 	banner.Name = "LimitedCard"
-	banner.Size = UDim2.new(1, -8, 0, BANNER_H)
 	banner.BackgroundColor3 = Color3.fromRGB(74, 52, 120)
 	banner.BorderSizePixel = 0
 	banner.Parent = list
@@ -100,22 +98,36 @@ function Shop.start(player: Player)
 		l.TextXAlignment = Enum.TextXAlignment.Left
 		return l
 	end
+	-- the right of the picture is laid out top to bottom so nothing can overlap: the title, the stock line, the pets it can hatch
+	-- (with their stats beside them), then the Buy button. Every row starts below the one above it, and the button's REAL height
+	-- (a phone makes it taller) decides how tall the banner is.
 	local limitedTitle = line(banner, "LimitedTitle", 120, 8, 340, 30, 24, Color3.fromRGB(255, 221, 68))
+	limitedTitle.Size = UDim2.new(1, -130, 0, 30)
 	limitedTitle.TextScaled = true
-	local limitedInfo = line(banner, "LimitedInfo", 120, 38, 340, 22, 16)
-	local limitedRobux =
-		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(170, Ui.tap(gui, 42)))
-	limitedRobux.Position = UDim2.fromOffset(120, 68)
-	limitedRobux.TextSize = 22
+	local limitedInfo = line(banner, "LimitedInfo", 120, 40, 340, 20, 16)
+	limitedInfo.Size = UDim2.new(1, -130, 0, 20)
+	local PET_Y, PET_H, PET_STEP = 64, 48, 58
 	local petRow = Instance.new("Frame")
 	petRow.Name = "Pets"
 	petRow.BackgroundTransparency = 1
-	petRow.Position = UDim2.fromOffset(10, 120)
-	petRow.Size = UDim2.new(1, -20, 0, 48)
+	petRow.Position = UDim2.fromOffset(120, PET_Y)
+	petRow.Size = UDim2.fromOffset(PET_STEP * 3, PET_H)
 	petRow.Parent = banner
-	local petStats = line(banner, "PetStats", 196, 120, 260, 48, 15, Color3.fromRGB(220, 225, 245))
+	local statsX = 120 + PET_STEP * 3 + 8
+	local petStats = line(banner, "PetStats", statsX, PET_Y, 200, PET_H, 15, Color3.fromRGB(220, 225, 245))
+	petStats.Size = UDim2.new(1, -(statsX + 10), 0, PET_H)
 	petStats.TextWrapped = true
+	petStats.TextScaled = true
+	local statsMax = Instance.new("UITextSizeConstraint")
+	statsMax.MaxTextSize = 15
+	statsMax.Parent = petStats
 	petStats.Text = "Hover a pet to see its stats"
+	local limitedRobux =
+		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(190, Ui.tap(gui, 42)))
+	limitedRobux.Position = UDim2.fromOffset(120, PET_Y + PET_H + 10)
+	limitedRobux.TextSize = 22
+	local BANNER_H = math.max(12 + 100, PET_Y + PET_H + 10 + limitedRobux.Size.Y.Offset) + 12
+	banner.Size = UDim2.new(1, -8, 0, BANNER_H)
 	local petButtons: { ImageButton } = {}
 	local shownTier = ""
 
