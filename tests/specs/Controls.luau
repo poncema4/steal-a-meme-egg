@@ -54,14 +54,40 @@ return function(t)
 	local here = root.Position
 	drop:FireServer()
 	t.equal("Drop empties her hands", ana:GetAttribute("Carrying"), "")
-	t.check("the egg is back in its nest", entry.prompt.Enabled and entry.nest.tier ~= nil)
+	-- a drop on purpose leaves the egg exactly where she let go; only being caught sends it back to its nest
+	local lying = entry.dropped
+	t.check("the egg lies on the ground", lying ~= nil and not entry.prompt.Enabled)
+	t.check(
+		"exactly where she dropped it",
+		lying ~= nil
+			and math.abs(lying.part.Position.X - here.X) < 0.01
+			and math.abs(lying.part.Position.Z - here.Z) < 0.01
+	)
 	t.check("she stays where she was", (root.Position - here).Magnitude < 0.01)
 	t.equal("nobody is chasing her any more", entry.thief, nil)
+	t.check(
+		"the nest does not grow a new egg while one lies on the ground",
+		(function()
+			world.advance(40)
+			return entry.dropped ~= nil and entry.nest.tier == nil
+		end)()
+	)
+	-- anyone can pick it up again, and the boss chases whoever does
+	lying = entry.dropped :: any
+	local prompt = lying.part:FindFirstChildOfClass("ProximityPrompt") :: ProximityPrompt
+	prompt.Triggered:Fire(ana)
+	t.check("she picks it up again", ana:GetAttribute("Carrying") ~= "" and entry.dropped == nil and entry.thief == ana)
+	drop:FireServer()
+	t.check("and drops it again", entry.dropped ~= nil)
+	world.advance(95)
+	t.check("a dropped egg nobody picks up goes back to its nest", entry.dropped == nil and entry.nest.tier ~= nil)
+	t.check("and the nest shows it", entry.prompt.Enabled)
 	drop:FireServer()
 	t.equal("a second Drop is harmless", ana:GetAttribute("Carrying"), "")
 
 	-- Drop only touches the sender's own egg
 	world.setLocal(ben)
+	root.Position = V3.new(entry.egg.Position.X - 5, 3, entry.egg.Position.Z)
 	entry.prompt.Triggered:Fire(ana)
 	drop:FireServer()
 	t.check("Ben cannot make Ana drop her egg", ana:GetAttribute("Carrying") ~= "")

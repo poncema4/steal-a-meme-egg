@@ -1,6 +1,7 @@
 --!strict
 -- Runs the REAL server scripts against the fake Roblox world: the map is built, players get bases, eggs are granted and
 -- hatch and earn, and admin events change the multipliers.
+local Config = require("../../src/shared/Config")
 local Fake = require("../fake/Roblox")
 local Daily = require("../../src/shared/Game/Daily")
 local Eggs = require("../../src/shared/Game/Eggs")
@@ -144,6 +145,25 @@ return function(t)
 	t.equal("/clear ends events", liveOps.luck(), 1)
 	liveOps.command(ana, "/event eggrain 30")
 	t.equal("Egg Rain speeds up nest regrowth", liveOps.nestRate(), 6)
+
+	-- /resetme: the owner starts over; it touches only whoever typed it
+	local sessionMod = world.load("src/server/Session")
+	sessionMod.addSpeedXp(ana, 5000)
+	sessionMod.addSpeedXp(ben, 5000)
+	sessionMod.get(ana).treadmill = 4
+	sessionMod.get(ana).rebirths = 2
+	world.studio = false
+	t.check("a non-admin cannot reset", string.find(liveOps.command(ana, "/resetme"), "not an admin") ~= nil)
+	t.check(
+		"and keeps their progress",
+		(ana:GetAttribute("SpeedLevel") :: number) >= 1 and sessionMod.get(ana).rebirths == 2
+	)
+	world.studio = true
+	liveOps.command(ana, "/resetme")
+	t.equal("an admin's reset sends them back to speed level 0", ana:GetAttribute("SpeedLevel"), 0)
+	t.equal("and treadmill 0, no rebirths", sessionMod.get(ana).treadmill + sessionMod.get(ana).rebirths, 0)
+	t.equal("and the starting coins", ana:GetAttribute("Coins"), Config.Economy.StartCoins)
+	t.check("nobody else is touched", (ben:GetAttribute("SpeedLevel") :: number) >= 1)
 
 	-- saving: leave and come back with the same things
 	local saved = ben:GetAttribute("Coins") :: number

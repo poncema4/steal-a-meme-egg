@@ -226,7 +226,12 @@ function Home.start(plots: { World.Plot })
 					plot.treadmill:SetAttribute("BeltSpeed", 0)
 				end
 				if Session.carrying(player) and insidePlot(root, plot) then
-					local ok, message = Session.deliver(player)
+					-- the egg is put down where you stand in your pen
+					local d = root.Position - plot.center
+					local ok, message = Session.deliver(player, {
+						x = d.X * plot.right.X + d.Z * plot.right.Z,
+						z = d.X * plot.front.X + d.Z * plot.front.Z,
+					})
 					notify(player, message)
 					if ok then
 						sfx(player, "deliver")

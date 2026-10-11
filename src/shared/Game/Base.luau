@@ -5,6 +5,8 @@ local Eggs = require("./Eggs")
 
 local Base = {}
 
+export type Spot = { x: number, z: number }
+
 export type Item = {
 	kind: "egg" | "char",
 	tier: string?, -- egg: which tier
@@ -12,11 +14,65 @@ export type Item = {
 	eggMutation: string?, -- egg: a Gold or Rainbow egg hatches into a pet with that mutation
 	id: string?, -- char: which character
 	mutation: string?, -- char: Normal / Gold / Rainbow
+	at: Spot?, -- egg: where in the pen it was put (pen-local: x to the right, z toward the front); nil = the slot's default spot
 }
 export type Base = {
 	size: number,
 	slots: { [number]: Item },
 }
+
+-- Where an egg without a chosen spot sits: slot n in a grid of 4 columns by 3 rows (the same spots the pedestals used to mark).
+function Base.defaultSpot(slot: number): Spot
+	local column = (slot - 1) % 4
+	local row = (slot - 1) // 4
+	return { x = (column - 1.5) * 8.5, z = (row - 1) * 10 - 2 }
+end
+
+-- The part of the pen eggs may be put in: inside the fence, and clear of the pads and the spawn along the front edge.
+Base.MIN_X, Base.MAX_X, Base.MIN_Z, Base.MAX_Z = -16, 16, -16, 10
+Base.EGG_GAP = 5 -- eggs are put at least this far apart
+
+function Base.clampSpot(x: number, z: number): Spot
+	local cx = if x == x then x else 0
+	local cz = if z == z then z else 0
+	return { x = math.clamp(cx, Base.MIN_X, Base.MAX_X), z = math.clamp(cz, Base.MIN_Z, Base.MAX_Z) }
+end
+
+local function spotOf(base: Base, slot: number): Spot
+	local item = base.slots[slot]
+	return if item and item.at then item.at else Base.defaultSpot(slot)
+end
+
+-- The spot nearest (x, z) that is inside the pen and not on top of another egg: the egg goes where the player stands, nudged
+-- sideways if somebody's egg is already there.
+function Base.freeSpot(base: Base, x: number, z: number): Spot
+	local start = Base.clampSpot(x, z)
+	local function clear(spot: Spot): boolean
+		for slot = 1, base.size do
+			local item = base.slots[slot]
+			if item and item.kind == "egg" then
+				local other = spotOf(base, slot)
+				if (other.x - spot.x) ^ 2 + (other.z - spot.z) ^ 2 < Base.EGG_GAP ^ 2 then
+					return false
+				end
+			end
+		end
+		return true
+	end
+	if clear(start) then
+		return start
+	end
+	for ring = 1, 6 do
+		for step = 0, 11 do
+			local a = step * math.pi / 6
+			local spot = Base.clampSpot(start.x + math.cos(a) * ring * 3, start.z + math.sin(a) * ring * 3)
+			if clear(spot) then
+				return spot
+			end
+		end
+	end
+	return start
+end
 
 function Base.new(size: number): Base
 	return { size = size, slots = {} }
@@ -41,15 +97,21 @@ function Base.count(base: Base): number
 	return n
 end
 
--- Puts a bought egg in the first free slot. Returns the slot, or nil if the base is full.
-function Base.placeEgg(base: Base, tierId: string, mutation: string?): number?
+-- Puts an egg in the first free slot, at `at` in the pen if the player chose a spot (a bought egg has none). Returns the slot, or nil if the base is full.
+function Base.placeEgg(base: Base, tierId: string, mutation: string?, at: Spot?): number?
 	local tier = Eggs.tier(tierId)
 	local slot = Base.firstFree(base)
 	if not tier or not slot then
 		return nil
 	end
 	local eggMutation = if mutation and mutation ~= "Normal" and Eggs.Mutations[mutation] then mutation else nil
-	base.slots[slot] = { kind = "egg", tier = tierId, hatchLeft = tier.hatchSeconds, eggMutation = eggMutation }
+	base.slots[slot] = {
+		kind = "egg",
+		tier = tierId,
+		hatchLeft = tier.hatchSeconds,
+		eggMutation = eggMutation,
+		at = if at then Base.freeSpot(base, at.x, at.z) else nil,
+	}
 	return slot
 end
 

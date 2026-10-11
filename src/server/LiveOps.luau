@@ -127,6 +127,10 @@ function LiveOps.command(player: Player, text: string): string
 	if result.ok and action then
 		if action.kind == "give" then
 			Session.add(player, action.coins)
+		elseif action.kind == "resetMe" then
+			-- never broadcast to other servers or players: it only resets whoever typed it
+			local _, message = Session.resetProgress(player)
+			return message
 		elseif action.kind ~= "help" then
 			dispatch(action :: any)
 		end
@@ -141,7 +145,7 @@ local function registerChat(tell: (Player, string) -> ())
 	if not ok or typeof(TextChatService) ~= "Instance" then
 		return
 	end
-	for _, name in { "event", "give", "giveall", "announce", "clear", "help" } do
+	for _, name in { "event", "give", "giveall", "announce", "clear", "help", "resetme" } do
 		local command = Instance.new("TextChatCommand")
 		command.Name = `RaidAdmin_{name}`
 		command.PrimaryAlias = `/{name}`

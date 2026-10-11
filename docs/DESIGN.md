@@ -27,7 +27,7 @@ Meme Points per delivered egg: Soggy 1, Disco 5, Spicy 25, Golden 150, Cosmic 1,
 There is no conveyor and no raiding: the Wilds are the only source of eggs (plus daily rewards and the shop).
 
 ## Hatching and limited eggs (built)
-Eggs take real time to hatch (8 s up to 5 minutes by tier). Hatching can only be sped up with Robux (an Instant hatch, or a hatch token bought with them), never with coins. Pets are not tied to their pedestal: each one walks around the whole pen (`Shared/Game/Wander`, `client/Roam`).
+Eggs take real time to hatch (8 s up to 5 minutes by tier). Hatching can only be sped up with Robux (an Instant hatch, or a hatch token bought with them), never with coins. Pets are not tied to anything: each one walks around the whole pen (`Shared/Game/Wander`, `client/Roam`). The pen is clear (no platforms): an egg is put down wherever you stand when you deliver it (`Base.freeSpot`, nudged off other eggs, kept inside the fence).
 
 Limited eggs: every 30 minutes one of three exclusive eggs (Golden Goose, Cosmic Cat, Meme Lord) goes on sale for 1,000,000,000 coins with a stock of 100 shared by every server (one MemoryStore counter per rotation; each server falls back to its own count if MemoryStore is unavailable). Limited characters earn 15M to 80M per second, more than anything in the Wilds, and pay their egg back in 20 to 120 seconds (tested). Robux purchase of the same eggs and Robux instant-hatch come with the monetization PR.
 
@@ -58,3 +58,9 @@ A nest can grow a Gold or Rainbow egg (`Eggs.nestMutation`: Meadow about 8% Gold
 
 ## Carrying
 While you carry an egg it floats above your head (Gold and Rainbow ones are coloured and shine), a blue speed trail follows you, the HUD shows a RUN!! banner and a Drop button, and you run 10% slower. It follows the `Carrying` attribute (`src/server/Carry.luau`) so it also survives a respawn. Being caught flings you (`Wilds.fling`, tumbling 1.4 s); dropping the egg on purpose does not.
+
+## Dropping an egg
+The Drop button puts the egg on the ground exactly where you stand; anyone can hold E on it to pick it up again (its terrain's boss then chases them), and it goes back to its nest after 90 seconds if nobody does. Being caught by the boss sends it back to its nest at once. The nest does not grow a new egg while one lies on the ground.
+
+## Admin
+`/resetme` (admins only, only affects the person who typed it) puts you back at the start: speed, treadmill, rebirths, coins, Meme Points, base and Index. Robux purchases are kept.

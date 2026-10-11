@@ -27,6 +27,8 @@ export type Boss = {
 	name: string,
 }
 
+export type Dropped = { tier: string, mutation: string?, part: BasePart, expires: number }
+
 export type Entry = {
 	id: string,
 	zone: Zones.Zone,
@@ -37,6 +39,7 @@ export type Entry = {
 	egg: BasePart,
 	prompt: ProximityPrompt,
 	thief: Player?,
+	dropped: Dropped?, -- an egg its thief let go of on purpose: it lies where it was dropped
 }
 
 -- the boss model's pivot is its body centre (14 studs tall), so its feet touch the ground when the pivot is this high
@@ -330,6 +333,7 @@ local function buildNests(zone: Zones.Zone, nests: { Layout.Nest }, boss: Boss, 
 			egg = egg,
 			prompt = prompt,
 			thief = nil,
+			dropped = nil,
 		}
 		model.Parent = parent
 		setEgg(entry, tier, entry.nest.mutation)
@@ -465,11 +469,97 @@ local function recover(entry: Entry, message: string?, sendHome: boolean?)
 	end
 end
 
--- The player lets go of the egg they are carrying: it goes back to its nest, and they stay where they are.
+local DROP_SECONDS = 90 -- a dropped egg that nobody picks up goes back to its nest after this long
+
+-- the egg goes back into its nest and whatever was lying on the ground disappears
+local function returnDropped(entry: Entry)
+	local dropped = entry.dropped
+	if not dropped then
+		return
+	end
+	entry.dropped = nil
+	dropped.part:Destroy()
+	Nest.giveBack(entry.nest, dropped.tier, dropped.mutation)
+	setEgg(entry, dropped.tier, dropped.mutation)
+end
+
+-- Where the ground is under (x, z), for an egg dropped at a player's feet.
+local function groundAt(x: number, z: number, near: number, ignore: Instance?): number
+	local ok, y = pcall(function()
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Exclude
+		params.FilterDescendantsInstances = if ignore then { ignore } else {}
+		local hit = workspace:Raycast(Vector3.new(x, near + 3, z), Vector3.new(0, -40, 0), params)
+		return if hit then hit.Position.Y else nil
+	end)
+	return if ok and typeof(y) == "number" then y else 0
+end
+
+-- Somebody holds E on an egg that was dropped: they carry it now, and the boss of its terrain chases them.
+function Wilds.pickUp(player: Player, entry: Entry)
+	local dropped = entry.dropped
+	local state = Session.get(player)
+	if not dropped or not state or not rootOf(player) then
+		return
+	end
+	if state.carry then
+		notify(player, "You are already carrying an egg!")
+		return
+	end
+	entry.dropped = nil
+	dropped.part:Destroy()
+	entry.thief = player
+	Session.setCarry(player, dropped.tier, entry.id, dropped.mutation)
+	Guardian.alert(entry.guardian, Config.Wilds.ChaseSeconds)
+	sfx(player, "steal")
+	notify(player, `You picked the egg up! {entry.boss.name} is chasing you. RUN HOME!`)
+end
+
+-- The player lets go of the egg they are carrying, on purpose: it stays on the ground exactly where they stand (anyone can pick
+-- it up), and goes back to its nest if nobody does. Being caught by the boss is different: that sends it back to its nest at once.
 function Wilds.drop(player: Player)
+	local root = rootOf(player)
 	for _, entry in entries do
 		if entry.thief == player then
-			recover(entry, "You dropped the egg. It went back to its nest.", false)
+			local tier, _, mutation = Session.carrying(player)
+			if not tier or not root then
+				recover(entry, "You dropped the egg. It went back to its nest.", false)
+				return
+			end
+			entry.thief = nil
+			Session.setCarry(player, nil)
+			local x, z = root.Position.X, root.Position.Z
+			local y = groundAt(x, z, root.Position.Y, player.Character)
+			local part = Instance.new("Part")
+			part.Name = "DroppedEgg"
+			part.Size = Vector3.new(4, 5, 4)
+			part.CFrame = CFrame.new(x, y + 2.5, z)
+			part.Anchored = true
+			part.CanCollide = false
+			World.roundify(part)
+			part.Color = Look.eggColor(tier, mutation)
+			local mutated = Look.isMutated(mutation)
+			part.Material = if mutated then Enum.Material.Neon else Enum.Material.SmoothPlastic
+			if Models.has("Eggs", tier) then
+				part.Transparency = 1
+				Models.show(part, "Eggs", tier, mutation)
+			end
+			local prompt = Instance.new("ProximityPrompt")
+			prompt.ActionText = "Pick up egg"
+			local def = Eggs.tier(tier)
+			prompt.ObjectText = (if mutated and mutation then `{mutation} ` else "")
+				.. (if def then def.name else "Egg")
+			prompt.HoldDuration = 0.6
+			prompt.MaxActivationDistance = 11
+			prompt.RequiresLineOfSight = false
+			prompt.Parent = part
+			prompt.Triggered:Connect(function(who)
+				Wilds.pickUp(who, entry)
+			end)
+			part.Parent = entry.model.Parent
+			entry.dropped =
+				{ tier = tier, mutation = mutation, part = part :: BasePart, expires = os.clock() + DROP_SECONDS }
+			notify(player, "You dropped the egg here. Pick it up again, or it goes back to its nest soon.")
 			return
 		end
 	end
@@ -492,8 +582,12 @@ function Wilds.start()
 			end
 			-- a nest grows a new egg only once the old one is resolved (delivered, or back after a catch): otherwise a second
 			-- thief could take the regrown egg and overwrite the first one's record
+			if entry.dropped and os.clock() >= entry.dropped.expires then
+				returnDropped(entry)
+			end
 			if
 				entry.thief == nil
+				and entry.dropped == nil
 				and Nest.tick(entry.nest, dt * nestRate(), function()
 					return Zones.eggFor(entry.zone, math.random),
 						Eggs.nestMutation(table.find(Zones.List, entry.zone) or 1, math.random)
