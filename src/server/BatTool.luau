@@ -148,24 +148,6 @@ local function build(player: Player, tier: number): Tool
 	return tool
 end
 
--- The trap item: hold it and click to set a bear trap where you stand (the server checks where and how many).
-local function buildTrap(player: Player): Tool
-	local tool = Instance.new("Tool")
-	tool.Name = "Trap"
-	tool.ToolTip = "Bear Trap: click to set one"
-	tool.TextureId = Config.Icons.trap
-	tool.CanBeDropped = false
-	tool.RequiresHandle = false
-	tool.Activated:Connect(function()
-		local ok, message = Traps.place(player)
-		notify(player, message)
-		if ok then
-			sfx(player, "click")
-		end
-	end)
-	return tool
-end
-
 -- Puts the player's items in their backpack like any Roblox game: the bat for their tier and the trap. Nothing is forced into
 -- their hands; they pick an item from the bar (1, 2 or a click) and put it away again. A better bat replaces the old one, and
 -- if they were holding the old one they hold the new one.
@@ -189,9 +171,7 @@ function BatTool.give(player: Player)
 	local tool = build(player, tier)
 	tool.Parent = backpack
 	given[player] = tier
-	if not backpack:FindFirstChild("Trap") and not character:FindFirstChild("Trap") then
-		buildTrap(player).Parent = backpack
-	end
+	Traps.syncTool(player)
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if humanoid and holding then
 		pcall(function()

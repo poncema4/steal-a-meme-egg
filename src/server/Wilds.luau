@@ -270,7 +270,7 @@ local function buildBoss(zone: Zones.Zone, parent: Instance): Boss
 	local tint = Color3.fromHSV((#c.id * 0.137) % 1, 0.55, 1)
 	local body = box("Body", Vector3.new(9, BOSS_HEIGHT, 9), CFrame.new(0, BODY_Y, 0), tint, model)
 	model.PrimaryPart = body
-	local name = `{c.name} BOSS`
+	local name = c.name -- just the meme's name (Marco: no "BOSS" after it)
 	local home = Layout.bossSpot(zone)
 	local boss: Boss = {
 		zone = zone,
