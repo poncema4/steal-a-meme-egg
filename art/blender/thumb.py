@@ -281,6 +281,41 @@ def voxel_duck(origin, yaw, s=1.0, seed=7):
     return root
 
 
+def brick_boss(model, origin, yaw, scale=1.0):
+    """A real brick model from art/renders/models (the same data the game's boss is built from), one mesh per colour. The model's
+    front (-Z) turns to face the camera (-y) at yaw 0."""
+    import bmesh, json
+    from mathutils import Matrix
+    parts = json.load(open(os.path.join(ROOT, "models", model + ".json")))
+    root = bpy.data.objects.new(model, None)
+    bpy.context.scene.collection.objects.link(root)
+    root.location = origin
+    root.rotation_euler = (0, 0, yaw)
+    root.scale = (scale, scale, scale)
+    buckets = {}
+    for p in parts:
+        buckets.setdefault((p["r"], p["g"], p["b"]), []).append(p)
+
+    def lin(c):
+        c = c / 255
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    for key, plist in buckets.items():
+        mesh = bpy.data.meshes.new(model)
+        bm = bmesh.new()
+        for p in plist:
+            # model (x, y up, z back) -> scene (-x, z, y): a half turn about the vertical, so the front faces -y
+            m = (Matrix.Translation((-p["x"], p["z"], p["y"])) @ Matrix.Diagonal((p["sx"] / 2, p["sz"] / 2, p["sy"] / 2, 1)))
+            bmesh.ops.create_cube(bm, size=2.0, matrix=m)
+        bm.to_mesh(mesh)
+        bm.free()
+        material = mat("b", (lin(key[0]), lin(key[1]), lin(key[2])), 0.42)
+        mesh.materials.append(material)
+        o = bpy.data.objects.new(model, mesh)
+        bpy.context.scene.collection.objects.link(o)
+        o.parent = root
+    return root
+
+
 def shot_wide():
     setup((1920, 1080))
     gradient_sky()
@@ -288,7 +323,7 @@ def shot_wide():
     hero = (7.5, 0, 14.5)
     voxel_egg(hero, 5.2, 6.6, seed=3)
     avatar(7.5, -1, 0, (0.1, 0.45, 1.0), (0.2, 0.7, 0.2), (1.0, 0.55, 0.04), yaw=0, arms=(0.1, 0.1), stride=0.5, lean=0.0, scale=1.25)
-    voxel_duck((-12, -3, 0), 1.05, 1.2)
+    brick_boss("BossCosmic", (-12.5, -3, 0), 0.55, 1.55)  # Final Boss Hamster, furious
     sparkles((3, -4, 12), (14, 2, 8), 18, 5)
     light("SUN", (20, -30, 50), 2.6, (1.0, 0.95, 0.85))
     light("AREA", (-10, -30, 14), 1800, (1.0, 0.95, 0.85), size=12, target=(0, 0, 8))
