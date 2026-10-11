@@ -7,6 +7,25 @@ local Zones = require("./Zones")
 
 local Layout = {}
 
+-- The brick model that stands as scenery in each terrain (src/models/Props), shared by the server and the map preview.
+Layout.SceneryModel = table.freeze({
+	Meadow = "Tree",
+	Dune = "Cactus",
+	Volcano = "LavaRock",
+	Frost = "IcePine",
+	Cosmic = "Crystal",
+	Swamp = "SwampTree",
+	Candy = "CandyCane",
+	Neon = "NeonPylon",
+	Haunted = "Tombstone",
+	Sky = "CloudPuff",
+	Toy = "ToyBlocks",
+	Pirate = "PalmTree",
+	Robot = "GearTower",
+	Jungle = "JungleVine",
+	Throne = "GoldPillar",
+})
+
 export type Nest = { x: number, z: number, tier: string }
 export type Prop = { x: number, z: number, size: number, extra: number }
 
@@ -18,6 +37,12 @@ Layout.BOSS_CLEAR = 20 -- scenery and nests stay this far from the terrain's bos
 -- Where the terrain's boss stands: the middle of the strip.
 function Layout.bossSpot(zone: Zones.Zone): { x: number, z: number }
 	return { x = zone.startX + zone.length / 2, z = 0 }
+end
+
+-- Where the small "Recommended speed" sign stands: just in front of the boss's home, on the side players come from.
+function Layout.bossSign(zone: Zones.Zone): { x: number, z: number }
+	local boss = Layout.bossSpot(zone)
+	return { x = boss.x - 13, z = -7 }
 end
 
 function Layout.nests(zone: Zones.Zone): { Nest }
