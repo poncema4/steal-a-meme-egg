@@ -109,8 +109,12 @@ return function(t)
 	t.equal("and there are no characters yet", ana:GetAttribute("Characters"), 0)
 	t.check("the egg shows on the player's base", anaPlot.Slot_1:FindFirstChild("Item") ~= nil)
 
-	-- hatching and earning
+	-- hatching and earning: the egg finishes, then its owner presses Hatch
 	world.advance(9)
+	for slot = 1, 12 do -- the owner presses Hatch on every finished egg
+		world.load("src/server/Session").hatchSlot(ana, slot)
+	end
+	world.advance(0.2)
 	local heard = false
 	for _, entry in world.log do
 		if entry.remote == "Sfx" and entry.to == "client" and entry.args[1] == ana and entry.args[2] == "hatch" then

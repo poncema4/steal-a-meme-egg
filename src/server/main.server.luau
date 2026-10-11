@@ -85,6 +85,16 @@ Carry.start()
 dropRemote.OnServerEvent:Connect(function(player: Player)
 	Wilds.drop(player)
 end)
+-- a click or tap on the ground of your pen while carrying an egg puts it there (the server checks it is your pen)
+local placeRemote = Instance.new("RemoteEvent")
+placeRemote.Name = "PlaceEgg"
+placeRemote.Parent = remotes
+placeRemote.OnServerEvent:Connect(function(player: Player, at: any)
+	if typeof(at) ~= "Vector3" or at.X ~= at.X or at.Z ~= at.Z or at.Magnitude > 1e6 then
+		return
+	end
+	Home.placeEgg(player, at)
+end)
 baseRemote.OnServerEvent:Connect(function(player: Player, kind: any, slot: any)
 	if typeof(slot) ~= "number" or slot ~= slot or slot % 1 ~= 0 or slot < 1 or slot > 12 then
 		return

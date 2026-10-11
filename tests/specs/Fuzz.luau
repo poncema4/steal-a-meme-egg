@@ -216,7 +216,7 @@ return function(t)
 		if item.kind == "egg" then
 			t.check(
 				"a loaded egg has a real timer",
-				finite(item.hatchLeft) and (item.hatchLeft :: number) > 0,
+				finite(item.hatchLeft) and (item.hatchLeft :: number) >= 0, -- 0 = ready to hatch
 				tostring(item.hatchLeft)
 			)
 		end

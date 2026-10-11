@@ -59,6 +59,10 @@ return function(t)
 	session.grantEgg(ben, "Soggy")
 	session.get(ana).purchases.passes.fastHatch = true
 	world.advance(5) -- the Soggy egg takes 8 seconds
+	for slot = 1, 12 do -- the owner presses Hatch on every finished egg
+		session.hatchSlot(ana, slot)
+	end
+	world.advance(0.2)
 	t.equal("with the pass an 8 second egg is done in 5", ana:GetAttribute("Characters"), 1)
 	t.equal("without it, it is not", ben:GetAttribute("Characters"), 0)
 

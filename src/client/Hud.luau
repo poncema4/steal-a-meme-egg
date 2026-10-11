@@ -147,6 +147,9 @@ function Hud.start(player: Player, actions: Actions?)
 	rightList.SortOrder = Enum.SortOrder.LayoutOrder
 	rightList.Parent = right
 	local badges: { [string]: TextLabel } = {}
+	-- a badge counts only what is new since you last opened that panel, and clears when you open it (Marco: cleaner)
+	local seen: { [string]: number } = { EggsButton = 0, PetsButton = 0 }
+	local counts: { [string]: number } = { EggsButton = 0, PetsButton = 0 }
 	local function iconButton(
 		name: string,
 		icon: string,
@@ -160,7 +163,16 @@ function Hud.start(player: Player, actions: Actions?)
 		end
 		local b = Ui.iconButton(right, name, icon, glyph, palette, side)
 		b.LayoutOrder = order
-		b.Activated:Connect(handler)
+		b.Activated:Connect(function()
+			if seen[name] then
+				seen[name] = counts[name]
+				local badge = b:FindFirstChild("Badge") :: TextLabel?
+				if badge then
+					badge.Visible = false
+				end
+			end
+			handler()
+		end)
 		badges[name] = b:FindFirstChild("Badge") :: TextLabel
 	end
 	iconButton("EggsButton", "egg", "🥚", Ui.Palettes.Red, 1, act.eggs)
@@ -399,20 +411,25 @@ function Hud.start(player: Player, actions: Actions?)
 			speedLevel = level,
 			canRebirth = Rebirth.can(rebirths, coins),
 			zone = tostring(player:GetAttribute("Zone") or ""),
+			inPen = player:GetAttribute("InPen") == true,
 		})
 		local def = if carrying ~= "" then Eggs.tier(carrying) else nil
 		run.Visible = def ~= nil
-		drop.Visible = def ~= nil
+		-- in your own pen you click or tap where the egg goes (client/PlaceEgg), so Drop and RUN!! step aside there
+		local inPen = player:GetAttribute("InPen") == true
+		drop.Visible = def ~= nil and not inPen
+		run.Visible = def ~= nil and not inPen
 		runText.Text = "RUN!!"
-		local eggBadge = badges.EggsButton
-		if eggBadge then
-			eggBadge.Visible = eggs > 0
-			eggBadge.Text = tostring(eggs)
-		end
-		local petBadge = badges.PetsButton
-		if petBadge then
-			petBadge.Visible = characters > 0
-			petBadge.Text = tostring(characters)
+		local current: { [string]: number } = { EggsButton = eggs, PetsButton = characters }
+		for name, count in current do
+			counts[name] = count
+			seen[name] = math.min(seen[name], count) -- hatched or sold ones leave the count; only new ones show
+			local badge = badges[name]
+			if badge then
+				local fresh = count - seen[name]
+				badge.Visible = fresh > 0
+				badge.Text = tostring(fresh)
+			end
 		end
 		local now = workspace:GetServerTimeNow()
 		local active = tostring(ReplicatedStorage:GetAttribute("ActiveEvents") or "")

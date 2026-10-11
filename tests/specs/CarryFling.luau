@@ -65,6 +65,8 @@ return function(t)
 	local plot = plots.of(ana)
 	world.root(ana).Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(1)
+	world.load("src/server/Home").placeEgg(ana) -- you place it yourself in your pen
+	world.advance(0.2)
 	t.equal("delivered", ana:GetAttribute("Carrying"), "")
 	t.check("the egg above your head is gone", has(ana.Character, "CarryEgg") == nil)
 

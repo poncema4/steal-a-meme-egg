@@ -132,6 +132,14 @@ return function(t)
 	local plot = plots.of(ana)
 	world.root(ana).Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(1)
+	-- in the pen the egg is not put down by itself (Marco): you pick the spot and press Place egg
+	t.equal("walking into the pen does not place the egg", ana:GetAttribute("Carrying"), "Soggy")
+	t.equal("the HUD knows you are in your pen", ana:GetAttribute("InPen"), true)
+	local remotes = world.service("ReplicatedStorage"):FindFirstChild("Remotes") :: Instance
+	local placeRemote = remotes:FindFirstChild("PlaceEgg") :: RemoteEvent
+	world.setLocal(ana)
+	placeRemote:FireServer(V3.new(plot.center.X + 4, 0.5, plot.center.Z + 4)) -- a click on the pen's ground
+	world.advance(0.2)
 	t.equal("a Gold egg pays double Meme Points", session.get(ana).mp - before, Progression.pointsForEgg("Soggy") * 2)
 	local item = session.get(ana).base.slots[1]
 	t.check("it is in the base as a Gold egg", item ~= nil and item.kind == "egg" and item.eggMutation == "Gold")
@@ -152,6 +160,8 @@ return function(t)
 	local coins = session.get(ana).coins
 	world.root(ana).Position = V3.new(plot.center.X, 3, plot.center.Z)
 	world.advance(1)
+	world.load("src/server/Home").placeEgg(ana)
+	world.advance(0.2)
 	t.equal("Rainbow pays five times the points", session.get(ana).mp - mpBefore, Progression.pointsForEgg("Soggy") * 5)
 	local def = Eggs.tier("Soggy") :: Eggs.Tier
 	t.check(

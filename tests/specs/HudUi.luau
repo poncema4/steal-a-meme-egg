@@ -188,6 +188,22 @@ return function(t)
 		"the icon buttons appear when there are panels",
 		find(pgui, "EggsButton") ~= nil and find(pgui, "PetsButton") ~= nil
 	)
+	-- the Pets badge counts new pets and clears once you open Pets (Marco: cleaner)
+	local petsBadge = find(find(pgui, "PetsButton") :: Instance, "Badge") :: TextLabel
+	local psession = pw.load("src/server/Session")
+	local pbase = psession.get(pana).base
+	pbase.slots[1] = { kind = "char", id = "BonkBean", mutation = "Normal" }
+	pbase.slots[2] = { kind = "char", id = "BonkBean", mutation = "Normal" }
+	psession.changed(pana)
+	pw.advance(0.6)
+	t.check("two new pets show a 2 on the Pets button", petsBadge.Visible and petsBadge.Text == "2", petsBadge.Text);
+	(find(pgui, "PetsButton") :: TextButton).Activated:Fire()
+	pw.advance(0.3)
+	t.check("opening Pets clears it", not petsBadge.Visible)
+	pbase.slots[3] = { kind = "char", id = "BonkBean", mutation = "Normal" }
+	psession.changed(pana)
+	pw.advance(0.6)
+	t.check("a newer pet shows just 1", petsBadge.Visible and petsBadge.Text == "1", petsBadge.Text)
 	local hint = find(pgui, "Objective") :: TextLabel
 	t.check(
 		"the hint wraps inside the middle of the screen, clear of the buttons and the People list",

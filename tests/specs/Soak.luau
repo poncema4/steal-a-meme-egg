@@ -123,7 +123,7 @@ return function(t)
 					elseif roll < 0.2 then
 						session.grantEgg(p, "Soggy") -- eggs also arrive from the daily reward and the shop
 					elseif roll < 0.3 and home then
-						for _, action in { "Upgrade treadmill", "Buy slot", "Instant hatch" } do
+						for _, action in { "Upgrade treadmill", "Buy slot", "Instant hatch", "Hatch", "Hatch" } do
 							local found = world.prompts(home.model, action)
 							if #found > 0 and math.random() < 0.3 then
 								found[math.random(1, #found)].Triggered:Fire(p)
@@ -154,6 +154,7 @@ return function(t)
 			players[i] = back
 		end
 		for _ = 1, 5 do
+			local home_ = world.load("src/server/Home")
 			for _, p in players do
 				local state = session.get(p)
 				local home = plots.of(p)
@@ -166,6 +167,10 @@ return function(t)
 					if m > 0.1 then
 						local len = math.min(speed * 0.1, m)
 						root.Position = root.Position + V3.new(dx / m * len, 0, dz / m * len)
+					end
+					-- once in their pen they press Place egg (it is not put down by itself)
+					if p:GetAttribute("InPen") == true then
+						home_.placeEgg(p)
 					end
 				end
 			end

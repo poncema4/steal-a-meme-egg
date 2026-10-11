@@ -143,7 +143,12 @@ return function(t)
 	t.equal("there is no coin skip: the egg is still hatching", ana:GetAttribute("Characters"), 0)
 	t.equal("and it cost nothing", ana:GetAttribute("Coins"), coins)
 	world.advance(10)
-	t.equal("it hatches on its own with time", ana:GetAttribute("Characters"), 1)
+	t.equal("it does not hatch by itself: it waits, ready", ana:GetAttribute("Characters"), 0)
+	for slot = 1, 12 do -- the owner presses Hatch on every finished egg
+		session.hatchSlot(ana, slot)
+	end
+	world.advance(0.2)
+	t.equal("pressing Hatch hatches it", ana:GetAttribute("Characters"), 1)
 	t.check("and in the Index", #tostring(ana:GetAttribute("Index")) > 0)
 	t.equal(
 		"the speed stat is published",
