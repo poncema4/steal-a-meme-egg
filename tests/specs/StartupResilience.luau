@@ -4,7 +4,7 @@
 local task = require("@lune/task")
 local Fake = require("../fake/Roblox")
 
-local REMOTES = { "Buy", "BuyLimited", "SlowMode", "Drop", "PlaceTrap", "LeaveTreadmill", "Sfx" }
+local REMOTES = { "Buy", "SlowMode", "Drop", "PlaceTrap", "LeaveTreadmill", "Sfx" }
 
 return function(t)
 	local world = Fake.world()

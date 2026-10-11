@@ -5,7 +5,6 @@
 local MemoryStoreService = game:GetService("MemoryStoreService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Limited = require(ReplicatedStorage.Shared.Game.Limited)
 local Session = require(script.Parent.Session)
@@ -40,19 +39,6 @@ function LimitedService.claimStock(key: string): number?
 	return after
 end
 
-local function releaseStock(key: string)
-	local shared = map
-	if shared then
-		local ok = pcall(function()
-			return shared:UpdateAsync(key, Limited.release, Limited.PERIOD * 2)
-		end)
-		if ok then
-			return
-		end
-	end
-	localStock[key] = Limited.release(localStock[key])
-end
-
 local function readStock(key: string): number
 	local shared = map
 	if shared then
@@ -67,41 +53,14 @@ local function readStock(key: string): number
 	return if own == nil then Limited.STOCK else own
 end
 
--- Buys the current limited egg with coins. Returns (ok, message).
-function LimitedService.buyWithCoins(player: Player): (boolean, string)
-	local state = Session.get(player)
-	if not state then
-		return false, "not ready"
-	end
-	local now = rotation()
-	local tier = Eggs.tier(now.tier)
-	if not tier then
-		return false, "no limited egg right now"
-	end
-	if state.coins < tier.price then
-		return false, "not enough coins"
-	end
-	if Base.firstFree(state.base) == nil then
-		return false, "your base is full!"
-	end
-	if LimitedService.claimStock(now.key) == nil then
-		return false, "sold out! A new egg arrives soon"
-	end
-	-- the stock is taken; if paying fails now (coins spent while we waited), put the stock back
-	if not Session.spend(player, tier.price) then
-		releaseStock(now.key)
-		return false, "not enough coins"
-	end
-	if not Session.grantEgg(player, tier.id) then
-		Session.add(player, tier.price)
-		releaseStock(now.key)
-		return false, "your base is full!"
-	end
-	return true, `You got a {tier.name}!`
-end
-
 -- Hands out a limited egg paid for with Robux (the receipt already proved payment). Returns true if it was placed.
 function LimitedService.grantPaid(player: Player, tierId: string): boolean
+	-- a paid egg takes one from the shared stock (the button is hidden once it is sold out; a purchase already paid for is always
+	-- honoured, even if the last one went in the meantime)
+	local now = rotation()
+	if now.tier == tierId then
+		LimitedService.claimStock(now.key)
+	end
 	return Session.grantEgg(player, tierId)
 end
 
@@ -112,26 +71,13 @@ local function publish()
 	ReplicatedStorage:SetAttribute("LimitedLeft", readStock(now.key))
 end
 
-function LimitedService.start(remotes: Folder, notifyFn: (Player, string) -> (), sfxAll: (string) -> ())
+function LimitedService.start(_remotes: Folder, notifyFn: (Player, string) -> (), sfxAll: (string) -> ())
 	notify = notifyFn
 	local ok, result = pcall(function()
 		return MemoryStoreService:GetHashMap("StealAMemeEgg_Limited")
 	end)
 	map = if ok and typeof(result) == "Instance" then result :: any else nil
-	local buy = Instance.new("RemoteEvent")
-	buy.Name = "BuyLimited"
-	buy.Parent = remotes
-	local last: { [Player]: number } = {}
-	buy.OnServerEvent:Connect(function(player: Player)
-		local t = os.clock()
-		if t - (last[player] or -10) < 1 then
-			return
-		end
-		last[player] = t
-		local _, message = LimitedService.buyWithCoins(player)
-		notify(player, message)
-		publish()
-	end)
+	-- limited eggs are sold for Robux only (Marco): there is no coin purchase
 	task.spawn(function()
 		while true do
 			local now = rotation()

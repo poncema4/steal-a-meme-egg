@@ -21,7 +21,7 @@ return function(t)
 	if not ok then
 		return
 	end
-	local session = world.load("src/server/Session")
+	local _session = world.load("src/server/Session")
 	local ana = world.addPlayer("Ana", 51)
 	world.advance(1)
 	world.setLocal(ana)
@@ -54,14 +54,24 @@ return function(t)
 		"it shows the stock",
 		string.find((find(gui, "LimitedInfo") :: TextLabel).Text, tostring(Limited.STOCK), 1, true) ~= nil
 	)
+	t.check("there is no coin button: limited eggs are Robux only", find(gui, "LimitedCoins") == nil)
+	local robuxButton = find(gui, "LimitedRobux") :: TextButton
 	t.check(
-		"the coin button shows the price",
-		string.find((find(gui, "LimitedCoins") :: TextButton).Text, "100Oc", 1, true) ~= nil
+		"the Robux button shows the Robux price",
+		string.find(robuxButton.Text, "R$", 1, true) ~= nil,
+		robuxButton.Text
 	)
+	-- the pets it can hatch, with their stats on hover (or a tap on a phone)
+	local firstPet = tier.pool[1]
+	local petButton = find(gui, `Pet_{firstPet.id}`) :: ImageButton
 	t.check(
-		"the Robux button shows now that the item exists in Creator Hub",
-		(find(gui, "LimitedRobux") :: TextButton).Visible
+		"the banner shows every pet the egg can hatch",
+		petButton ~= nil and find(gui, `Pet_{tier.pool[#tier.pool].id}`) ~= nil
 	)
+	local statsLabel = find(gui, "PetStats") :: TextLabel
+	petButton.MouseEnter:Fire()
+	t.check("hovering a pet shows its stats", string.find(statsLabel.Text, "chance", 1, true) ~= nil, statsLabel.Text)
+	t.check("with its name", string.find(statsLabel.Text, (Eggs.character(firstPet.id) :: any).name, 1, true) ~= nil)
 
 	-- every pass and Robux hatch pack is listed
 	local rows = 0
@@ -99,16 +109,6 @@ return function(t)
 	end
 	t.equal("no blurb runs under its card's button", clipped, 0)
 	t.check("the limited egg has its own banner", find(gui, "LimitedCard") ~= nil)
-
-	-- buying with coins from the screen
-	local coinsButton = find(gui, "LimitedCoins") :: TextButton
-	coinsButton.Activated:Fire()
-	t.check("a poor player buys nothing", session.get(ana).base.slots[1] == nil)
-	session.add(ana, tier.price + 1000)
-	world.advance(1.1)
-	coinsButton.Activated:Fire()
-	local item = session.get(ana).base.slots[1]
-	t.check("a rich player gets the egg", item ~= nil and item.kind == "egg" and item.tier == tier.id)
 
 	-- sound on the client: the tune starts, and effects are played by name from Config.Sounds
 	local Config = require("../../src/shared/Config")

@@ -136,8 +136,11 @@ return function(t)
 					elseif roll < 0.318 then
 						session.addSpeedXp(p, math.random(200, 4000)) -- train, so deeper terrains can be outrun
 					elseif roll < 0.32 then
-						session.add(p, 5e9)
-						world.load("src/server/LimitedService").buyWithCoins(p)
+						-- a Robux purchase of the limited egg (the receipt already proved payment)
+						local tierId = world.service("ReplicatedStorage"):GetAttribute("LimitedTier")
+						if typeof(tierId) == "string" then
+							world.load("src/server/LimitedService").grantPaid(p, tierId)
+						end
 					elseif roll < 0.325 then
 						session.rebirth(p)
 					end
