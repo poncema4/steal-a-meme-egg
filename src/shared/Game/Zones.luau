@@ -293,4 +293,30 @@ function Zones.endX(zone: Zone): number
 	return zone.startX + zone.length
 end
 
+-- The corridor walls in each terrain wear its theme: the wall colour and the lip along its top (the Safe Zone keeps tan and grass).
+Zones.WallTheme = table.freeze({
+	Safe = { wall = { 205, 150, 98 }, lip = { 90, 200, 60 } },
+	Meadow = { wall = { 196, 142, 92 }, lip = { 90, 200, 60 } },
+	Dune = { wall = { 226, 190, 120 }, lip = { 246, 218, 150 } },
+	Volcano = { wall = { 72, 52, 52 }, lip = { 255, 110, 30 } },
+	Frost = { wall = { 170, 210, 240 }, lip = { 245, 250, 255 } },
+	Cosmic = { wall = { 62, 42, 112 }, lip = { 90, 230, 255 } },
+	Swamp = { wall = { 86, 96, 60 }, lip = { 72, 140, 60 } },
+	Candy = { wall = { 255, 160, 200 }, lip = { 255, 240, 250 } },
+	Neon = { wall = { 32, 32, 64 }, lip = { 255, 60, 220 } },
+	Haunted = { wall = { 92, 86, 102 }, lip = { 140, 90, 170 } },
+	Sky = { wall = { 228, 238, 255 }, lip = { 255, 220, 120 } },
+	Toy = { wall = { 60, 120, 230 }, lip = { 255, 210, 40 } },
+	Pirate = { wall = { 140, 95, 55 }, lip = { 220, 190, 130 } },
+	Robot = { wall = { 130, 140, 160 }, lip = { 250, 200, 30 } },
+	Jungle = { wall = { 150, 140, 105 }, lip = { 60, 150, 60 } },
+	Throne = { wall = { 150, 30, 50 }, lip = { 255, 200, 60 } },
+})
+
+-- The wall theme at position x along the corridor.
+function Zones.wallThemeAt(x: number): { wall: { number }, lip: { number } }
+	local zone = Zones.at(x)
+	return Zones.WallTheme[if zone then zone.id else "Safe"] or Zones.WallTheme.Safe
+end
+
 return Zones

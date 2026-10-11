@@ -125,29 +125,11 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	local indexPanel = Ui.panel(gui, "INDEX", 720, 540)
 	local progress = Ui.label(indexPanel.body, "Progress", 22, Color3.fromRGB(255, 240, 150))
 	progress.Size = UDim2.new(1, 0, 0, 30)
-	-- one tab per world, like the reference: pick a world to see its characters, finish them all for a reward and a better bat
-	local tabsBar = Instance.new("ScrollingFrame")
-	tabsBar.Name = "Tabs"
-	tabsBar.BackgroundTransparency = 1
-	tabsBar.BorderSizePixel = 0
-	tabsBar.Position = UDim2.fromOffset(0, 34)
-	tabsBar.Size = UDim2.new(1, 0, 0, 56)
-	tabsBar.ScrollBarThickness = 4
-	tabsBar.ScrollingDirection = Enum.ScrollingDirection.X
-	tabsBar.AutomaticCanvasSize = Enum.AutomaticSize.X
-	tabsBar.CanvasSize = UDim2.new()
-	tabsBar.Parent = indexPanel.body
-	local tabsLayout = Instance.new("UIListLayout")
-	tabsLayout.FillDirection = Enum.FillDirection.Horizontal
-	tabsLayout.Padding = UDim.new(0, 6)
-	tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	tabsLayout.Parent = tabsBar
-	local reward = Ui.label(indexPanel.body, "Reward", 16, Color3.fromRGB(190, 235, 255))
-	reward.Position = UDim2.fromOffset(0, 94)
-	reward.Size = UDim2.new(1, 0, 0, 24)
-	local cards = scroller(indexPanel.body, "Cards", UDim2.fromOffset(0, 122), UDim2.new(1, 0, 1, -122))
+	-- one long list you scroll down: a section per world, each on its world's own colours (its ground fading into its sky),
+	-- with the world's name, how many you have found, what finishing it pays (coins and a better bat), then its characters
+	local cards = scroller(indexPanel.body, "Cards", UDim2.fromOffset(0, 34), UDim2.new(1, 0, 1, -34))
 	local stack = Instance.new("UIListLayout")
-	stack.Padding = UDim.new(0, 6)
+	stack.Padding = UDim.new(0, 12)
 	stack.SortOrder = Enum.SortOrder.LayoutOrder
 	stack.Parent = cards
 	type Card = {
@@ -162,46 +144,75 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		char: Eggs.Character,
 	}
 	local cardList: { Card } = {}
-	type SectionView = { title: string, zoneId: string, tab: TextButton, holder: Frame, total: number }
+	type SectionView =
+		{ title: string, zoneId: string, header: TextLabel, reward: TextLabel, grid: Frame, total: number }
 	local sectionViews: { SectionView } = {}
-	local selected = 1
-	local refreshTabs: () -> () = function() end
-	local function selectSection(n: number)
-		selected = n
-		refreshTabs()
-	end
 	local order = 0
+	local LIMITED_THEME = { ground = { 120, 60, 170 }, sky = { 255, 150, 60 } }
 	for sectionNumber, section in sections() do
-		local tab = Ui.button(tabsBar, `Tab_{sectionNumber}`, "", Ui.Palettes.Blue, UDim2.fromOffset(124, 50))
-		tab.LayoutOrder = sectionNumber
-		tab.TextSize = 15
-		tab.TextWrapped = true
+		local zone = Zones.get(section.zoneId)
+		local theme = if zone then zone else LIMITED_THEME
+		local ground, sky = theme.ground :: { number }, theme.sky :: { number }
 		local holder = Instance.new("Frame")
 		holder.Name = `Section_{sectionNumber}`
-		holder.BackgroundTransparency = 1
-		holder.Size = UDim2.fromScale(1, 0)
+		holder.BackgroundColor3 = Color3.fromRGB(ground[1], ground[2], ground[3])
+		holder.BorderSizePixel = 0
+		holder.Size = UDim2.new(1, -8, 0, 0)
 		holder.AutomaticSize = Enum.AutomaticSize.Y
 		holder.LayoutOrder = sectionNumber
-		holder.Visible = sectionNumber == 1
 		holder.Parent = cards
+		corner(holder, 14)
+		local gradient = Instance.new("UIGradient")
+		gradient.Rotation = 90
+		gradient.Color = ColorSequence.new(
+			Color3.fromRGB(sky[1], sky[2], sky[3]),
+			Color3.fromRGB(math.floor(ground[1] * 0.75), math.floor(ground[2] * 0.75), math.floor(ground[3] * 0.75))
+		)
+		gradient.Parent = holder
+		local stroke = Instance.new("UIStroke")
+		stroke.Thickness = 3
+		stroke.Color = Color3.new(0, 0, 0)
+		stroke.Parent = holder
+		local pad = Instance.new("UIPadding")
+		pad.PaddingTop, pad.PaddingBottom = UDim.new(0, 8), UDim.new(0, 10)
+		pad.PaddingLeft, pad.PaddingRight = UDim.new(0, 10), UDim.new(0, 10)
+		pad.Parent = holder
+		local column = Instance.new("UIListLayout")
+		column.Padding = UDim.new(0, 4)
+		column.SortOrder = Enum.SortOrder.LayoutOrder
+		column.Parent = holder
+		local header = Ui.label(holder, "Header", 26)
+		header.LayoutOrder = 1
+		header.Size = UDim2.new(1, 0, 0, 32)
+		header.TextXAlignment = Enum.TextXAlignment.Left
+		local rewardLine = Ui.label(holder, "Reward", 16, Color3.fromRGB(255, 245, 190))
+		rewardLine.LayoutOrder = 2
+		rewardLine.Size = UDim2.new(1, 0, 0, 22)
+		rewardLine.TextXAlignment = Enum.TextXAlignment.Left
+		rewardLine.TextWrapped = true
+		local gridFrame = Instance.new("Frame")
+		gridFrame.Name = "Grid"
+		gridFrame.LayoutOrder = 3
+		gridFrame.BackgroundTransparency = 1
+		gridFrame.Size = UDim2.fromScale(1, 0)
+		gridFrame.AutomaticSize = Enum.AutomaticSize.Y
+		gridFrame.Parent = holder
 		sectionViews[sectionNumber] = {
 			title = section.name,
 			zoneId = section.zoneId,
-			tab = tab,
-			holder = holder,
+			header = header,
+			reward = rewardLine,
+			grid = gridFrame,
 			total = #section.characters,
 		}
-		tab.Activated:Connect(function()
-			selectSection(sectionNumber)
-		end)
 		local grid = Instance.new("UIGridLayout")
 		grid.CellSize = UDim2.fromOffset(150, 168)
 		grid.CellPadding = UDim2.fromOffset(10, 10)
 		grid.SortOrder = Enum.SortOrder.LayoutOrder
-		grid.Parent = holder
+		grid.Parent = gridFrame
 		for _, c in section.characters do
 			order += 1
-			local root = frame(holder, `Card_{c.id}`, UDim2.fromOffset(150, 168))
+			local root = frame(gridFrame, `Card_{c.id}`, UDim2.fromOffset(150, 168))
 			root.LayoutOrder = order
 			corner(root, 10)
 			local portrait =
@@ -258,7 +269,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		end
 	end
 
-	refreshTabs = function()
+	local function refreshSections()
 		local found = Collection.decode(attr(player, "Index"))
 		local claims: { [string]: boolean } = {}
 		local claimedCount = 0
@@ -266,42 +277,33 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			claims[id] = true
 			claimedCount += 1
 		end
-		for i, view in sectionViews do
+		local nextBat = Bats.get(claimedCount + 1).name
+		for _, view in sectionViews do
 			local count, total = Collection.worldProgress(found, view.zoneId)
 			if view.zoneId == "Limited" then
 				count, total = 0, view.total
 				for _, card in cardList do
-					if card.root.Parent == view.holder and Collection.has(found, card.char.id) then
+					if card.root.Parent == view.grid and Collection.has(found, card.char.id) then
 						count += 1
 					end
 				end
 			end
 			local done = claims[view.zoneId] == true
-			view.tab.Text = `{view.title}\n{count}/{total}{if done then " ✓" else ""}`
-			Ui.setPalette(
-				view.tab,
-				if i == selected then Ui.Palettes.Gold elseif done then Ui.Palettes.Green else Ui.Palettes.Blue
-			)
-			view.holder.Visible = i == selected
-		end
-		local view = sectionViews[selected]
-		local tier = if view
-			then Eggs.tier(((Zones.get(view.zoneId) or { eggs = { "" } }).eggs :: { string })[1])
-			else nil
-		if view and view.zoneId == "Limited" then
-			reward.Text = "Limited eggs come and go in the shop: collect them while you can."
-		elseif view and claims[view.zoneId] then
-			reward.Text = "Index complete! Reward claimed: coins and a better bat."
-		elseif view and tier then
-			reward.Text =
-				`Find all {view.total}: win {Economy.format(tier.price * Config.Index.RewardEggs)} coins and the {Bats.get(
-					claimedCount + 1
-				).name}`
+			view.header.Text = `{string.upper(view.title)}   {count}/{total}{if done then "  ✓" else ""}`
+			local tier = Eggs.tier(((Zones.get(view.zoneId) or { eggs = { "" } }).eggs :: { string })[1])
+			if view.zoneId == "Limited" then
+				view.reward.Text = "Limited eggs come and go in the shop: collect them while you can."
+			elseif done then
+				view.reward.Text = "Complete! Reward claimed: coins and a better bat."
+			elseif tier then
+				view.reward.Text =
+					`Find all {view.total}: win {Economy.format(tier.price * Config.Index.RewardEggs)} coins and the {nextBat}`
+			end
 		end
 	end
 
 	local function refreshIndex()
-		refreshTabs()
+		refreshSections()
 		local found = Collection.decode(attr(player, "Index"))
 		local count, total = Collection.progress(found)
 		progress.Text = `Discovered {count} / {total}`

@@ -87,33 +87,29 @@ return function(t)
 		total += 1
 	end
 	t.equal("it has a card for every character", count(find(index, "Cards") :: Instance, "Card_"), total)
-	t.equal("one tab for each world and one for the limited eggs", count(find(index, "Tabs") :: Instance, "Tab_"), 16)
 	t.equal("it counts nothing discovered", (find(index, "Progress") :: TextLabel).Text, `Discovered 0 / {total}`)
-	-- the tabs: only the picked world's characters show, the tab says how many of its characters are found, and a reward is promised
-	local firstTab, secondTab = find(index, "Tab_1") :: TextButton, find(index, "Tab_2") :: TextButton
+	-- one list you scroll down (no tabs): a section per world plus the limited eggs, every one showing, each on its own colours
+	local cardsList = find(index, "Cards") :: ScrollingFrame
 	t.check(
-		"a tab names its world and counts",
-		string.find(firstTab.Text, "Meme Meadow", 1, true) ~= nil and string.find(firstTab.Text, "/", 1, true) ~= nil,
-		firstTab.Text
+		"the Index scrolls down",
+		cardsList:IsA("ScrollingFrame") and cardsList.ScrollingDirection ~= world.enum.ScrollingDirection.X
 	)
+	t.check("there are no tabs any more", find(index, "Tabs") == nil)
+	local one, two = find(index, "Section_1") :: Frame, find(index, "Section_2") :: Frame
+	t.check("every world's section shows at once", one.Visible and two.Visible and find(index, "Section_16") ~= nil)
+	t.check("each world has its own background colour", one.BackgroundColor3 ~= two.BackgroundColor3)
+	t.check("in its world's theme (a gradient)", one:FindFirstChildOfClass("UIGradient") ~= nil)
+	local header = find(one, "Header") :: TextLabel
 	t.check(
-		"the first world is showing",
-		(find(index, "Section_1") :: Frame).Visible and not (find(index, "Section_2") :: Frame).Visible
-	)
-	secondTab.Activated:Fire()
-	world.advance(0.1)
-	t.check(
-		"picking the second tab shows only the second world",
-		not (find(index, "Section_1") :: Frame).Visible and (find(index, "Section_2") :: Frame).Visible
+		"a section names its world and counts",
+		string.find(header.Text, "MEME MEADOW", 1, true) ~= nil and string.find(header.Text, "/", 1, true) ~= nil,
+		header.Text
 	)
 	t.check(
 		"and says what finishing it wins",
-		string.find((find(index, "Reward") :: TextLabel).Text, "Bat", 1, true) ~= nil,
-		(find(index, "Reward") :: TextLabel).Text
+		string.find((find(two, "Reward") :: TextLabel).Text, "Bat", 1, true) ~= nil,
+		(find(two, "Reward") :: TextLabel).Text
 	)
-	firstTab.Activated:Fire()
-	world.advance(0.1)
-	t.check("and back", (find(index, "Section_1") :: Frame).Visible and not (find(index, "Section_2") :: Frame).Visible)
 	t.equal(
 		"an unknown character is hidden",
 		(find(find(index, "Card_BonkBean") :: Instance, "Name") :: TextLabel).Text,

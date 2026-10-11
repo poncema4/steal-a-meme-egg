@@ -348,27 +348,32 @@ local function buildCorridor(map: Instance)
 	lobby.Duration = 0
 	lobby.Transparency = 1
 	lobby.Parent = map
+	local function rgb(c: { number }, k: number): Color3
+		return Color3.fromRGB(math.floor(c[1] * k), math.floor(c[2] * k), math.floor(c[3] * k))
+	end
 	local tans = { Color3.fromRGB(205, 150, 98), Color3.fromRGB(190, 136, 86) }
 	local segments = math.ceil(length / band)
 	for _, side in { -1, 1 } do
 		for k = 0, segments - 1 do
 			local x0 = World.SAFE_BACK + k * band
 			local x1 = math.min(x0 + band, endX)
+			-- each terrain's walls wear its theme (two tones so the wall reads as blocks, like the reference)
+			local theme = Zones.wallThemeAt((x0 + x1) / 2)
 			part(
 				"Wall",
 				Vector3.new(x1 - x0, World.WALL_HEIGHT, 4),
 				CFrame.new((x0 + x1) / 2, World.WALL_HEIGHT / 2, side * (half + 2)),
-				tans[k % 2 + 1],
+				rgb(theme.wall, if k % 2 == 0 then 1 else 0.92),
+				map
+			)
+			part(
+				"WallLip",
+				Vector3.new(x1 - x0, 1.5, 7),
+				CFrame.new((x0 + x1) / 2, World.WALL_HEIGHT + 0.75, side * (half + 2)),
+				rgb(theme.lip, 1),
 				map
 			)
 		end
-		part(
-			"WallLip",
-			Vector3.new(length + 8, 1.5, 7),
-			CFrame.new((World.SAFE_BACK + endX) / 2, World.WALL_HEIGHT + 0.75, side * (half + 2)),
-			Color3.fromRGB(90, 200, 60),
-			map
-		)
 	end
 	for _, x in { World.SAFE_BACK - 2, endX + 2 } do
 		part(
