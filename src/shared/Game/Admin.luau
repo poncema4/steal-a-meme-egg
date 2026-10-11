@@ -12,6 +12,7 @@ export type Action =
 	| { kind: "announce", text: string }
 	| { kind: "clearEvents" }
 	| { kind: "resetMe" }
+	| { kind: "maxMe" }
 	| { kind: "help" }
 export type Result = { ok: boolean, message: string, action: Action? }
 
@@ -83,12 +84,15 @@ function Admin.run(text: string, isAdmin: boolean): Result
 	elseif name == "resetme" then
 		-- starts the caller over (speed, treadmill, rebirths, coins, base, Index); purchases are kept. It only ever touches whoever typed it.
 		return { ok = true, message = "resetting YOUR progress to the start", action = { kind = "resetMe" } }
+	elseif name == "maxme" then
+		-- gives the caller the top of everything to test the late game: max treadmill, past the deepest world's speed, coins
+		return { ok = true, message = "maxing YOUR progress", action = { kind = "maxMe" } }
 	elseif name == "clear" then
 		return { ok = true, message = "events cleared", action = { kind = "clearEvents" } }
 	elseif name == "help" then
 		return {
 			ok = true,
-			message = "/event <name> [seconds], /give <coins>, /giveall <coins>, /announce <text>, /clear, /resetme (only you)",
+			message = "/event <name> [seconds], /give <coins>, /giveall <coins>, /announce <text>, /clear, /resetme and /maxme (only you)",
 			action = { kind = "help" },
 		}
 	end
