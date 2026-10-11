@@ -1,71 +1,52 @@
 --!nocheck
--- A player carrying an egg holds it over their head with both arms raised; the arms come down when they stop carrying.
+-- A player carrying an egg holds it over their head with both arms raised; when the egg is gone the pose stops and the walk
+-- animation takes the arms back. Works for classic Motor6D shoulders (R15, R6) and Roblox's upgraded joints (AnimationConstraint).
 local Fake = require("../fake/Roblox")
 
 local function rig(world, kind: string)
 	local Instance = world.instance
 	local character = Instance.new("Model")
 	character.Name = "Rig"
-	local function motor(parentName: string, name: string)
+	local function joint(parentName: string, name: string)
 		local parent = character:FindFirstChild(parentName) or Instance.new("Part")
 		parent.Name = parentName
 		parent.Parent = character
-		local m = Instance.new("Motor6D")
-		m.Name = name
-		m.Transform = world.CFrame.new(0, 0, 0)
-		m.C0 = world.CFrame.new(0, 0, 0)
-		m.Parent = parent
-		return m
+		local j = Instance.new(if kind == "Upgraded" then "AnimationConstraint" else "Motor6D")
+		j.Name = name
+		j.Transform = world.CFrame.new(0, 0, 0)
+		j.Parent = parent
+		return j
 	end
-	-- Roblox's avatar joint upgrade: the joint is an AnimationConstraint between two attachments
-	local function constraint(parentName: string, name: string)
-		local parent = Instance.new("Part")
-		parent.Name = parentName
-		parent.Parent = character
-		local a0 = Instance.new("Attachment")
-		a0.Name = `{name}RigAttachment`
-		a0.CFrame = world.CFrame.new(0, 0, 0)
-		a0.Parent = character
-		local c = Instance.new("AnimationConstraint")
-		c.Name = name
-		c.Attachment0 = a0
-		c.Parent = parent
-		return a0
+	if kind == "R6" then
+		return character, joint("Torso", "Right Shoulder"), joint("Torso", "Left Shoulder")
 	end
-	if kind == "R15" then
-		return character, motor("RightUpperArm", "RightShoulder"), motor("LeftUpperArm", "LeftShoulder")
-	elseif kind == "Upgraded" then
-		return character, constraint("RightUpperArm", "RightShoulder"), constraint("LeftUpperArm", "LeftShoulder")
-	end
-	return character, motor("Torso", "Right Shoulder"), motor("Torso", "Left Shoulder")
+	return character, joint("RightUpperArm", "RightShoulder"), joint("LeftUpperArm", "LeftShoulder")
 end
 
 return function(t)
 	local world = Fake.world()
 	local CarryPose = world.load("src/client/CarryPose")
-	local function frame(m: any): any
-		return if m:IsA("Motor6D") then m.C0 else m.CFrame
+	CarryPose.start()
+	local function raised(j: any): boolean
+		return j.Transform.LookVector.Z > -0.5 or j.Transform.UpVector.Y < 0
 	end
-	local function raised(m: any): boolean
-		return frame(m).LookVector.Z > -0.5 or frame(m).UpVector.Y < 0
-	end
-	for _, kind in { "R15", "R6", "Upgraded" } do
+	for i, kind in { "R15", "R6", "Upgraded" } do
 		local character, right, left = rig(world, kind)
 		t.equal(`{kind}: both shoulders are found`, #CarryPose.joints(character), 2)
-		local ana = world.addPlayer(`Ana{kind}`, if kind == "R15" then 81 elseif kind == "R6" then 82 else 83)
+		local ana = world.addPlayer(`Ana{kind}`, 80 + i)
 		ana.Character = character
-		CarryPose.start()
 		world.advance(0.1)
-		local restC0 = frame(right)
 		t.check(`{kind}: arms hang normally with empty hands`, not raised(right))
 		ana:SetAttribute("Carrying", "Soggy")
 		world.advance(0.1)
 		t.check(`{kind}: carrying an egg raises the right arm`, raised(right))
 		t.check(`{kind}: and the left arm`, raised(left))
-		world.advance(1)
-		t.check(`{kind}: it stays raised (the pose is not stacked every frame)`, raised(right))
-		ana:SetAttribute("Carrying", "")
+		right.Transform = world.CFrame.new(0, 0, 0) -- the walk animation writes the joint again on the next frame...
 		world.advance(0.1)
-		t.check(`{kind}: the arms come down after the egg is delivered`, frame(right) == restC0 and not raised(right))
+		t.check(`{kind}: ...and the pose wins again, every frame`, raised(right))
+		ana:SetAttribute("Carrying", "")
+		right.Transform = world.CFrame.new(0, 0, 0)
+		world.advance(0.1)
+		t.check(`{kind}: after the egg is gone the animation keeps the arms`, not raised(right))
 	end
 end

@@ -342,6 +342,7 @@ function Fake.world()
 		Died = true,
 		Heartbeat = true,
 		Stepped = true,
+		PreSimulation = true,
 		RenderStepped = true,
 		PlayerAdded = true,
 		PlayerRemoving = true,
@@ -989,6 +990,7 @@ function Fake.world()
 				end
 			end
 			service("RunService").Stepped:Fire(step, step)
+			service("RunService").PreSimulation:Fire(step)
 			service("RunService").Heartbeat:Fire(step)
 		end
 	end
