@@ -1,6 +1,7 @@
 --!nocheck
 -- The real models show up in the pens and nests, tinted by mutation, and the old look stays when a template is missing.
 local Fake = require("../fake/Roblox")
+local Zones = require("../../src/shared/Game/Zones")
 
 local function template(world: any, kind: string, id: string)
 	local Instance, Vector3, CFrame, Color3 = world.instance, world.Vector3, world.CFrame, world.Color3
@@ -94,7 +95,7 @@ return function(t)
 		end
 	end
 	t.check("the Meadow has real tree models", trees > 5, tostring(trees))
-	t.check("every nest sits in a twig nest model", nests == 25, tostring(nests))
+	t.check("every nest sits in a twig nest model", nests == 5 * #Zones.List, tostring(nests))
 	local boss = wilds:FindFirstChild("Boss_Meadow") :: Instance
 	t.check("the Meadow boss is its brick model", boss:FindFirstChild("Visual") ~= nil)
 	t.check(

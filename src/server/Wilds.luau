@@ -56,6 +56,13 @@ function Wilds.setNotify(fn: (Player, string) -> ())
 	notify = fn
 end
 
+local stealListeners: { (Player, Zones.Zone) -> () } = {}
+
+-- Called when a player takes an egg from a nest (or picks one up off the ground): who, and the terrain it came from.
+function Wilds.onStolen(fn: (Player, Zones.Zone) -> ())
+	table.insert(stealListeners, fn)
+end
+
 local sfx: (Player, string) -> () = function(_player: Player, _name: string) end
 
 local nestRate: () -> number = function()
@@ -128,7 +135,18 @@ local function label(parent: BasePart, lines: { string }, offset: number, width:
 	end
 end
 
-local SCENERY = { Meadow = "Tree", Dune = "Cactus", Volcano = "LavaRock", Frost = "IcePine", Cosmic = "Crystal" }
+local SCENERY = {
+	Meadow = "Tree",
+	Dune = "Cactus",
+	Volcano = "LavaRock",
+	Frost = "IcePine",
+	Cosmic = "Crystal",
+	Swamp = "SwampTree",
+	Candy = "CandyCane",
+	Neon = "NeonPylon",
+	Haunted = "Tombstone",
+	Sky = "CloudPuff",
+}
 
 -- Scenery per terrain: simple parts only (no meshes), seeded so every server builds the same map.
 local function decorate(zone: Zones.Zone, nests: { Layout.Nest }, parent: Instance)
@@ -372,18 +390,29 @@ function Wilds.build(): Folder
 		local nests = Layout.nests(zone)
 		decorate(zone, nests, folder)
 		buildNests(zone, nests, buildBoss(zone, folder), folder)
-		-- the gate: a see-through frame with the price on it (the server, not the frame, keeps people out)
-		local gate = box(
-			`Gate_{zone.id}`,
-			Vector3.new(Zones.GATE_DEPTH, 26, Zones.WIDTH),
-			CFrame.new(zone.startX, 13, 0),
-			Color3.fromRGB(255, 70, 70),
-			folder,
-			Enum.Material.Neon
-		)
-		gate.Transparency = 0.7
-		gate.CanCollide = false
-		label(gate, { zone.name, if zone.level > 0 then `Speed {Zones.speedLabel(zone)}` else "open" }, 14, 260)
+		-- no gates: two signposts at the entrance say which speed is recommended here (anyone may walk in, bosses just catch the slow)
+		for _, side in { -1, 1 } do
+			local z = side * 18
+			local board = box(
+				`Sign_{zone.id}`,
+				Vector3.new(16, 7, 0.8),
+				CFrame.new(zone.startX + 4, 9.5, z) * CFrame.Angles(0, math.pi / 2, 0),
+				Color3.fromRGB(38, 44, 60),
+				folder
+			)
+			board.CanCollide = false
+			for _, dz in { -6, 6 } do
+				local leg = box(
+					"Leg",
+					Vector3.new(1, 6, 1),
+					CFrame.new(zone.startX + 4, 3, z + dz),
+					Color3.fromRGB(120, 90, 60),
+					folder
+				)
+				leg.CanCollide = false
+			end
+			label(board, { zone.name, `Recommended speed: {Zones.speedLabel(zone)}` }, 0, 300)
+		end
 	end
 	return folder
 end
@@ -427,10 +456,6 @@ function Wilds.steal(player: Player, entry: Entry)
 		notify(player, "You are already carrying an egg!")
 		return
 	end
-	if not Zones.unlocked(entry.zone, Session.speedLevel(player)) then
-		notify(player, `You need Speed {Zones.speedLabel(entry.zone)} for {entry.zone.name}`)
-		return
-	end
 	local tier, mutation = Nest.take(entry.nest, Config.Wilds.NestRespawnSeconds)
 	if not tier then
 		return
@@ -442,6 +467,9 @@ function Wilds.steal(player: Player, entry: Entry)
 	sfx(player, "steal")
 	sfx(player, "roar")
 	notify(player, `You stole the egg! {entry.boss.name} is chasing you. RUN HOME!`)
+	for _, fn in stealListeners do
+		fn(player, entry.zone)
+	end
 end
 
 -- The egg goes back to its nest and the thief (if any) is sent home.
@@ -567,7 +595,6 @@ end
 
 function Wilds.start()
 	local sinceGate = 0
-	local lastWarn: { [Player]: number } = {}
 	RunService.Heartbeat:Connect(function(dt: number)
 		-- guardians and nests
 		for _, entry in entries do
@@ -627,6 +654,9 @@ function Wilds.start()
 			if target and target.x < first.startX then
 				target = nil
 			end
+			-- a player with the Boss Slow pass is chased at a slower pace
+			local slow = if nearest and nearest.thief then Session.perks(nearest.thief).bossSlow else 1
+			g.speed = boss.zone.guardianSpeed / slow
 			local before = g.state
 			local caught = Guardian.step(g, dt, target, Config.Wilds.CatchRadius, Config.Wilds.Leash)
 			-- ...and no monster ever enters the Safe Zone: it stops at the first terrain's edge
@@ -668,24 +698,13 @@ function Wilds.start()
 		end
 		-- the gates, and the "Zone" label the HUD shows
 		sinceGate += dt
-		if sinceGate >= Config.Wilds.GatePushSeconds then
+		if sinceGate >= Config.Wilds.ZoneLabelSeconds then
 			sinceGate = 0
 			for _, player in Players:GetPlayers() do
 				local root = rootOf(player)
 				local state = Session.get(player)
 				if root and state then
 					local x = root.Position.X
-					local back = Zones.pushBack(x, Session.speedLevel(player))
-					if back then
-						root.CFrame = CFrame.new(back, root.Position.Y, root.Position.Z)
-						local zone = Zones.at(x) :: Zones.Zone
-						local now = os.clock()
-						if now - (lastWarn[player] or -10) > 3 then
-							lastWarn[player] = now
-							notify(player, `{zone.name} needs Speed {Zones.speedLabel(zone)}`)
-						end
-						x = back
-					end
 					local zone = Zones.at(x)
 					player:SetAttribute("Zone", if zone then zone.name else "Safe Zone")
 				end

@@ -115,11 +115,37 @@ function Store.popLimited(p: Purchases): string?
 	return table.remove(p.pendingLimited, 1)
 end
 
+-- The perks passes give besides multipliers: how much faster eggs hatch, how many traps you may have out (and the shorter wait between
+-- them), and how much slower the bosses chase you.
+export type Perks = { hatch: number, trapMax: number, trapCooldown: number, bossSlow: number }
+
+Store.BASE_TRAPS = 3
+
+function Store.perks(catalog: Catalog, p: Purchases): Perks
+	local perks: Perks = { hatch = 1, trapMax = Store.BASE_TRAPS, trapCooldown = 1, bossSlow = 1 }
+	for key, owned in p.passes do
+		local pass = catalog.Passes[key]
+		if owned and pass then
+			if pass.effect == "hatch" then
+				perks.hatch *= pass.factor
+			elseif pass.effect == "traps" then
+				perks.trapMax = math.max(perks.trapMax, math.floor(pass.factor))
+				perks.trapCooldown = 0.5
+			elseif pass.effect == "bossSlow" then
+				perks.bossSlow *= pass.factor
+			end
+		end
+	end
+	return perks
+end
+
+local EFFECTS = { luck = true, income = true, train = true, hatch = true, traps = true, bossSlow = true }
+
 -- Every pass effect and product kind the catalogue uses is one the game understands (a typo would sell nothing).
 function Store.invalid(catalog: Catalog): { string }
 	local bad = {}
 	for key, pass in catalog.Passes do
-		if pass.effect ~= "luck" and pass.effect ~= "income" and pass.effect ~= "train" then
+		if not EFFECTS[pass.effect] then
 			table.insert(bad, `pass {key}: unknown effect {pass.effect}`)
 		end
 		if pass.factor < 1 then

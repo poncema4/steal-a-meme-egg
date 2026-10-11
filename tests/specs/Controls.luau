@@ -13,10 +13,12 @@ return function(t)
 	t.equal("an exact thousand", Economy.full(1000), "1,000")
 	t.equal("the speed number starts at 1600 (16 studs a second)", Progression.speedStat(0), 1600)
 	t.check(
-		"and always matches your real run speed",
-		Progression.speedStat(7) == math.floor(Progression.walkSpeed(7) * 100)
+		"every level multiplies it by 1.22",
+		math.abs(Progression.speedStat(7) / Progression.speedStat(6) - 1.22) < 0.01
 	)
-	t.equal("it stops at the cap", Progression.speedStat(999), Progression.speedStat(Progression.MAX_LEVEL))
+	t.check("it has no ceiling: billions, trillions and quadrillions are reachable", Progression.speedStat(170) > 1e15)
+	t.equal("a number of billions reads as B", Economy.speed(8.89e9), "8.89B")
+	t.equal("and trillions as T", Economy.speed(4.2e12), "4.2T")
 	t.equal("a negative level is the start", Progression.speedStat(-4), 1600)
 	t.equal("slow mode caps a fast walker", Progression.slowed(30, true), Progression.SLOW_SPEED)
 	t.equal("and does not speed up a slow one", Progression.slowed(10, true), 10)

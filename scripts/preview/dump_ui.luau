@@ -32,7 +32,7 @@ shop.start(ana)
 local panels = world.load("src/client/Panels").start(ana)
 world
 	.load("src/client/Hud")
-	.start(ana, { shop = shop.toggle, index = panels.index, eggs = panels.eggs, pets = panels.pets })
+	.start(ana, { shop = shop.toggle, index = panels.index, eggs = panels.eggs, pets = panels.pets, trophy = panels.trophy })
 -- something to look at in every panel
 session.get(ana).base.slots[1] = { kind = "char", id = "BonkBean", mutation = "Gold" }
 session.get(ana).base.slots[2] = { kind = "char", id = "DiscoPickle", mutation = "Normal" }
@@ -44,7 +44,7 @@ world.advance(1)
 local which = process.args[5]
 if which == "shop" then
 	shop.toggle()
-elseif which == "index" or which == "eggs" or which == "pets" then
+elseif which == "index" or which == "eggs" or which == "pets" or which == "trophy" then
 	(panels :: any)[which]()
 end
 world.advance(1)
@@ -101,6 +101,12 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 					ch = cw / ratio
 				end
 			end
+			-- a size constraint (the panels' maximum size) caps the size, like Roblox does
+			local limit = c:FindFirstChildOfClass("UISizeConstraint")
+			if limit and (limit :: any).MaxSize then
+				cw = math.min(cw, (limit :: any).MaxSize.X)
+				ch = math.min(ch, (limit :: any).MaxSize.Y)
+			end
 			local padLeft = 0
 			local pad = c:FindFirstChildOfClass("UIPadding")
 			if pad then
@@ -132,9 +138,24 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 			end
 			-- an automatic-height frame is as tall as its children stacked
 			if c.AutomaticSize == world.enum.AutomaticSize.Y then
-				for _, g in c:GetChildren() do
-					if g:IsA("Frame") then
-						ch += (g.Size or ZERO).Y.Offset
+				local innerGrid = c:FindFirstChildOfClass("UIGridLayout")
+				if innerGrid then
+					local count = 0
+					for _, g in c:GetChildren() do
+						if g:IsA("Frame") then
+							count += 1
+						end
+					end
+					local cell = (innerGrid :: any).CellSize
+					local gap = (innerGrid :: any).CellPadding
+					local columns = math.max(1, math.floor((cw + gap.X.Offset) / (cell.X.Offset + gap.X.Offset)))
+					local rowsNeeded = math.ceil(count / columns)
+					ch += rowsNeeded * (cell.Y.Offset + gap.Y.Offset)
+				else
+					for _, g in c:GetChildren() do
+						if g:IsA("Frame") then
+							ch += (g.Size or ZERO).Y.Offset
+						end
 					end
 				end
 			end
@@ -217,7 +238,12 @@ local function walk(node: any, x: number, y: number, w: number, h: number, scale
 	used = cursor
 end
 
-for _, gui in ana.PlayerGui:GetChildren() do
+-- screens are drawn in DisplayOrder (the panels sit above the HUD)
+local screens = ana.PlayerGui:GetChildren()
+table.sort(screens, function(a: any, b: any)
+	return (a.DisplayOrder or 1) < (b.DisplayOrder or 1)
+end)
+for _, gui in screens do
 	if gui:IsA("ScreenGui") then
 		local scaleObj = gui:FindFirstChild("Scale")
 		local scale = if scaleObj then (scaleObj :: any).Scale else 1

@@ -258,7 +258,7 @@ function Hud.start(player: Player, actions: Actions?)
 	hotbarList.SortOrder = Enum.SortOrder.LayoutOrder
 	hotbarList.Parent = hotbar
 	local trapSlots: { TextButton } = {}
-	for i = 1, 3 do
+	for i = 1, 6 do
 		local slot = Ui.button(hotbar, `TrapSlot_{i}`, "", Ui.Palettes.Slot, UDim2.fromOffset(slotSide, slotSide))
 		slot.LayoutOrder = i
 		Ui.addIcon(slot, "trap", "center", "TRAP")
@@ -400,7 +400,7 @@ function Hud.start(player: Player, actions: Actions?)
 				`Row_{p.Name}`,
 				i,
 				p.DisplayName,
-				Economy.full(number(p, "SpeedStat", Progression.SPEED_STAT_BASE)),
+				Economy.speed(number(p, "SpeedStat", Progression.SPEED_STAT_BASE)),
 				Economy.format(number(p, "Income", 0)),
 				tostring(number(p, "Rebirths", 0)),
 				if p == player then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1)
@@ -420,7 +420,7 @@ function Hud.start(player: Player, actions: Actions?)
 		local counting = math.min(os.clock() - coinsSince, 0.6) * number(player, "Income", 0)
 		money.Text = "$" .. Economy.format(coins + counting)
 		speed.Text = (if hasShoe then "" else "👟 ")
-			.. Economy.full(number(player, "SpeedStat", Progression.SPEED_STAT_BASE))
+			.. Economy.speed(number(player, "SpeedStat", Progression.SPEED_STAT_BASE))
 			.. (if rebirths > 0 then ` (x{Rebirth.multiplier(rebirths)})` else "")
 		leave.Visible = player:GetAttribute("TreadmillLocked") == true
 	end
@@ -458,7 +458,9 @@ function Hud.start(player: Player, actions: Actions?)
 		local placed = number(player, "TrapsPlaced", 0)
 		local cooling = number(player, "TrapReadyAt", 0) > workspace:GetServerTimeNow()
 		for i, slot in trapSlots do
-			local ready = i <= 3 - placed and not cooling
+			local limit = number(player, "TrapsMax", 3)
+			slot.Visible = i <= limit
+			local ready = i <= limit - placed and not cooling
 			Ui.setPalette(slot, if ready then Ui.Palettes.Slot else Ui.Palettes.SlotUsed)
 		end
 		local eggBadge = badges.EggsButton

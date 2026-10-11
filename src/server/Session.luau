@@ -84,6 +84,13 @@ function Session.onChanged(fn: (Player) -> ())
 	table.insert(listeners, fn)
 end
 
+local deliverListeners: { (Player, string) -> () } = {}
+
+-- Called when a player brings a stolen egg home (the egg's tier).
+function Session.onDelivered(fn: (Player, string) -> ())
+	table.insert(deliverListeners, fn)
+end
+
 function Session.onHatched(fn: (Player, { number }) -> ())
 	table.insert(hatchListeners, fn)
 end
@@ -114,6 +121,7 @@ local function publish(state: State)
 	state.player:SetAttribute("Coins", math.floor(state.coins))
 	state.player:SetAttribute("Income", Base.income(state.base, income))
 	state.player:SetAttribute("Slots", state.base.size)
+	state.player:SetAttribute("TrapsMax", Store.perks(catalog, state.purchases).trapMax)
 	Collection.record(state.collection, state.base)
 	state.player:SetAttribute("Index", Collection.encode(state.collection))
 	state.player:SetAttribute("BaseItems", BaseView.encode(state.base))
@@ -298,6 +306,15 @@ function Session.hatchNow(player: Player)
 	end
 end
 
+-- What this player's passes give besides multipliers (hatch speed, trap count, boss slowing).
+function Session.perks(player: Player): Store.Perks
+	local state = states[player]
+	if not state then
+		return Store.perks(catalog, Store.new())
+	end
+	return Store.perks(catalog, state.purchases)
+end
+
 function Session.rebirths(player: Player): number
 	local state = states[player]
 	return if state then state.rebirths else 0
@@ -429,6 +446,9 @@ function Session.deliver(player: Player, at: Base.Spot?): (boolean, string)
 	end
 	Session.applySpeed(player)
 	Session.changed(player)
+	for _, fn in deliverListeners do
+		fn(player, tier)
+	end
 	return true, message
 end
 
@@ -704,7 +724,7 @@ function Session.start(onJoin: (Player) -> (), onLeave: (Player) -> ())
 		for player, state in states do
 			local passLuck, passIncome = Store.multipliers(catalog, state.purchases)
 			local myLuck = luck * passLuck
-			local hatched = Base.tick(state.base, step, function(tier)
+			local hatched = Base.tick(state.base, step * Store.perks(catalog, state.purchases).hatch, function(tier)
 				return Eggs.roll(tier, myLuck, rng)
 			end, function()
 				return Eggs.mutation(myLuck, rng)

@@ -42,13 +42,13 @@ function Objective.hint(f: Facts): string
 	if f.freeSlots == 0 then
 		return "Your base is full! Stand on the green pad to buy another slot."
 	end
-	local nextZone = Zones.nextLocked(f.speedLevel)
+	local nextZone = Zones.nextTarget(f.speedLevel)
 	local needed = Objective.speedNeeded(f.speedLevel)
 	if f.speedLevel < needed then
 		return `Train on the treadmill: you need speed level {needed} to outrun the guardians out here.`
 	end
 	if nextZone then
-		return `Train on the treadmill to Speed {Zones.speedLabel(nextZone)} to unlock {nextZone.name}.`
+		return `Train on the treadmill: recommended speed {Zones.speedLabel(nextZone)} for {nextZone.name}.`
 	end
 	if f.eggs > 0 and f.characters == 0 then
 		return "Your egg is hatching. Hold E on it to skip the wait with coins."

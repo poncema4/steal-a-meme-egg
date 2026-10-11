@@ -768,6 +768,12 @@ function Fake.world()
 			s.UserOwnsGamePassAsync = function(_, userId, id)
 				return s.owned[userId .. ":" .. id] == true
 			end
+		elseif name == "BadgeService" then
+			s.awarded = {}
+			s.AwardBadge = function(_, userId, id)
+				table.insert(s.awarded, { userId = userId, id = id })
+				return true
+			end
 		elseif name == "TeleportService" then
 			s.SetTeleportGui = function(_, gui)
 				world.teleportGui = gui

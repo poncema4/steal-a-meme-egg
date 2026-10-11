@@ -10,9 +10,17 @@ local Guardian = require(ReplicatedStorage.Shared.Game.Guardian)
 local Trap = require(ReplicatedStorage.Shared.Game.Trap)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 local Models = require(script.Parent.Models)
+local Session = require(script.Parent.Session)
 local Wilds = require(script.Parent.Wilds)
 
 local Traps = {}
+
+local springListeners: { (Player) -> () } = {}
+
+-- Called when one of a player's traps holds a boss.
+function Traps.onSprung(fn: (Player) -> ())
+	table.insert(springListeners, fn)
+end
 
 local states: { [Player]: Trap.State } = {}
 local pieces: { [Trap.Spot]: Part } = {}
@@ -92,7 +100,8 @@ function Traps.place(player: Player): (boolean, string)
 			remove(spot)
 		end
 	end
-	local ok, why = Trap.place(state, x, z, now)
+	local perks = Session.perks(player)
+	local ok, why = Trap.place(state, x, z, now, perks.trapMax, perks.trapCooldown)
 	if not ok then
 		return false, why or "cannot place"
 	end
@@ -158,6 +167,9 @@ function Traps.start(remotes: Instance, notifyFn: (Player, string) -> (), sfxFn:
 						remove(spot)
 						Guardian.stunned(g, Trap.STUN)
 						notify(player, "Your trap caught a guardian!")
+						for _, fn in springListeners do
+							fn(player)
+						end
 						sfx(player, "caught")
 						changed = true
 					end

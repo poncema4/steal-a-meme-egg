@@ -67,7 +67,7 @@ return function(t)
 	world.prompts(model, "Upgrade treadmill")[1].Triggered:Fire(ana)
 	world.advance(0.5)
 	t.equal("upgrading changes the display", plot.display.level.Text, "LEVEL 1")
-	t.check("and the rate", string.find(plot.display.rate.Text, "3", 1, true) ~= nil, plot.display.rate.Text)
+	t.check("and the rate", string.find(plot.display.rate.Text, "6", 1, true) ~= nil, plot.display.rate.Text)
 	session.get(ana).treadmill = Progression.MAX_TREADMILL
 	session.changed(ana)
 	world.advance(0.5)
@@ -110,7 +110,7 @@ return function(t)
 		(plot.treadmill:GetAttribute("BeltSpeed") :: number) > 5
 	)
 	-- a short while, so even a fast belt has not carried a ridge more than half way round (which would look like moving forward)
-	for _ = 1, 6 do
+	for _ = 1, 2 do
 		world.render(1 / 30)
 	end
 	local moved = positions()

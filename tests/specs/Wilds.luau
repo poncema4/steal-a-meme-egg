@@ -25,13 +25,25 @@ return function(t)
 	t.equal("each terrain has 5 nests", Zones.List[1].nests, 5)
 	local folder = world.workspace:FindFirstChild("Wilds") :: Instance
 	t.check("the Wilds folder is built", folder ~= nil)
-	local gates = 0
+	local signs, gates = 0, 0
 	for _, child in folder:GetChildren() do
-		if string.match(child.Name, "^Gate_") then
+		if string.match(child.Name, "^Sign_") then
+			signs += 1
+			local text = ""
+			for _, d in child:GetDescendants() do
+				if d:IsA("TextLabel") then
+					text ..= (d :: TextLabel).Text .. "|"
+				end
+			end
+			if string.find(text, "Recommended speed", 1, true) == nil then
+				signs -= 1000
+			end
+		elseif string.match(child.Name, "^Gate_") then
 			gates += 1
 		end
 	end
-	t.equal("every terrain has a gate", gates, #Zones.List)
+	t.equal("every terrain has two signposts saying its recommended speed", signs, 2 * #Zones.List)
+	t.equal("and there are no gates or red walls", gates, 0)
 	local bosses = wilds.bosses()
 	t.equal("there is exactly one boss per terrain", #bosses, #Zones.List)
 	local shared = true
@@ -206,31 +218,20 @@ return function(t)
 	t.check("and the egg is sold for coins instead", (ana:GetAttribute("Coins") :: number) > coinsBeforeFull)
 	t.equal("nothing was added to the full base", full.base.slots[1].kind, "char")
 
-	-- 6) the gates
+	-- 6) no gates: anyone may walk anywhere, the signs only recommend a speed
 	local duneX = Zones.List[2].startX
 	root.Position = V3.new(duneX + 60, 3, 0)
 	world.advance(0.7)
-	t.check("a player who is too slow is pushed out of the Dune", root.Position.X < duneX)
-	t.equal("the HUD zone is the Meadow-side or home", ana:GetAttribute("Zone") ~= "Dune Desert", true)
-	t.check(
-		"and Meme Points alone do not open it",
-		(session.addPoints(ana, 1e6) :: any) == nil and Zones.pushBack(duneX + 60, session.speedLevel(ana)) ~= nil
-	)
-	session.addSpeedXp(ana, 3000) -- training to speed level 5 opens it
-	root.Position = V3.new(duneX + 60, 3, 0)
-	world.advance(0.7)
-	t.check("once fast enough they can stay", root.Position.X >= duneX + 60)
-	t.equal("and the zone shows", ana:GetAttribute("Zone"), "Dune Desert")
+	t.check("a brand new player is NOT pushed out of the Dune", root.Position.X >= duneX + 60)
+	t.equal("and the HUD zone shows where they are", ana:GetAttribute("Zone"), "Dune Desert")
 	local dune = entries[7]
 	t.equal("the seventh nest is the Dune's first", dune.zone.id, "Dune")
-	-- a locked-terrain steal is refused even if you are standing there
 	local lowbie = world.addPlayer("Ben", 22)
 	world.spawnCharacter(lowbie)
 	world.advance(0.6)
 	world.root(lowbie).Position = V3.new(dune.egg.Position.X - 5, 3, dune.egg.Position.Z)
 	dune.prompt.Triggered:Fire(lowbie)
-	t.equal("a player who has not unlocked the terrain cannot steal there", lowbie:GetAttribute("Carrying"), "")
-	t.check("and the egg is still there", dune.prompt.Enabled)
+	t.check("a slow player can steal there too (the boss will just catch them)", lowbie:GetAttribute("Carrying") ~= "")
 
 	-- 7) the treadmill: you have to RUN on it, and upgrading it trains you faster
 	local anaRoot = world.root(ana)

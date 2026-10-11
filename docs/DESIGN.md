@@ -64,3 +64,15 @@ The Drop button puts the egg on the ground exactly where you stand; anyone can h
 
 ## Admin
 `/resetme` (admins only, only affects the person who typed it) puts you back at the start: speed, treadmill, rebirths, coins, Meme Points, base and Index. Robux purchases are kept.
+
+## Speed has no ceiling, and ten worlds
+- **Speed** is a number that never stops growing: each level multiplies it by 1.22 (1,600 at the start, then thousands, millions, B, T, Qa...). A level takes `30 * (level+1)^2 * 1.12^level` training XP, so every level is a bigger effort than the last; each treadmill upgrade triples the training rate (12 upgrades, each with its own look). How fast your character REALLY runs is separate: it climbs from 16 and settles toward 88 studs a second (a body cannot run a billion studs a second).
+- **Worlds:** Meadow, Dune, Lava Lands, Frozen Peaks, Cosmic Void, Slime Swamp, Candy Canyon, Neon City, Haunted Hollow, Sky Kingdom. Nothing blocks anyone: two signposts at each entrance say the recommended speed (about the level where you can outrun that boss while carrying an egg). Bosses go from 12 to 76 studs a second. A boss chases a thief through every terrain back to the Safe Zone (it never enters it).
+- **Eggs and characters:** eleven egg tiers (Soggy ... Divine, then Slime, Candy, Neon, Cursed, Cloud) and 42 standard characters, grouped by world in the Index. Meme Points are just a number; they open nothing.
+
+## Passes, products and badges
+- Passes: 2x Coins, 2x Luck, 2x Training, 2x Hatch Speed, VIP (+25% coins), Trap Master (6 traps, half the wait), Slow Bosses (bosses chase 25% slower). Developer products: Instant Hatch (1, 5) and the three limited eggs. Pass pictures are made by `art/ui/make_passes.py` with a safe margin so nothing is cut off.
+- Badges (`Config.Badges`, `server/Badges.luau`): Welcome, Egg Thief, Crack!, Home Safe, Speed Demon, Reborn, Meme Collector, Boss Escape, Sky High, Gotcha!. Roblox allows five free badge creations per experience per day, so five exist and the rest have id 0 (skipped) until they are created.
+
+## 2D art
+Every picture in the UI is a sticker render of the real brick model (`scripts/preview/portrait.py` renders it on a transparent background, `art/ui/stylize.py` crops, outlines and shades it, `art/ui/make_all.sh` does all of them). Uploaded images must use their IMAGE id (look the Decal id up with Roblox's asset delivery), never the Decal id, or an ImageLabel draws nothing.

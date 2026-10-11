@@ -27,7 +27,7 @@ return function(t)
 
 	-- every HUD icon is a real asset id, and no icon reuses a sound's id or another icon's
 	local icons = Config.Icons :: { [string]: string }
-	local iconKeys = { "egg", "paw", "trophy", "shoe", "cash", "cart", "book", "potion", "trap" }
+	local iconKeys = { "egg", "paw", "trophy", "shoe", "cash", "cart", "book", "potion", "trap", "clock" }
 	local used: { [string]: string } = {}
 	for _, id in sounds do
 		used[id] = "a sound"
@@ -57,6 +57,34 @@ return function(t)
 		end
 	end
 	t.check("every character has a portrait with its own asset id", portraitsOk)
+	-- every egg tier has a picture, and every pass and product a card picture, each its own asset
+	local eggPictures = Config.EggIcons :: { [string]: string }
+	local eggsOk = true
+	for _, tier in Eggs.Tiers do
+		local id = eggPictures[tier.id]
+		if id == nil or string.match(id, "^rbxassetid://%d+$") == nil or used[id] then
+			eggsOk = false
+			print(`  bad egg picture {tier.id}: {tostring(id)}`)
+		else
+			used[id] = tier.id
+		end
+	end
+	t.check("every egg has a picture with its own asset id", eggsOk)
+	local art = Config.ShopArt :: { [string]: string }
+	local artOk = true
+	local catalog = Config.Monetization :: any
+	for _, group in { catalog.Passes, catalog.Products } do
+		for key in group do
+			local id = art[key]
+			if id == nil or string.match(id, "^rbxassetid://%d+$") == nil or used[id] then
+				artOk = false
+				print(`  bad shop art {key}: {tostring(id)}`)
+			else
+				used[id] = key
+			end
+		end
+	end
+	t.check("every pass and product has card art with its own asset id", artOk)
 	local extra = false
 	for charId in portraits do
 		if Eggs.Characters[charId] == nil then

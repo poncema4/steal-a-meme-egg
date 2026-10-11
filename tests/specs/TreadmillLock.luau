@@ -13,7 +13,11 @@ return function(t)
 		math.abs(Progression.levelFloat(Progression.xpForNext(0) / 2) - 0.5) < 1e-9
 	)
 	t.equal("level 1.0 starts exactly at the XP for level 0", Progression.levelFloat(Progression.xpForNext(0)), 1)
-	t.equal("the top is capped", Progression.levelFloat(1e12), Progression.MAX_LEVEL)
+	t.equal(
+		"only the safety stop caps it, far beyond any real play",
+		Progression.levelFloat(1e300),
+		Progression.MAX_LEVEL
+	)
 	t.equal("negative XP is level 0", Progression.levelFloat(-9), 0)
 	local rising = true
 	local last = -1
