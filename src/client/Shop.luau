@@ -106,10 +106,19 @@ function Shop.start(player: Player)
 	-- the shop lists are grids of item cards built from the catalogue (only items with a real id): a picture, the name, what it
 	-- does and a buy button
 	local rows: { { key: string, kind: string, button: TextButton, name: string, robux: number } } = {}
-	local ICONS: { [string]: string } =
-		{ coins2x = "cash", luck2x = "potion", train2x = "shoe", hatch1 = "egg", hatch5 = "egg" }
+	local ICONS: { [string]: string } = {
+		coins2x = "cash",
+		vip = "trophy",
+		luck2x = "potion",
+		train2x = "shoe",
+		fastHatch = "egg",
+		trapMaster = "trap",
+		bossSlow = "paw",
+		hatch1 = "egg",
+		hatch5 = "egg",
+	}
 	local y = 124 + 14
-	local CARD_W, CARD_H, GAP = 166, 214, 10
+	local CARD_W, CARD_H, GAP = 166, 240, 10
 	local function section(title: string)
 		local l = line(list, "Section", 4, y, 400, 26, 20, Color3.fromRGB(150, 220, 255))
 		l.Text = title
@@ -117,7 +126,8 @@ function Shop.start(player: Player)
 	end
 	local function addCards(
 		kind: string,
-		map: { [string]: { id: number, name: string, robux: number, blurb: string? } }
+		map: { [string]: { id: number, name: string, robux: number, blurb: string? } },
+		title: string
 	)
 		local keys = {}
 		for _, key in sortedKeys(map) do
@@ -128,7 +138,7 @@ function Shop.start(player: Player)
 		if #keys == 0 then
 			return
 		end
-		section(if kind == "pass" then "BOOSTS" else "INSTANT HATCH")
+		section(title)
 		for i, key in keys do
 			local item = map[key]
 			local col, row = (i - 1) % 3, (i - 1) // 3
@@ -142,17 +152,30 @@ function Shop.start(player: Player)
 			round(card, 14)
 			outline(card)
 			local art = Ui.label(card, "Art", 40)
-			art.Size = UDim2.fromOffset(86, 86)
-			art.Position = UDim2.new(0.5, -43, 0, 8)
-			Ui.addIcon(art, ICONS[key] or "egg", "center", "?")
+			art.Size = UDim2.fromOffset(92, 92)
+			art.Position = UDim2.new(0.5, -46, 0, 6)
+			-- the card's own picture (a sticker with the pass's art), else a HUD icon
+			local pictureId = (Config.ShopArt :: { [string]: string })[key]
+			if pictureId then
+				local picture = Instance.new("ImageLabel")
+				picture.Name = "Picture"
+				picture.BackgroundTransparency = 1
+				picture.Size = UDim2.fromScale(1, 1)
+				picture.Image = pictureId
+				picture.ScaleType = Enum.ScaleType.Fit
+				picture.Parent = art
+				art.Text = ""
+			else
+				Ui.addIcon(art, ICONS[key] or "egg", "center", "?")
+			end
 			local name = Ui.label(card, "Name", 20)
 			name.Size = UDim2.new(1, -8, 0, 26)
-			name.Position = UDim2.fromOffset(4, 98)
+			name.Position = UDim2.fromOffset(4, 102)
 			name.TextScaled = true
 			name.Text = item.name
-			local blurb = Ui.label(card, "Blurb", 14, Color3.fromRGB(200, 205, 225))
-			blurb.Size = UDim2.new(1, -12, 0, 40)
-			blurb.Position = UDim2.fromOffset(6, 126)
+			local blurb = Ui.label(card, "Blurb", 13, Color3.fromRGB(200, 205, 225))
+			blurb.Size = UDim2.new(1, -12, 0, 62)
+			blurb.Position = UDim2.fromOffset(6, 130)
 			blurb.TextWrapped = true
 			blurb.TextYAlignment = Enum.TextYAlignment.Top
 			blurb.Text = item.blurb or ""
@@ -167,14 +190,25 @@ function Shop.start(player: Player)
 		end
 		y += math.ceil(#keys / 3) * (CARD_H + GAP) + 6
 	end
-	addCards("pass", catalog.Passes :: any)
+	-- three sections of passes: boosts that multiply things, perks that change how you play
+	local boosts: { [string]: Store.Pass } = {}
+	local perks: { [string]: Store.Pass } = {}
+	for key, pass in catalog.Passes do
+		if pass.effect == "luck" or pass.effect == "income" or pass.effect == "train" then
+			boosts[key] = pass
+		else
+			perks[key] = pass
+		end
+	end
+	addCards("pass", boosts :: any, "BOOSTS")
+	addCards("pass", perks :: any, "PERKS")
 	local hatchOnly: { [string]: Store.Product } = {}
 	for key, product in catalog.Products do
 		if product.kind == "hatch" then
 			hatchOnly[key] = product
 		end
 	end
-	addCards("product", hatchOnly :: any)
+	addCards("product", hatchOnly :: any, "INSTANT HATCH")
 	list.CanvasSize = UDim2.fromOffset(0, y)
 
 	limitedCoins.Activated:Connect(function()

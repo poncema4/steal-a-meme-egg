@@ -148,11 +148,65 @@ def bear_trap(g):
     return 2.4
 
 
-RECIPES = {"BearTrap": bear_trap, "Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
+def swamp_tree(g):
+    bark, moss, leaf = rgb("4a3a2a"), rgb("5a8a3a"), rgb("2f5a34")
+    g.cylinder((0, 2.6, 0), 0.9, 5.2, bark)
+    g.box((1.0, 0.4, 0.3), (1.0, 0.8, 0.7), bark)
+    g.box((-1.0, 0.4, -0.2), (0.9, 0.8, 0.7), bark)
+    g.ellipsoid((0, 6.4, 0), (3.6, 2.0, 3.6), leaf)
+    g.ellipsoid((0.8, 7.6, 0.3), (2.4, 1.4, 2.4), rgb("3e7a42"))
+    for x, z, h in ((2.8, 0.6, 3.0), (-2.6, -0.8, 3.6), (0.4, 2.8, 2.6), (-0.6, -2.8, 3.2), (2.0, -2.0, 2.4)):
+        g.cylinder((x, 6.0 - h / 2, z), 0.22, h, moss)  # hanging moss
+    g.cylinder((2.0, 0.9, -1.8), 0.25, 1.4, rgb("f4efc0"))  # a toadstool
+    g.ellipsoid((2.0, 1.7, -1.8), (0.9, 0.5, 0.9), rgb("e2323a"))
+    return 8.8
+
+
+def candy_cane(g):
+    red, white = rgb("ff3a5a"), rgb("ffffff")
+    for k in range(10):
+        g.cylinder((0, 0.35 + k * 0.7, 0), 0.6, 0.7, red if k % 2 == 0 else white)
+    for k in range(7):  # the hook: half a circle over the top
+        a = math.radians(180 - k * 30)
+        g.cylinder((1.4 + math.cos(a) * 1.4, 7.0 + math.sin(a) * 1.4, 0), 0.6, 0.7, red if k % 2 == 0 else white)
+    g.ellipsoid((0, 0.3, 0), (1.4, 0.3, 1.4), rgb("ff9ed2"))
+    return 8.6
+
+
+def neon_pylon(g):
+    dark, cyan, mag = rgb("22243e"), rgb("38f2ff"), rgb("ff3df0")
+    g.box((0, 3.4, 0), (2.2, 6.8, 2.2), dark)
+    for k, y in enumerate((1.4, 3.0, 4.6)):
+        g.box((0, y, 0), (2.5, 0.35, 2.5), cyan if k % 2 == 0 else mag)
+    g.ellipsoid((0, 7.4, 0), (1.1, 1.1, 1.1), mag)
+    g.box((0, 0.3, 0), (3.4, 0.6, 3.4), rgb("14143a"))
+    return 8.5
+
+
+def tombstone(g):
+    stone, dark = rgb("9a9fb0"), rgb("6a6f80")
+    g.box((0, 2.2, 0), (3.4, 4.4, 1.0), stone)
+    g.ellipsoid((0, 4.4, 0), (1.7, 1.2, 0.5), stone)
+    g.box((0, 3.6, -0.55), (0.35, 1.7, 0.3), dark)
+    g.box((0, 4.0, -0.55), (1.1, 0.35, 0.3), dark)
+    g.box((0, 0.3, 0.2), (4.4, 0.6, 2.4), rgb("5a4a3a"))
+    g.ellipsoid((1.8, 0.6, -0.6), (0.7, 0.4, 0.7), rgb("3e5a36"))
+    return 5.6
+
+
+def cloud_puff(g):
+    white, blue = rgb("ffffff"), rgb("cfe6ff")
+    for x, y, z, r in ((0, 3.0, 0, 2.6), (2.4, 2.6, 0.4, 2.0), (-2.4, 2.5, -0.3, 2.0), (0.6, 4.2, 0.2, 1.8), (1.4, 2.2, -2.0, 1.7), (-1.2, 2.2, 2.0, 1.7)):
+        g.ellipsoid((x, y, z), (r, r * 0.75, r), white)
+    g.ellipsoid((0, 1.2, 0), (4.0, 0.5, 3.2), blue)
+    return 6.0
+
+
+RECIPES = {"SwampTree": swamp_tree, "CandyCane": candy_cane, "NeonPylon": neon_pylon, "Tombstone": tombstone, "CloudPuff": cloud_puff, "BearTrap": bear_trap, "Tree": tree, "Cactus": cactus, "LavaRock": lava_rock, "IcePine": ice_pine, "Crystal": crystal, "Nest": nest, "TreadmillTopper": treadmill_topper}
 
 
 # the big, round props use bigger bricks: far fewer parts (there are about thirty of each in a terrain) and a chunkier toy look
-UNITS = {"BearTrap": 0.3, "Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
+UNITS = {"BearTrap": 0.3, "SwampTree": 0.75, "CloudPuff": 0.6, "CandyCane": 0.5, "Tree": 0.75, "LavaRock": 0.7, "Nest": 0.6, "IcePine": 0.6}
 
 
 def build(name):

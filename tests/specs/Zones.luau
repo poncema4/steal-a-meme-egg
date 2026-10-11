@@ -43,23 +43,18 @@ return function(t)
 	t.equal("x inside the first terrain", (Zones.at(Zones.List[1].startX + 100) :: Zones.Zone).id, "Meadow")
 	t.equal("the start is inclusive", (Zones.at(Zones.List[1].startX) :: Zones.Zone).id, "Meadow")
 	t.equal("the boundary belongs to the next terrain", (Zones.at(Zones.List[2].startX) :: Zones.Zone).id, "Dune")
-	t.equal("past the last terrain is nothing", Zones.at(1500), nil)
-	t.equal("speed level 0 opens only the Meadow", Zones.furthest(0).id, "Meadow")
-	t.equal("level 5 opens the Dune", Zones.furthest(5).id, "Dune")
-	t.equal("level 4 does not", Zones.furthest(4).id, "Meadow")
-	t.equal("everything open at the top", Zones.furthest(1e9).id, "Cosmic")
-	t.equal("the next locked terrain after the Meadow", (Zones.nextLocked(0) :: Zones.Zone).id, "Dune")
-	t.equal("nothing is locked at the top", Zones.nextLocked(1e9), nil)
-
-	-- pushing back players who are somewhere they have not unlocked
-	t.equal("a player in an unlocked terrain stays", Zones.pushBack(Zones.List[1].startX + 100, 0), nil)
-	t.equal("a player in the home area stays", Zones.pushBack(Zones.List[1].startX - 5, 0), nil)
-	t.equal(
-		"a player in a locked terrain is pushed to its entrance",
-		Zones.pushBack(Zones.List[2].startX + 60, 0),
-		Zones.List[2].startX - 4
+	t.equal("past the last terrain is nothing", Zones.at(Zones.endX(Zones.List[#Zones.List]) + 5), nil)
+	t.check("there are ten worlds", #Zones.List == 10)
+	t.equal("speed level 0 is a Meadow player", Zones.furthest(0).id, "Meadow")
+	t.equal("level 3 reaches the Dune's recommended speed", Zones.furthest(3).id, "Dune")
+	t.equal("level 2 does not", Zones.furthest(2).id, "Meadow")
+	t.equal("the last world is reached at the top", Zones.furthest(1e9).id, "Sky")
+	t.equal("the next world to aim for after the Meadow", (Zones.nextTarget(0) :: Zones.Zone).id, "Dune")
+	t.equal("nothing is left to aim for at the top", Zones.nextTarget(1e9), nil)
+	t.check(
+		"nothing blocks anyone: there is no way to be refused entry",
+		Zones.unlocked == nil and Zones.pushBack == nil
 	)
-	t.equal("with enough speed they stay", Zones.pushBack(Zones.List[2].startX + 60, 5), nil)
 
 	-- which egg a nest grows
 	local meadow = Zones.List[1]
@@ -78,42 +73,47 @@ return function(t)
 		"Disco"
 	)
 
-	-- balance: the speed level a terrain demands (to outrun its guardians while carrying an egg) is reachable and rises
+	-- balance: the recommended level is about when you can outrun the boss while carrying an egg, and it only goes up
 	local previous = -1
 	for _, zone in Zones.List do
-		local need = 0
-		while
-			need <= Progression.MAX_LEVEL
-			and Progression.carrySpeed(Progression.walkSpeed(need), true) <= zone.guardianSpeed
-		do
-			need += 1
-		end
+		local carry = Progression.carrySpeed(Progression.walkSpeed(zone.level), true)
 		t.check(
-			`{zone.id} can be outrun by level {need}`,
-			need <= Progression.MAX_LEVEL and need >= previous,
-			tostring(need)
+			`{zone.id}: at its recommended level you outrun its boss`,
+			carry > zone.guardianSpeed,
+			`{carry} vs {zone.guardianSpeed}`
 		)
-		previous = need
+		t.check(`{zone.id}: its recommended level is above the previous one`, zone.level >= previous)
+		previous = zone.level
+		-- and a player a few levels short really is slower than it
+		if zone.level >= 8 then
+			local short = Progression.carrySpeed(Progression.walkSpeed(zone.level - 8), true)
+			t.check(
+				`{zone.id}: eight levels short you are slower than its boss`,
+				short < zone.guardianSpeed,
+				`{short} vs {zone.guardianSpeed}`
+			)
+		end
 	end
 	t.equal(
 		"a new player can outrun the first terrain's guardians",
 		Progression.carrySpeed(Progression.walkSpeed(0), true) > Zones.List[1].guardianSpeed,
 		true
 	)
-	-- ...and the last chaser is slower than a maxed player
-	local top = Progression.walkSpeed(Progression.MAX_LEVEL)
-	for _, zone in Zones.List do
-		t.check(
-			`{zone.id} guardians can be outrun at max speed`,
-			zone.guardianSpeed < top,
-			`{zone.guardianSpeed} vs {top}`
-		)
-	end
+	-- the deepest boss is still slower than the fastest a body can run, so the end can be reached (but takes a very high level)
+	t.check(
+		"even the last boss can be outrun by the fastest runner",
+		Zones.List[#Zones.List].guardianSpeed < Progression.TOP_SPEED * Progression.CARRY_FACTOR
+	)
+	t.check(
+		"but it takes a very high speed: the last recommended level is 50 or more",
+		Zones.List[#Zones.List].level >= 50
+	)
 
 	-- the Index groups characters by the world their egg belongs to
 	t.equal("the Soggy egg belongs to the Meadow", (Zones.forTier("Soggy") :: Zones.Zone).id, "Meadow")
 	t.equal("the Disco egg to the Dune", (Zones.forTier("Disco") :: Zones.Zone).id, "Dune")
-	t.equal("the Divine egg to the deepest world", (Zones.forTier("Divine") :: Zones.Zone).id, "Cosmic")
+	t.equal("the Divine egg to the Cosmic Void", (Zones.forTier("Divine") :: Zones.Zone).id, "Cosmic")
+	t.equal("the Cloud egg to the Sky Kingdom", (Zones.forTier("Cloud") :: Zones.Zone).id, "Sky")
 	t.equal("limited eggs belong to no world", Zones.forTier("GooseGold"), nil)
 	local homes = true
 	for _, tier in Eggs.Tiers do

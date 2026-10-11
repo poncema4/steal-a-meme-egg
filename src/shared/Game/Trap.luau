@@ -17,23 +17,24 @@ function Trap.new(): State
 end
 
 -- Why a trap cannot be placed right now, or nil if it can.
-function Trap.why(s: State, now: number): string?
+function Trap.why(s: State, now: number, max: number?, cooldown: number?): string?
 	Trap.prune(s, now)
-	if #s.spots >= Trap.MAX then
-		return "You can only have 3 traps out at once"
+	local limit = max or Trap.MAX
+	if #s.spots >= limit then
+		return `You can only have {limit} traps out at once`
 	end
-	if now - s.lastPlaced < Trap.COOLDOWN then
+	if now - s.lastPlaced < Trap.COOLDOWN * (cooldown or 1) then
 		return "Your next trap is not ready yet"
 	end
 	return nil
 end
 
 -- Places a trap. Returns (true, nil) or (false, the reason).
-function Trap.place(s: State, x: number, z: number, now: number): (boolean, string?)
+function Trap.place(s: State, x: number, z: number, now: number, max: number?, cooldown: number?): (boolean, string?)
 	if x ~= x or z ~= z or math.abs(x) == math.huge or math.abs(z) == math.huge then
 		return false, "bad position"
 	end
-	local reason = Trap.why(s, now)
+	local reason = Trap.why(s, now, max, cooldown)
 	if reason then
 		return false, reason
 	end

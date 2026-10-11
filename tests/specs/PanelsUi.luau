@@ -90,7 +90,7 @@ return function(t)
 	t.equal(
 		"grouped under a header for each world and the limited eggs",
 		count(find(index, "Cards") :: Instance, "World_"),
-		6
+		11
 	)
 	t.equal("it counts nothing discovered", (find(index, "Progress") :: TextLabel).Text, `Discovered 0 / {total}`)
 	t.equal(

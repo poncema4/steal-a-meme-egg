@@ -60,7 +60,7 @@ function Layout.scenery(zone: Zones.Zone, nests: { Nest }): { Prop }
 			local z = (Rng.next(rng) - 0.5) * (Zones.WIDTH - 20)
 			local size = 3 + Rng.next(rng) * 5
 			local extra = Rng.next(rng)
-			if not nearNest(x, z, nests, zone) and x > zone.startX + Zones.GATE_DEPTH + 8 then
+			if not nearNest(x, z, nests, zone) and x > zone.startX + 14 then
 				table.insert(list, { x = x, z = z, size = size, extra = extra })
 				break
 			end

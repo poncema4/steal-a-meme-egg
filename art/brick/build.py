@@ -14,7 +14,8 @@ PREVIEW = os.path.join(ROOT, "art", "renders", "models")
 
 BOSS_SCALE = 2.6
 BOSSES = {"Meadow": "SoggyToast", "Dune": "PharaohPancake", "Volcano": "VolcanoVicar", "Frost": "SleepySock",
-          "Cosmic": "FinalBossHamster"}
+          "Cosmic": "FinalBossHamster", "Swamp": "SwampSensei", "Candy": "TaffyTitan", "Neon": "VaporVulture",
+          "Haunted": "LichLasagna", "Sky": "ZeusZucchini"}
 
 
 def emit(folder, name, parts, report):

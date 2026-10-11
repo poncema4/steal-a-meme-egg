@@ -51,9 +51,9 @@ return function(t)
 	t.check("Meme Points never gate a terrain", string.find(next, "Meme Points", 1, true) == nil, next)
 	t.check(
 		"a waiting egg with everything unlocked says hatching",
-		string.find(Objective.hint(facts({ eggs = 1, mp = 1e9, speedLevel = 30 })), "hatching", 1, true) ~= nil
+		string.find(Objective.hint(facts({ eggs = 1, mp = 1e9, speedLevel = 100 })), "hatching", 1, true) ~= nil
 	)
-	t.check("a veteran still gets a hint", Objective.hint(facts({ characters = 6, mp = 1e9, speedLevel = 30 })) ~= "")
+	t.check("a veteran still gets a hint", Objective.hint(facts({ characters = 6, mp = 1e9, speedLevel = 100 })) ~= "")
 
 	-- speed needed matches the terrain balance
 	t.equal("a new player needs no training for the Meadow", Objective.speedNeeded(0), 0)

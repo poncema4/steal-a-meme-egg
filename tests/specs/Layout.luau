@@ -105,7 +105,7 @@ return function(t)
 			if prop.x < zone.startX or prop.x > Zones.endX(zone) or math.abs(prop.z) > Zones.WIDTH / 2 then
 				boundsOk = false
 			end
-			if prop.x < zone.startX + Zones.GATE_DEPTH + 8 then
+			if prop.x < zone.startX + 14 then
 				gateClear = false
 			end
 			local boss = Layout.bossSpot(zone)

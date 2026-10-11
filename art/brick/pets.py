@@ -433,6 +433,256 @@ def meme_lord(color, jewel, big):
         return 5.0
     return f
 
+# ------------------------------------------------------------------ worlds 6 to 10: slime, candy, neon, haunted and sky memes
+def gloop_goblin(g):
+    green, dark, belly = rgb("62d44c"), rgb("2f8f2a"), rgb("a8f08a")
+    blob_body(g, (0, 1.6, 0), (1.9, 1.5, 1.6), green, belly)
+    for s2 in (-1, 1):
+        g.cone((s2 * 2.0, 2.7, 0), 0.6, 0.0, 1.6, dark)  # long pointy ears
+        g.cone((s2 * 1.95, 2.6, -0.1), 0.32, 0.0, 1.0, belly)
+        g.ellipsoid((s2 * 0.8, 2.15, -1.45), (0.4, 0.5, 0.25), rgb("ffe44a"))
+        g.box((s2 * 0.8, 2.15, -1.7), (0.16, 0.4, 0.15), BLACK)
+    g.box((0, 1.1, -1.55), (1.6, 0.3, 0.3), BLACK)
+    for x in (-0.55, -0.2, 0.2, 0.55):
+        g.box((x, 0.95, -1.62), (0.2, 0.26, 0.2), WHITE)  # a toothy grin
+    for x, h in ((-1.2, 0.9), (0.4, 1.3), (1.3, 0.8)):
+        g.cylinder((x, 0.0 + 0.2, -1.2), 0.2, h * 0.5, dark)  # drips
+    feet(g, 0.85, dark, -0.4, 0.15)
+    return 4.4
+
+
+def bog_burrito(g):
+    tort, foil, sauce, bean = rgb("e8c88a"), rgb("c8ccd8"), rgb("5ccf48"), rgb("7a4a28")
+    g.cylinder((0, 2.1, 0), 1.45, 3.8, tort)
+    g.cylinder((0, 4.1, 0), 1.5, 0.5, foil)  # foil wrap
+    g.cone((0, 4.7, 0), 1.45, 0.4, 1.0, foil)
+    g.ellipsoid((0, 4.3, -0.2), (0.9, 0.5, 0.9), sauce)  # sauce spilling out the top
+    for k in range(3):
+        g.ellipsoid((-0.9 + k * 0.9, 4.5, -0.3), (0.35, 0.3, 0.3), bean)
+    eyes(g, 2.6, -1.4, 0.65, "angry", 0.42)
+    g.box((0, 1.7, -1.45), (1.3, 0.28, 0.3), BLACK)
+    g.box((-0.6, 1.9, -1.45), (0.2, 0.2, 0.3), BLACK)
+    g.box((0.6, 1.9, -1.45), (0.2, 0.2, 0.3), BLACK)
+    for x in (-0.6, 0.6):
+        g.cylinder((x, 0.3, 0.0), 0.5, 0.6, rgb("3a5a2a"))
+    g.ellipsoid((-1.5, 1.4, -0.4), (0.4, 0.4, 0.5), sauce)  # a drip of swamp sauce
+    return 5.3
+
+
+def swamp_sensei(g):
+    skin, robe, beard, hat = rgb("4a9a4a"), rgb("5a4a8a"), rgb("f4f4f0"), rgb("d8b868")
+    blob_body(g, (0, 1.7, 0), (1.8, 1.6, 1.5), skin)
+    g.ellipsoid((0, 1.15, -0.6), (1.7, 1.1, 1.2), robe)  # the robe
+    g.cone((0, 3.8, 0), 2.4, 0.0, 1.6, hat)  # a wide straw hat
+    g.cylinder((0, 3.1, 0), 2.6, 0.25, hat)
+    eyes(g, 2.1, -1.4, 0.65, "sleepy", 0.4)
+    g.ellipsoid((0, 1.0, -1.35), (0.95, 1.1, 0.5), beard)  # a long white beard
+    g.ellipsoid((0, 0.8, -1.3), (0.6, 0.7, 0.4), beard)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.5, 1.75, -1.4), (0.5, 0.18, 0.2), beard)  # moustache
+    g.cylinder((2.3, 2.0, -0.5), 0.12, 4.0, rgb("7a4a28"))  # his staff
+    g.ellipsoid((2.3, 4.1, -0.5), (0.35, 0.35, 0.35), rgb("62e0ff"))
+    feet(g, 0.8, skin, -0.3, 0.15)
+    return 5.4
+
+
+def sprinkle_sloth(g):
+    fur, patch, cone, ice = rgb("ffb3d8"), rgb("c47aa8"), rgb("e8b868"), rgb("fff0f6")
+    blob_body(g, (0, 1.8, 0), (1.9, 1.7, 1.6), fur, ice)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.75, 2.2, -1.4), (0.55, 0.7, 0.3), patch)  # sloth eye patches
+        g.ellipsoid((s2 * 0.75, 2.2, -1.65), (0.22, 0.26, 0.15), BLACK)
+        g.cylinder((s2 * 2.1, 1.0, -0.2), 0.35, 2.0, fur)  # long arms
+    g.ellipsoid((0, 1.6, -1.6), (0.35, 0.28, 0.2), patch)
+    smile(g, 1.25, -1.55, 0.9)
+    g.cone((0, 4.4, 0), 0.8, 0.1, 1.8, cone)  # a cone hat with a scoop on top
+    g.ellipsoid((0, 5.3, 0), (0.85, 0.7, 0.85), rgb("ff6ab0"))
+    sp = [rgb("ffe44a"), rgb("5fd8ff"), rgb("8aff7a"), rgb("ff8a3a")]
+    for i, (x, y, z) in enumerate(((0.9, 2.9, -1.0), (-1.2, 2.8, -0.9), (1.5, 1.6, -1.0), (-1.6, 1.3, -1.1), (0.3, 3.2, -1.2), (-0.4, 0.9, -1.5))):
+        g.box((x, y, z), (0.35, 0.18, 0.18), sp[i % 4])
+    feet(g, 0.9, patch, -0.4, 0.15)
+    return 5.9
+
+
+def gummy_golem(g):
+    red, hi, dark = rgb("ff4a5a"), rgb("ff9aa6"), rgb("c8283a")
+    g.box((0, 1.6, 0), (3.2, 3.2, 2.2), red)  # a blocky gummy body
+    g.box((0, 4.0, -0.1), (2.4, 1.8, 2.0), red)  # the head
+    for s2 in (-1, 1):
+        g.box((s2 * 2.2, 1.9, 0), (1.2, 2.6, 1.4), red)  # arms
+        g.box((s2 * 0.85, 0.2, 0), (1.3, 0.5, 1.6), dark)  # feet
+    g.box((-0.9, 3.0, -1.05), (0.5, 1.2, 0.2), hi)  # shiny highlights
+    g.box((-1.0, 4.4, -1.05), (0.4, 0.6, 0.2), hi)
+    eyes(g, 4.2, -1.1, 0.65, "happy", 0.5)
+    g.box((0, 3.4, -1.1), (1.2, 0.25, 0.25), BLACK)
+    g.box((0, 2.0, -1.15), (1.6, 0.3, 0.2), dark)
+    return 5.0
+
+
+def taffy_titan(g):
+    pink, white = rgb("ff8ac8"), rgb("ffffff")
+
+    def stripes(p):
+        return white if int((p[1] + math.sin(p[0]) * 0.5) / 0.55) % 2 == 0 else pink
+    g.fill((-1.6, 0.0, -1.6), (1.6, 4.6, 1.6), lambda p: p[0] ** 2 + p[2] ** 2 <= 1.55 ** 2, stripes)
+    g.cone((0, 4.9, 0), 1.5, 0.7, 0.8, pink)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 2.2, 3.0, 0), (0.7, 0.7, 0.7), pink)  # the wrapper's twisted ends
+        g.cone((s2 * 2.7, 3.0, 0), 0.6, 0.0, 1.0, white, axis="x")
+    eyes(g, 3.1, -1.5, 0.6, "angry", 0.45)
+    g.box((0, 2.3, -1.55), (1.2, 0.3, 0.3), BLACK)
+    for s2 in (-1, 1):
+        g.box((s2 * 0.9, 0.3, -0.2), (1.0, 0.6, 1.4), rgb("c8508a"))
+    crown(g, 5.2, GOLD, rgb("62e0ff"))
+    return 6.6
+
+
+def pixel_pigeon(g):
+    body, dark, neon, beak = rgb("8a96b8"), rgb("4a5472"), rgb("38f2ff"), rgb("ffb21e")
+    blob_body(g, (0, 1.9, 0), (1.9, 1.7, 1.7), body, rgb("c8d0e8"))
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 2.0, 1.9, 0.3), (0.45, 1.3, 1.1), dark)  # wings
+        g.box((s2 * 2.35, 1.9, -0.3), (0.2, 0.8, 0.2), neon)
+    g.box((0, 2.5, -1.55), (2.4, 0.7, 0.4), rgb("14143a"))  # a neon visor
+    g.box((0, 2.5, -1.8), (2.1, 0.22, 0.15), neon)
+    g.cone((0, 1.9, -1.9), 0.4, 0.0, 0.9, beak, axis="z")
+    g.box((0, 2.9, -0.2), (0.3, 0.5, 1.0), neon)  # a glowing crest
+    for s2 in (-1, 1):
+        g.box((s2 * 0.6, 0.3, -0.3), (0.2, 0.6, 0.2), beak)
+        g.box((s2 * 0.6, 0.1, -0.5), (0.8, 0.2, 0.6), beak)
+    return 4.4
+
+
+def synth_squid(g):
+    skin, neon, dark = rgb("9a5af0"), rgb("ff3df0"), rgb("5a2ab0")
+    g.ellipsoid((0, 3.4, 0), (1.9, 2.2, 1.9), skin)  # the dome head
+    for k, y in enumerate((2.6, 3.4, 4.2)):
+        g.box((0, y, -1.85), (2.4 - k * 0.4, 0.2, 0.15), neon)
+    eyes(g, 2.9, -1.7, 0.7, "happy", 0.5)
+    g.box((0, 2.2, -1.75), (0.9, 0.25, 0.25), BLACK)
+    for s2 in (-1, 1):
+        g.cylinder((s2 * 1.95, 3.5, 0), 0.5, 0.7, rgb("22243e"), axis="x")  # headphones
+    g.torus((0, 3.4, 0), 1.95, 0.18, rgb("22243e"), axis="z")
+    for k in range(6):
+        a = k * math.tau / 6
+        x, z = math.cos(a) * 1.25, math.sin(a) * 1.25
+        g.cylinder((x, 1.0, z), 0.34, 2.0, dark)
+        g.ellipsoid((x * 1.05, 0.1, z * 1.05), (0.45, 0.25, 0.45), neon)
+    return 5.6
+
+
+def vapor_vulture(g):
+    body, wing, neon, beak = rgb("ff6ab8"), rgb("7a4af0"), rgb("38f2ff"), rgb("ffd84a")
+    g.ellipsoid((0, 2.0, 0.2), (1.5, 1.5, 1.9), body)
+    g.cylinder((0, 3.5, -0.9), 0.5, 2.0, body)  # long neck
+    g.ellipsoid((0, 4.5, -1.2), (0.95, 0.85, 1.0), body)
+    g.cone((0, 4.3, -2.3), 0.5, 0.0, 1.3, beak, axis="z")
+    eyes(g, 4.7, -1.85, 0.4, "shades", 0.35)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 2.7, 2.6, 0.4), (1.5, 0.35, 1.5), wing)  # spread wings
+        g.box((s2 * 3.6, 2.9, 0.6), (1.8, 0.14, 0.3), neon)
+        g.box((s2 * 0.5, 0.45, -0.1), (0.3, 0.9, 0.3), beak)
+    g.torus((0, 6.1, -1.2), 0.9, 0.12, neon, axis="y")  # a neon halo ring
+    g.ellipsoid((0, 1.4, 1.9), (0.7, 0.4, 0.8), wing)
+    return 6.6
+
+
+def boo_banana(g):
+    peel, white, glow = rgb("ffe04a"), rgb("f4f4ff"), rgb("6bff6b")
+    for k, (x, y, r) in enumerate(((-0.6, 1.2, 1.1), (-0.2, 2.4, 1.2), (0.3, 3.6, 1.15), (0.8, 4.7, 0.9))):
+        g.ellipsoid((x, y, 0), (r, 0.75, r * 0.9), peel)  # a curved banana
+    g.ellipsoid((0.95, 5.5, 0), (0.35, 0.3, 0.35), rgb("6a4a2a"))  # the stem
+    g.ellipsoid((-0.2, 2.5, -0.4), (1.6, 2.1, 1.5), white)  # a ghost sheet draped over it
+    eyes(g, 3.0, -1.55, 0.6, "happy", 0.5)
+    g.ellipsoid((-0.2, 2.1, -1.55), (0.35, 0.5, 0.2), BLACK)  # an "oooh" mouth
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.62 - 0.2, 3.0, -1.5), (0.22, 0.25, 0.1), glow)
+    for k in range(5):
+        g.cone((-1.6 + k * 0.8, 0.5, 0.0), 0.3, 0.0, 0.9, white, axis="y")  # wavy ghost hem
+    return 5.8
+
+
+def mummy_muffin(g):
+    cake, wrap, glow = rgb("c8884a"), rgb("e8e0c8"), rgb("ff3a3a")
+    g.cylinder((0, 1.0, 0), 1.45, 2.0, rgb("a86a3a"))  # the paper cup
+    g.ellipsoid((0, 2.7, 0), (1.9, 1.5, 1.8), cake)  # the muffin top
+    for y in (0.9, 1.4, 2.2, 2.8, 3.3):
+        g.cylinder((0, y, 0), 1.5 if y < 2.1 else 1.95, 0.22, wrap)  # bandage strips
+    eyes(g, 2.6, -1.7, 0.7, "angry", 0.4)
+    for s2 in (-1, 1):
+        g.box((s2 * 0.7, 2.6, -1.82), (0.34, 0.3, 0.1), glow)
+    g.box((0, 1.85, -1.8), (1.2, 0.24, 0.2), BLACK)
+    g.box((1.8, 2.2, -0.3), (1.3, 0.4, 0.4), wrap)  # a trailing bandage
+    g.box((2.5, 1.8, -0.3), (0.9, 0.4, 0.3), wrap)
+    return 5.0
+
+
+def lich_lasagna(g):
+    noodle, sauce, cheese, bone = rgb("f0d890"), rgb("c8283a"), rgb("ffd84a"), rgb("e8e8d8")
+    for k, c in enumerate((noodle, sauce, cheese, noodle, sauce, cheese)):
+        g.box((0, 0.5 + k * 0.7, 0), (3.4, 0.7, 2.6), c)  # the layers
+    eyes(g, 3.0, -1.35, 0.8, "angry", 0.5)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.8, 3.0, -1.38), (0.4, 0.45, 0.18), rgb("5fd8ff"))  # glowing eye sockets
+    g.box((0, 1.4, -1.35), (1.6, 0.35, 0.2), BLACK)
+    for x in (-0.6, -0.2, 0.2, 0.6):
+        g.box((x, 1.4, -1.45), (0.18, 0.4, 0.15), bone)  # skull teeth
+    crown(g, 4.7, rgb("a86aff"), rgb("5fd8ff"))
+    for s2 in (-1, 1):
+        g.box((s2 * 2.1, 2.4, 0), (0.9, 2.4, 1.0), bone)  # bony arms
+    return 6.0
+
+
+def nimbus_nugget(g):
+    gold, hi, cloud = rgb("ffc21a"), rgb("fff0a0"), rgb("ffffff")
+    g.ellipsoid((0, 0.9, 0), (3.0, 0.8, 2.2), cloud)  # it floats on a little cloud
+    for x in (-1.9, 1.9):
+        g.ellipsoid((x, 1.1, 0.3), (1.1, 0.7, 1.1), cloud)
+    blob_body(g, (0, 2.7, 0), (1.8, 1.6, 1.5), gold, hi)
+    eyes(g, 2.9, -1.4, 0.65, "happy", 0.42)
+    smile(g, 2.2, -1.45, 0.9)
+    halo(g, 4.3)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.5 + s2 * 1.5, 3.0, 0.2), (0.35, 0.8, 0.6), cloud)  # tiny wings
+    return 5.7
+
+
+def storm_sandwich(g):
+    bread, filling, lettuce, bolt = rgb("e8b868"), rgb("c8283a"), rgb("5ccf48"), rgb("ffe44a")
+    g.box((0, 0.6, 0), (3.6, 1.0, 2.6), bread)
+    g.box((0, 1.4, 0), (3.8, 0.4, 2.8), lettuce)
+    g.box((0, 1.9, 0), (3.5, 0.6, 2.5), filling)
+    g.box((0, 2.9, 0), (3.6, 1.2, 2.6), bread)
+    eyes(g, 2.9, -1.35, 0.8, "angry", 0.5)
+    g.box((0, 2.2, -1.3), (1.5, 0.3, 0.2), BLACK)
+    g.ellipsoid((0, 4.4, 0), (2.3, 0.9, 1.7), rgb("5a6482"))  # a storm cloud over his head
+    g.ellipsoid((1.3, 4.7, 0.2), (1.2, 0.7, 1.1), rgb("6a7494"))
+    g.box((0, 3.6, -0.2), (0.5, 0.8, 0.4), bolt)  # lightning
+    g.box((-0.3, 3.0, -0.2), (0.5, 0.7, 0.4), bolt)
+    return 5.5
+
+
+def zeus_zucchini(g):
+    skin, light, beard, bolt = rgb("3e8a3e"), rgb("62b862"), rgb("f4f4f0"), rgb("ffe44a")
+    g.cylinder((0, 2.4, 0), 1.25, 4.4, skin)  # a tall zucchini body
+    g.ellipsoid((0, 4.5, 0), (1.25, 0.6, 1.25), skin)
+    g.cylinder((0, 5.1, 0), 0.3, 0.5, rgb("5a4a2a"))
+    for y in (1.4, 2.4, 3.4):
+        g.cylinder((0, y, 0), 1.3, 0.14, light)  # ridges
+    eyes(g, 3.4, -1.15, 0.55, "angry", 0.42)
+    g.ellipsoid((0, 2.2, -1.1), (1.0, 1.4, 0.6), beard)  # a big white beard
+    g.ellipsoid((0, 1.0, -1.0), (0.6, 0.8, 0.45), beard)
+    for s2 in (-1, 1):
+        g.ellipsoid((s2 * 0.5, 2.9, -1.2), (0.5, 0.2, 0.25), beard)
+    for k in range(7):  # a laurel crown
+        a = math.radians(k * 51)
+        g.ellipsoid((math.cos(a) * 1.15, 4.5, math.sin(a) * 1.15), (0.3, 0.2, 0.3), rgb("ffd84a"))
+    g.cylinder((2.0, 2.2, -0.4), 0.14, 4.4, rgb("c8a040"))  # a lightning bolt on a rod
+    g.box((2.0, 4.8, -0.4), (0.6, 0.9, 0.3), bolt)
+    g.box((2.3, 4.2, -0.4), (0.6, 0.8, 0.3), bolt)
+    g.box((2.0, 3.6, -0.4), (0.6, 0.8, 0.3), bolt)
+    return 5.6
+
 
 RECIPES = {
     "SoggyToast": soggy_toast, "BonkBean": bonk_bean, "SleepySock": sleepy_sock, "DiscoPickle": disco_pickle,
@@ -443,6 +693,10 @@ RECIPES = {
     "MythicGoose": mythic_goose, "CosmicKitten": cosmic_kitten, "NebulaCat": nebula_cat, "GalaxyTiger": galaxy_tiger,
     "MemeLordJr": meme_lord(rgb("38c878"), rgb("ff4a4a"), 0), "MemeLordPrime": meme_lord(rgb("3a82ff"), rgb("ffd84a"), 1),
     "MemeLordOmega": meme_lord(rgb("e8344e"), rgb("62e0ff"), 2),
+    "GloopGoblin": gloop_goblin, "BogBurrito": bog_burrito, "SwampSensei": swamp_sensei, "SprinkleSloth": sprinkle_sloth,
+    "GummyGolem": gummy_golem, "TaffyTitan": taffy_titan, "PixelPigeon": pixel_pigeon, "SynthSquid": synth_squid,
+    "VaporVulture": vapor_vulture, "BooBanana": boo_banana, "MummyMuffin": mummy_muffin, "LichLasagna": lich_lasagna,
+    "NimbusNugget": nimbus_nugget, "StormSandwich": storm_sandwich, "ZeusZucchini": zeus_zucchini,
 }
 
 

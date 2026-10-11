@@ -248,7 +248,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	eggLayout.Padding = UDim.new(0, 8)
 	eggLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	eggLayout.Parent = eggList
-	type EggRow = { root: Frame, title: TextLabel, timer: TextLabel, instant: TextButton }
+	type EggRow = { root: Frame, title: TextLabel, timer: TextLabel, instant: TextButton, picture: ImageLabel }
 	local eggRows: { [number]: EggRow } = {}
 	local hatchProducts = false
 	for _, product in (Config.Monetization :: any).Products :: { [string]: { kind: string, id: number } } do
@@ -261,12 +261,20 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		local root = frame(eggList, `EggRow_{slot}`, UDim2.new(1, -8, 0, Ui.tap(gui, 64)))
 		root.LayoutOrder = slot
 		corner(root, 10)
+		-- the egg's own picture on the left
+		local picture = Instance.new("ImageLabel")
+		picture.Name = "Picture"
+		picture.BackgroundTransparency = 1
+		picture.Size = UDim2.fromOffset(52, 52)
+		picture.Position = UDim2.fromOffset(8, 6)
+		picture.ScaleType = Enum.ScaleType.Fit
+		picture.Parent = root
 		local title = Ui.label(root, "Title", 22)
-		title.Position = UDim2.fromOffset(12, 4)
-		title.Size = UDim2.new(0.45, 0, 0, 28)
+		title.Position = UDim2.fromOffset(68, 4)
+		title.Size = UDim2.new(0.4, 0, 0, 28)
 		title.TextXAlignment = Enum.TextXAlignment.Left
 		local timer = Ui.label(root, "Timer", 17, Color3.fromRGB(170, 220, 255))
-		timer.Position = UDim2.fromOffset(12, 32)
+		timer.Position = UDim2.fromOffset(68, 32)
 		timer.Size = UDim2.new(0.45, 0, 0, 24)
 		timer.TextXAlignment = Enum.TextXAlignment.Left
 		local instant = Ui.button(root, "Instant", "Instant", Ui.Palettes.Gold, UDim2.fromOffset(120, Ui.tap(gui, 44)))
@@ -276,7 +284,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		instant.Activated:Connect(function()
 			action:FireServer("instant", slot)
 		end)
-		return { root = root, title = title, timer = timer, instant = instant }
+		return { root = root, title = title, timer = timer, instant = instant, picture = picture }
 	end
 
 	local function refreshEggs()
@@ -300,6 +308,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 				entry.title.TextColor3 = (if row.mutation then MUTATION_COLORS[row.mutation] else nil)
 					or Color3.new(1, 1, 1)
 				entry.timer.Text = `hatching in {left}s`
+				entry.picture.Image = (Config.EggIcons :: { [string]: string })[row.id] or ""
 				entry.instant.Visible = tokens > 0 or hatchProducts
 				entry.instant.Text = if tokens > 0 then `Instant ({tokens})` else "Instant"
 			end
@@ -432,7 +441,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		for i, p in people do
 			row(`Row_{p.Name}`, i, {
 				p.DisplayName,
-				Economy.full(number(p, "SpeedStat")),
+				Economy.speed(number(p, "SpeedStat")),
 				Economy.format(number(p, "Income")),
 				tostring(number(p, "Rebirths")),
 			}, if p == player then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1))

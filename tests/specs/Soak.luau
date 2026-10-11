@@ -3,7 +3,6 @@
 -- stealing from guardians, using the pads, admin events, leaving and rejoining). It checks that nothing throws and that
 -- the numbers that must always hold really always hold.
 local Fake = require("../fake/Roblox")
-local Zones = require("../../src/shared/Game/Zones")
 
 return function(t)
 	math.randomseed(1234)
@@ -117,7 +116,7 @@ return function(t)
 					if roll < 0.12 then
 						-- go and steal from a random nest this player has unlocked
 						local entry = entries[math.random(1, #entries)]
-						if Zones.unlocked(entry.zone, session.speedLevel(p)) and entry.prompt.Enabled then
+						if entry.prompt.Enabled then
 							root.Position = V3.new(entry.egg.Position.X - 7, 3, entry.egg.Position.Z)
 							entry.prompt.Triggered:Fire(p)
 						end

@@ -6,9 +6,20 @@ local serde = require("@lune/serde")
 local Layout = require("../../src/shared/Game/Layout")
 local Zones = require("../../src/shared/Game/Zones")
 
-local SCENERY = { Meadow = "Tree", Dune = "Cactus", Volcano = "LavaRock", Frost = "IcePine", Cosmic = "Crystal" }
+local SCENERY = {
+	Meadow = "Tree",
+	Dune = "Cactus",
+	Volcano = "LavaRock",
+	Frost = "IcePine",
+	Cosmic = "Crystal",
+	Swamp = "SwampTree",
+	Candy = "CandyCane",
+	Neon = "NeonPylon",
+	Haunted = "Tombstone",
+	Sky = "CloudPuff",
+}
 local MAX_PER_TERRAIN = 3500
-local MAX_TOTAL = 13500
+local MAX_TOTAL = 27000 -- ten terrains; streaming means a phone only ever holds the few around it
 
 local function parts(folder: string, name: string): number
 	local text = fs.readFile(`src/models/{folder}/{name}.rbxmx`)

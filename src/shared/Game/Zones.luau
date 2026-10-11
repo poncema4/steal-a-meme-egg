@@ -9,7 +9,7 @@ local Zones = {}
 export type Zone = {
 	id: string,
 	name: string,
-	level: number, -- Speed level needed to enter: only how fast you run decides how far you may go
+	level: number, -- the Speed level that is RECOMMENDED here: about when you can outrun this terrain's boss. Nothing blocks you.
 	startX: number, -- the terrain covers startX to startX + length along the map
 	length: number,
 	nests: number, -- guarded eggs in this terrain
@@ -21,8 +21,9 @@ export type Zone = {
 }
 
 Zones.WIDTH = 320 -- every terrain is this wide (z from -WIDTH/2 to WIDTH/2)
-Zones.GATE_DEPTH = 6
 
+-- Ten worlds, each 240 studs long, going east from the Safe Zone. Everyone may walk into any of them; the deeper ones simply have
+-- bosses you can only outrun with a lot of speed, so the game does not end quickly.
 Zones.List = {
 	{
 		id = "Meadow",
@@ -41,7 +42,7 @@ Zones.List = {
 		id = "Dune",
 		boss = "PharaohPancake",
 		name = "Dune Desert",
-		level = 5,
+		level = 3,
 		startX = 250,
 		length = 240,
 		nests = 5,
@@ -54,7 +55,7 @@ Zones.List = {
 		id = "Volcano",
 		boss = "VolcanoVicar",
 		name = "Lava Lands",
-		level = 10,
+		level = 8,
 		startX = 490,
 		length = 240,
 		nests = 5,
@@ -67,7 +68,7 @@ Zones.List = {
 		id = "Frost",
 		boss = "SleepySock",
 		name = "Frozen Peaks",
-		level = 16,
+		level = 14,
 		startX = 730,
 		length = 240,
 		nests = 5,
@@ -80,7 +81,7 @@ Zones.List = {
 		id = "Cosmic",
 		boss = "FinalBossHamster",
 		name = "Cosmic Void",
-		level = 23,
+		level = 22,
 		startX = 970,
 		length = 240,
 		nests = 5,
@@ -88,6 +89,71 @@ Zones.List = {
 		eggs = { "Cosmic", "Divine" },
 		ground = { 40, 30, 90 },
 		sky = { 20, 10, 50 },
+	},
+	{
+		id = "Swamp",
+		boss = "SwampSensei",
+		name = "Slime Swamp",
+		level = 25,
+		startX = 1210,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 60,
+		eggs = { "Slime", "Candy" },
+		ground = { 62, 112, 58 },
+		sky = { 90, 130, 90 },
+	},
+	{
+		id = "Candy",
+		boss = "TaffyTitan",
+		name = "Candy Canyon",
+		level = 30,
+		startX = 1450,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 64,
+		eggs = { "Candy", "Neon" },
+		ground = { 255, 150, 205 },
+		sky = { 255, 205, 235 },
+	},
+	{
+		id = "Neon",
+		boss = "VaporVulture",
+		name = "Neon City",
+		level = 36,
+		startX = 1690,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 68,
+		eggs = { "Neon", "Cursed" },
+		ground = { 36, 36, 62 },
+		sky = { 60, 30, 110 },
+	},
+	{
+		id = "Haunted",
+		boss = "LichLasagna",
+		name = "Haunted Hollow",
+		level = 44,
+		startX = 1930,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 72,
+		eggs = { "Cursed", "Cloud" },
+		ground = { 92, 72, 104 },
+		sky = { 58, 40, 84 },
+	},
+	{
+		id = "Sky",
+		boss = "ZeusZucchini",
+		name = "Sky Kingdom",
+		level = 62,
+		startX = 2170,
+		length = 240,
+		nests = 5,
+		guardianSpeed = 76,
+		eggs = { "Cloud", "Cloud" },
+		ground = { 244, 250, 255 },
+		sky = { 140, 200, 255 },
 	},
 } :: { Zone }
 
@@ -110,11 +176,7 @@ function Zones.at(x: number): Zone?
 	return nil
 end
 
-function Zones.unlocked(zone: Zone, level: number): boolean
-	return level >= zone.level
-end
-
--- The furthest terrain this Speed level reaches.
+-- The deepest terrain whose recommended speed this Speed level has reached.
 function Zones.furthest(level: number): Zone
 	local best = Zones.List[1]
 	for _, zone in Zones.List do
@@ -125,8 +187,8 @@ function Zones.furthest(level: number): Zone
 	return best
 end
 
--- The next terrain still locked, or nil if everything is open.
-function Zones.nextLocked(level: number): Zone?
+-- The next terrain to aim for (its recommended speed is still ahead of you), or nil once you have passed them all.
+function Zones.nextTarget(level: number): Zone?
 	for _, zone in Zones.List do
 		if level < zone.level then
 			return zone
@@ -151,9 +213,9 @@ function Zones.forTier(tierId: string): Zone?
 	return nil
 end
 
--- The Speed number (as the HUD shows it, with commas) you reach at the level this terrain opens.
+-- The Speed number (as the HUD shows it) you reach at the level that is recommended for this terrain: "Recommended speed: 4.3K".
 function Zones.speedLabel(zone: Zone): string
-	return Economy.full(Progression.speedStat(zone.level))
+	return Economy.speed(Progression.speedStat(zone.level))
 end
 
 -- Which egg a nest grows: the common one most of the time, the rarer one 1 time in 4.
@@ -164,16 +226,6 @@ end
 -- The first x that is NOT inside terrain `zone` going east: where the next gate stands.
 function Zones.endX(zone: Zone): number
 	return zone.startX + zone.length
-end
-
--- Where a player standing at x should be pushed back to if they are in a terrain they have not unlocked: just
--- before that terrain's entrance. Returns nil if x is fine.
-function Zones.pushBack(x: number, level: number): number?
-	local zone = Zones.at(x)
-	if zone and not Zones.unlocked(zone, level) then
-		return zone.startX - 4
-	end
-	return nil
 end
 
 return Zones

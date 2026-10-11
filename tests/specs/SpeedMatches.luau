@@ -1,6 +1,6 @@
 --!strict
 -- The Speed number on the HUD and how fast you really run are the same thing: whatever level you have trained to, you run at that
--- level's speed, and the number is 100 times it. Respawning, carrying an egg and Slow Mode change how fast you move, never the number.
+-- level's speed, and the HUD number is that level's own big number (it has no ceiling: it keeps growing into B, T and Qa). Respawning, carrying an egg and Slow Mode change how fast you move, never the number.
 local Fake = require("../fake/Roblox")
 local Progression = require("../../src/shared/Game/Progression")
 
@@ -34,10 +34,14 @@ return function(t)
 			math.abs(world.humanoid(ana).WalkSpeed - walk) < 1e-6,
 			tostring(world.humanoid(ana).WalkSpeed)
 		)
-		t.equal(`level {level}: the number is 100 times that`, ana:GetAttribute("SpeedStat"), math.floor(walk * 100))
+		t.equal(
+			`level {level}: the number is that level's speed number`,
+			ana:GetAttribute("SpeedStat"),
+			Progression.speedStat(level)
+		)
 	end
 	local top = world.humanoid(ana).WalkSpeed
-	t.check("the best runner is much faster than a new one", top >= Progression.BASE_SPEED * 5)
+	t.check("the best runner is much faster than a new one", top >= Progression.BASE_SPEED * 3)
 
 	-- dying and coming back keeps your speed
 	world.spawnCharacter(ana)
@@ -54,14 +58,18 @@ return function(t)
 		"carrying an egg slows you a little",
 		math.abs(world.humanoid(ana).WalkSpeed - top * Progression.CARRY_FACTOR) < 1e-6
 	)
-	t.equal("but the number stays", ana:GetAttribute("SpeedStat"), math.floor(top * 100))
+	t.equal("but the number stays", ana:GetAttribute("SpeedStat"), Progression.speedStat(30))
 	session.setCarry(ana, nil)
 	t.check("putting it down gives the speed back", math.abs(world.humanoid(ana).WalkSpeed - top) < 1e-6)
 
 	-- Slow Mode is for building: it holds you at a walk, and turning it off brings the speed back
 	session.setSlow(ana, true)
 	t.equal("Slow Mode walks at the normal pace", world.humanoid(ana).WalkSpeed, Progression.SLOW_SPEED)
-	t.equal("and the number still shows what you have trained", ana:GetAttribute("SpeedStat"), math.floor(top * 100))
+	t.equal(
+		"and the number still shows what you have trained",
+		ana:GetAttribute("SpeedStat"),
+		Progression.speedStat(30)
+	)
 	session.setSlow(ana, false)
 	t.check("Slow Mode off: full speed again", math.abs(world.humanoid(ana).WalkSpeed - top) < 1e-6)
 end

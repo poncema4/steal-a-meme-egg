@@ -4,12 +4,13 @@
 local Progression = {}
 
 Progression.BASE_SPEED = 16
-Progression.MAX_LEVEL = 30
-Progression.SPEED_PER_LEVEL = 2.4 -- level 30 = 88 studs/s (5.5x the start), well above the last terrain's boss (56)
+-- Speed has no ceiling in the game: the number on the HUD just keeps growing (thousands, millions, then B, T, Qa and beyond). This is only
+-- a safety stop for the loop that turns XP into a level; at this level the number is past anything a player will ever see.
+Progression.MAX_LEVEL = 400
 
--- Training XP needed to go from `level` to `level + 1`.
+-- Training XP needed to go from `level` to `level + 1`. It grows faster and faster, so every new level is a real effort.
 function Progression.xpForNext(level: number): number
-	return math.floor(30 * (level + 1) ^ 2.2)
+	return math.floor(30 * (level + 1) ^ 2 * 1.12 ^ level)
 end
 
 -- The level reached with this much total training XP (and the XP left over inside it).
@@ -37,17 +38,24 @@ function Progression.levelFloat(xp: number): number
 	return level + left / Progression.xpForNext(level)
 end
 
+-- How fast your character really runs, in studs a second. A body cannot run a billion studs a second, so this climbs quickly at first
+-- and then settles toward the fastest the game's physics allow (88). The big number on the HUD is `speedStat`, below.
+Progression.TOP_SPEED = 88
+Progression.SPEED_SETTLE = 20 -- levels it takes to get about two thirds of the way from 16 to 88
+
 function Progression.walkSpeed(level: number): number
-	return Progression.BASE_SPEED + math.clamp(level, 0, Progression.MAX_LEVEL) * Progression.SPEED_PER_LEVEL
+	local l = math.max(level, 0)
+	return Progression.BASE_SPEED
+		+ (Progression.TOP_SPEED - Progression.BASE_SPEED) * (1 - math.exp(-l / Progression.SPEED_SETTLE))
 end
 
--- The "Speed" number shown on the HUD and the leaderboard: always 100 times your real run speed, so a bigger number means a
--- quicker you (16 studs/s shows 1,600, the top level shows 8,800).
-Progression.SPEED_STAT_PER_STUD = 100
-Progression.SPEED_STAT_BASE = Progression.BASE_SPEED * Progression.SPEED_STAT_PER_STUD
+-- The "Speed" number shown on the HUD and the leaderboard. It has no limit: every level multiplies it by 1.22, so players climb
+-- from 1,600 through thousands and millions to B (billions), T (trillions) and Qa (quadrillions).
+Progression.SPEED_STAT_BASE = 1600
+Progression.SPEED_STAT_GROWTH = 1.22
 
 function Progression.speedStat(level: number): number
-	return math.floor(Progression.walkSpeed(level) * Progression.SPEED_STAT_PER_STUD)
+	return math.floor(Progression.SPEED_STAT_BASE * Progression.SPEED_STAT_GROWTH ^ math.max(level, 0))
 end
 
 -- Slow Mode caps your walking speed at the Roblox default, for placing things carefully on your base.
@@ -67,7 +75,7 @@ end
 -- The treadmill is upgraded with coins; each level multiplies the speed XP it gives per second. Speed itself cannot be bought:
 -- you earn it by running.
 Progression.MAX_TREADMILL = 12
-Progression.TREADMILL_GROWTH = 1.6
+Progression.TREADMILL_GROWTH = 3 -- every upgrade triples the training rate (12 upgrades: x531,441)
 
 function Progression.treadmillCost(level: number): number
 	return math.floor(100 * 3.2 ^ math.clamp(level, 0, Progression.MAX_TREADMILL))
@@ -79,8 +87,19 @@ function Progression.trainRate(treadmillLevel: number, multiplier: number): numb
 end
 
 -- Meme Points for bringing home one egg of this tier. Rarer eggs are worth far more.
-Progression.EggPoints =
-	{ Soggy = 1, Disco = 5, Spicy = 25, Golden = 150, Cosmic = 1000, Divine = 10000 } :: { [string]: number }
+Progression.EggPoints = {
+	Soggy = 1,
+	Disco = 5,
+	Spicy = 25,
+	Golden = 150,
+	Cosmic = 1000,
+	Divine = 10000,
+	Slime = 100000,
+	Candy = 1000000,
+	Neon = 10000000,
+	Cursed = 100000000,
+	Cloud = 1000000000,
+} :: { [string]: number }
 
 function Progression.pointsForEgg(tier: string): number
 	return Progression.EggPoints[tier] or 0

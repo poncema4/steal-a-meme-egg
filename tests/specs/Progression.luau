@@ -9,7 +9,11 @@ return function(t)
 	local level, left = Progression.levelFor(Progression.xpForNext(0) + 5)
 	t.check("leftover XP carries inside the level", level == 1 and left == 5)
 	t.equal("negative XP is level 0", (Progression.levelFor(-50)), 0)
-	t.equal("a huge XP stops at the cap", (Progression.levelFor(1e12)), Progression.MAX_LEVEL)
+	t.equal("only the safety stop caps it", (Progression.levelFor(1e300)), Progression.MAX_LEVEL)
+	t.check(
+		"1e12 XP is a high level, not the cap",
+		Progression.levelFor(1e12) > 40 and Progression.levelFor(1e12) < Progression.MAX_LEVEL
+	)
 
 	local increasing = true
 	for n = 1, Progression.MAX_LEVEL do
@@ -47,7 +51,11 @@ return function(t)
 
 	t.equal("level 0 walks at the base speed", Progression.walkSpeed(0), Progression.BASE_SPEED)
 	t.check("each level is faster", Progression.walkSpeed(5) > Progression.walkSpeed(4))
-	t.equal("speed stops growing at the cap", Progression.walkSpeed(99), Progression.walkSpeed(Progression.MAX_LEVEL))
+	t.check(
+		"real running speed settles near the physics limit",
+		Progression.walkSpeed(400) <= Progression.TOP_SPEED
+			and Progression.walkSpeed(400) > Progression.TOP_SPEED - 0.01
+	)
 	t.check("a negative level is just the base speed", Progression.walkSpeed(-3) == Progression.BASE_SPEED)
 
 	-- the treadmill should be slow but real: level 1 in well under a minute, level 10 not in a few minutes
@@ -64,8 +72,8 @@ return function(t)
 	t.equal("not carrying is full speed", Progression.carrySpeed(20, false), 20)
 	-- even carrying, a maxed player still outruns the fastest guardian (27)
 	t.check(
-		"a maxed carrier outruns the fastest guardian",
-		Progression.carrySpeed(Progression.walkSpeed(Progression.MAX_LEVEL), true) > 27
+		"a very fast carrier still outruns a 60 stud a second boss",
+		Progression.carrySpeed(Progression.walkSpeed(60), true) > 60
 	)
 
 	-- Meme Points: every egg is worth something and rarer is worth more

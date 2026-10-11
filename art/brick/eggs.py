@@ -1,4 +1,4 @@
-"""The six egg tiers as brick models, like the big voxel eggs in the reference: each a brick-built egg with its own pattern."""
+"""The eleven egg tiers as brick models, like the big voxel eggs in the reference: each a brick-built egg with its own pattern."""
 import math
 from kit import Grid, rgb, shade
 
@@ -74,6 +74,16 @@ def build(tier):
         f = band(rgb("ffd23a"), rgb("fff3b0"), 2.2, 3.0, spots(rgb("ffd23a"), rgb("f2a900"), 0.06, 0.45, 5))
     elif tier == "Cosmic":
         f = stars(rgb("3b2f9e"), rgb("ffe27a"))
+    elif tier == "Slime":
+        f = band(rgb("63d64c"), rgb("c8ff7a"), 3.1, 3.6, spots(rgb("63d64c"), rgb("2f8f2a"), 0.08, 0.55, 11))
+    elif tier == "Candy":
+        f = tiles(rgb("ff9ed2"), rgb("ffffff"), rgb("ffd84a"))
+    elif tier == "Neon":
+        f = band(rgb("14143a"), rgb("ff3df0"), 2.4, 2.9, stars(rgb("14143a"), rgb("38f2ff"), 5))
+    elif tier == "Cursed":
+        f = stars(rgb("2a1a3a"), rgb("6bff6b"), 13)
+    elif tier == "Cloud":
+        f = band(rgb("ffffff"), rgb("ffd54a"), 2.5, 3.0, spots(rgb("ffffff"), rgb("bfe3ff"), 0.08, 0.55, 17))
     else:  # Divine
         f = band(rgb("fffbe8"), rgb("ffd54a"), 2.4, 3.0, spots(rgb("fffbe8"), rgb("ffeaa8"), 0.05, 0.4, 7))
     g.egg((0, cy, 0), R, H, f)
@@ -81,7 +91,15 @@ def build(tier):
         g.torus((0, H + 0.55, 0), 1.0, 0.18, rgb("ffe066"), axis="y")
     if tier == "Cosmic":
         g.torus((0, cy, 0), R + 0.45, 0.14, rgb("8fd4ff"), axis="z")
+    if tier == "Neon":
+        g.torus((0, cy, 0), R + 0.5, 0.12, rgb("38f2ff"), axis="x")
+    if tier == "Cursed":
+        for k in range(5):
+            a = k * math.tau / 5
+            g.cone((math.cos(a) * 0.9, H + 0.5, math.sin(a) * 0.9), 0.22, 0.0, 1.0, rgb("6bff6b"))
+    if tier == "Cloud":
+        g.torus((0, H + 0.5, 0), 0.9, 0.16, rgb("ffe066"), axis="y")
     return g
 
 
-TIERS = ["Soggy", "Disco", "Spicy", "Golden", "Cosmic", "Divine"]
+TIERS = ["Soggy", "Disco", "Spicy", "Golden", "Cosmic", "Divine", "Slime", "Candy", "Neon", "Cursed", "Cloud"]
