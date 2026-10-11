@@ -323,7 +323,7 @@ function Hud.start(player: Player, actions: Actions?)
 	-- messages from the server
 	local toast = Ui.label(gui, "Toast", 26)
 	toast.AnchorPoint = Vector2.new(0.5, 1)
-	toast.Position = UDim2.new(0.5, 0, 1, -90)
+	toast.Position = UDim2.new(0.5, 0, 1, -160) -- above the Drop / Jump off buttons (bottom -96, 52 tall), never on them
 	toast.Size = UDim2.fromOffset(700, 40)
 	local toastToken = 0
 	local function show(text: string)

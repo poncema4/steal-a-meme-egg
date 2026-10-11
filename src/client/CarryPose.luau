@@ -1,7 +1,8 @@
 --!strict
 -- Anyone carrying a stolen egg holds it up over their head with both arms raised (Marco: "their avatar is holding it and their
--- arms are raised"). Every client poses every carrier, so everyone sees it. It overrides the shoulder joints each frame after the
--- walk animation has set them (Motor6D.Transform in Stepped), so walking and running still move the legs.
+-- arms are raised"). Every client poses every carrier, so everyone sees it. The pose turns each shoulder joint's C0, which no
+-- animation touches (setting Motor6D.Transform was overwritten by the walk animation in Studio), and puts C0 back afterwards;
+-- the walk animation still swings the arms a little on top of the raised pose, and the legs run as usual.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -35,14 +36,29 @@ local function carrying(player: Player): boolean
 	return typeof(tier) == "string" and tier ~= ""
 end
 
--- Raises the arms of every player who carries an egg (call once per frame, after the animations).
+-- the joint's own resting C0 is kept on the joint (an attribute) while the arms are up, so it is put back exactly
+local REST = "CarryRestC0"
+
+local function pose(character: Model, on: boolean)
+	for _, joint in CarryPose.joints(character) do
+		local motor = joint.motor
+		local saved = motor:GetAttribute(REST)
+		if on and saved == nil then
+			motor:SetAttribute(REST, motor.C0)
+			motor.C0 = motor.C0 * joint.pose
+		elseif not on and typeof(saved) == "CFrame" then
+			motor.C0 = saved
+			motor:SetAttribute(REST, nil)
+		end
+	end
+end
+
+-- Raises the arms of every player who carries an egg, and lowers them again when they stop.
 function CarryPose.update()
 	for _, player in Players:GetPlayers() do
 		local character = player.Character
-		if character and carrying(player) then
-			for _, joint in CarryPose.joints(character) do
-				joint.motor.Transform = joint.pose
-			end
+		if character then
+			pose(character, carrying(player))
 		end
 	end
 end
