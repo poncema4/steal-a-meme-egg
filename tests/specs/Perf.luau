@@ -49,4 +49,9 @@ return function(t)
 			string.find(text, '<token name="ModelStreamingMode">1</token>', 1, true) ~= nil
 		)
 	end
+
+	-- the lighting is set in the project (not left at Studio's washed-out default), so every build looks the same
+	local lighting = project.tree.Lighting["$properties"]
+	t.check("the sun is not overexposed", lighting.Brightness <= 2.5 and lighting.ExposureCompensation <= 0)
+	t.check("and shadows are on", lighting.GlobalShadows == true)
 end
