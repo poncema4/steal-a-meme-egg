@@ -3,6 +3,7 @@
 -- hatch and earn, and admin events change the multipliers.
 local Config = require("../../src/shared/Config")
 local Fake = require("../fake/Roblox")
+local Progression = require("../../src/shared/Game/Progression")
 local Daily = require("../../src/shared/Game/Daily")
 local Eggs = require("../../src/shared/Game/Eggs")
 local Zones = require("../../src/shared/Game/Zones")
@@ -178,6 +179,29 @@ return function(t)
 	t.equal("and treadmill 0, no rebirths", sessionMod.get(ana).treadmill + sessionMod.get(ana).rebirths, 0)
 	t.equal("and the starting coins", ana:GetAttribute("Coins"), Config.Economy.StartCoins)
 	t.check("nobody else is touched", (ben:GetAttribute("SpeedLevel") :: number) >= 1)
+	-- /maxme: the owner jumps to the top to test the late game; again only themselves
+	local benLevel = ben:GetAttribute("SpeedLevel") :: number
+	liveOps.command(ana, "/maxme")
+	t.equal("/maxme puts the treadmill at its top level", sessionMod.get(ana).treadmill, Progression.MAX_TREADMILL)
+	t.check("and speed past the deepest world", (ana:GetAttribute("SpeedLevel") :: number) >= sessionMod.MAX_ME_LEVEL)
+	t.check("and plenty of coins", (ana:GetAttribute("Coins") :: number) >= sessionMod.MAX_ME_COINS)
+	t.equal("nobody else is maxed", ben:GetAttribute("SpeedLevel"), benLevel)
+	world.studio = false
+	t.check("a non-admin cannot max", string.find(liveOps.command(ben, "/maxme"), "not an admin") ~= nil)
+	world.studio = true
+	-- the commands are not registered on the server, so other players never see them in the chat suggestions
+	local chat = world.service("TextChatService")
+	local serverCommands = 0
+	for _, c in chat:GetChildren() do
+		if c:IsA("TextChatCommand") then
+			serverCommands += 1
+		end
+	end
+	t.equal("no admin command is visible to everyone", serverCommands, 0)
+	t.check(
+		"admins send them through their own remote",
+		world.service("ReplicatedStorage"):FindFirstChild("Remotes"):FindFirstChild("AdminCommand") ~= nil
+	)
 
 	-- saving: leave and come back with the same things
 	local saved = ben:GetAttribute("Coins") :: number

@@ -422,6 +422,29 @@ function Session.resetProgress(player: Player): (boolean, string)
 	return true, "You are back at the very start: speed level 0, treadmill 0, no rebirths."
 end
 
+-- The owner's testing shortcut (/maxme, on themselves only): the treadmill at its top level, speed past the deepest world's
+-- recommended level, and enough coins for anything in the game. Nothing else changes.
+Session.MAX_ME_LEVEL = 110
+Session.MAX_ME_COINS = 1e33
+function Session.maxProgress(player: Player): (boolean, string)
+	local state = states[player]
+	if not state then
+		return false, "not ready"
+	end
+	local xp = 0
+	for level = 0, Session.MAX_ME_LEVEL - 1 do
+		xp += Progression.xpForNext(level)
+	end
+	state.speedXp = math.max(state.speedXp, xp)
+	state.treadmill = Progression.MAX_TREADMILL
+	state.coins = math.max(state.coins, Session.MAX_ME_COINS)
+	Session.applySpeed(player)
+	Session.changed(player)
+	task.spawn(Session.save, player)
+	return true,
+		`Maxed: treadmill level {Progression.MAX_TREADMILL}, speed level {Session.MAX_ME_LEVEL}, plenty of coins.`
+end
+
 local dailyListeners: { (Player, number, number, string?) -> () } = {}
 
 function Session.onDaily(fn: (Player, number, number, string?) -> ())

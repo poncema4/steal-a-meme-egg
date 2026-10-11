@@ -131,6 +131,9 @@ function LiveOps.command(player: Player, text: string): string
 			-- never broadcast to other servers or players: it only resets whoever typed it
 			local _, message = Session.resetProgress(player)
 			return message
+		elseif action.kind == "maxMe" then
+			local _, message = Session.maxProgress(player)
+			return message
 		elseif action.kind ~= "help" then
 			dispatch(action :: any)
 		end
@@ -138,25 +141,29 @@ function LiveOps.command(player: Player, text: string): string
 	return result.message
 end
 
+-- The admin chat commands exist ONLY on an admin's own client (client/AdminCommands builds them when the server marks the
+-- player IsAdmin), so nobody else sees them in the chat's suggestions. A command comes back through the AdminCommand remote and
+-- is checked again here: a client that pretends to be an admin gets "not allowed".
+LiveOps.COMMANDS = { "event", "give", "giveall", "announce", "clear", "help", "resetme", "maxme" }
 local function registerChat(tell: (Player, string) -> ())
-	local ok, TextChatService = pcall(function()
-		return game:GetService("TextChatService")
+	local remote = Instance.new("RemoteEvent")
+	remote.Name = "AdminCommand"
+	remote.Parent = remotes
+	remote.OnServerEvent:Connect(function(player: Player, text: any)
+		if typeof(text) ~= "string" or #text > 200 then
+			return
+		end
+		tell(player, LiveOps.command(player, text))
 	end)
-	if not ok or typeof(TextChatService) ~= "Instance" then
-		return
-	end
-	for _, name in { "event", "give", "giveall", "announce", "clear", "help", "resetme" } do
-		local command = Instance.new("TextChatCommand")
-		command.Name = `RaidAdmin_{name}`
-		command.PrimaryAlias = `/{name}`
-		command.Parent = TextChatService
-		command.Triggered:Connect(function(source, text)
-			local player = Players:GetPlayerByUserId(source.UserId)
-			if player then
-				tell(player, LiveOps.command(player, text))
-			end
+	local function mark(player: Player)
+		task.spawn(function()
+			player:SetAttribute("IsAdmin", LiveOps.isAdmin(player))
 		end)
 	end
+	for _, player in Players:GetPlayers() do
+		mark(player)
+	end
+	Players.PlayerAdded:Connect(mark)
 end
 
 function LiveOps.start(remoteFolder: Folder, tell: (Player, string) -> (), sfxAllFn: (string) -> ())
