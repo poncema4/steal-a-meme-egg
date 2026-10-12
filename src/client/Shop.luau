@@ -123,7 +123,7 @@ function Shop.start(player: Player)
 	statsMax.Parent = petStats
 	petStats.Text = "Hover a pet to see its stats"
 	local limitedRobux =
-		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Green, UDim2.fromOffset(132, Ui.tap(gui, 30)))
+		Ui.button(banner, "LimitedRobux", "", Ui.Palettes.Purple, UDim2.fromOffset(132, Ui.tap(gui, 30)))
 	limitedRobux.Position = UDim2.fromOffset(120, PET_Y + PET_H + 10)
 	-- the price always fills the small button legibly (it scales to the button, up to 20 px)
 	limitedRobux.TextScaled = true
@@ -324,7 +324,7 @@ function Shop.start(player: Player)
 			for _, product in catalog.Products do
 				if product.kind == "limited" and product.tier == tier.id and product.id ~= 0 and left > 0 then
 					limitedRobux.Text = `Buy R${product.robux}`
-					Ui.setPalette(limitedRobux, Ui.Palettes.Green)
+					Ui.setPalette(limitedRobux, Ui.Palettes.Purple) -- a Robux buy is purple, like every pass that is not owned yet
 				end
 			end
 		end
