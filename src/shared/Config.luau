@@ -197,19 +197,20 @@ return table.freeze({
 	}),
 	-- HUD icons: sticker renders of the brick models (art/ui/make_all.sh), uploaded to the studio group. These are IMAGE ids (an ImageLabel draws
 	-- nothing from a Decal id). A missing icon falls back to a glyph.
-	-- HUD and shop icons: smooth cartoon art like Steal an Egg (art/ui/cartoon_icons.py), one Image id each
+	-- HUD icons from Google's Noto Color Emoji art (Apache 2.0; art/ui/emoji_icons.py): glossy like Steal an Egg, the Shop cart and
+	-- Index book as white silhouettes with a black outline like the reference. One Image id each.
 	Icons = table.freeze({
-		book = "rbxassetid://121507954762513",
-		cart = "rbxassetid://132453993626916",
-		cash = "rbxassetid://93514424698283",
-		clock = "rbxassetid://131917973669516",
-		egg = "rbxassetid://96059258580867",
-		paw = "rbxassetid://127080637555607",
-		potion = "rbxassetid://112674684021077",
-		shoe = "rbxassetid://123691087443726",
+		book = "rbxassetid://97952116811228",
+		cart = "rbxassetid://138284838244499",
+		cash = "rbxassetid://86253579644854",
+		clock = "rbxassetid://127413837879622",
+		egg = "rbxassetid://100302718886608",
+		paw = "rbxassetid://111724444278545",
+		potion = "rbxassetid://115856427959528",
+		shoe = "rbxassetid://80065126082671",
 		trap = "rbxassetid://135157184755259",
 		bat = "rbxassetid://96955999977109",
-		trophy = "rbxassetid://123343204382303",
+		trophy = "rbxassetid://93248775215980",
 	}),
 	-- character portraits: a sticker render of each character's brick model (art/ui/make_all.sh), one Image id each; a character without one shows a letter tile
 	PetIcons = table.freeze({

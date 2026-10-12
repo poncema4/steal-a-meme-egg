@@ -45,6 +45,7 @@ local specs = {
 	require("./specs/PlaceAndHatch"),
 	require("./specs/LimitedBannerLayout"),
 	require("./specs/RealPurchases"),
+	require("./specs/EggTimers"),
 	require("./specs/BossChase"),
 	require("./specs/ModelViews"),
 	require("./specs/Perf"),

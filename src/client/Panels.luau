@@ -338,7 +338,14 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	eggLayout.Padding = UDim.new(0, 8)
 	eggLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	eggLayout.Parent = eggList
-	type EggRow = { root: Frame, title: TextLabel, timer: TextLabel, instant: TextButton, picture: ImageLabel }
+	type EggRow = {
+		root: Frame,
+		title: TextLabel,
+		timer: TextLabel,
+		instant: TextButton,
+		hatch: TextButton,
+		picture: ImageLabel,
+	}
 	local eggRows: { [number]: EggRow } = {}
 	local hatchProducts = false
 	for _, product in (Config.Monetization :: any).Products :: { [string]: { kind: string, id: number } } do
@@ -367,14 +374,23 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 		timer.Position = UDim2.fromOffset(68, 32)
 		timer.Size = UDim2.new(0.45, 0, 0, 24)
 		timer.TextXAlignment = Enum.TextXAlignment.Left
-		local instant = Ui.button(root, "Instant", "Instant", Ui.Palettes.Gold, UDim2.fromOffset(96, Ui.tap(gui, 28)))
+		-- one button, depending on the egg: a green Hatch once its timer is done, else a purple Robux instant hatch
+		local instant = Ui.button(root, "Instant", "Instant", Ui.Palettes.Purple, UDim2.fromOffset(96, Ui.tap(gui, 28)))
 		instant.AnchorPoint = Vector2.new(1, 0.5)
 		instant.Position = UDim2.new(1, -10, 0.5, 0)
 		instant.TextSize = 14
 		instant.Activated:Connect(function()
 			action:FireServer("instant", slot)
 		end)
-		return { root = root, title = title, timer = timer, instant = instant, picture = picture }
+		local hatch = Ui.button(root, "Hatch", "Hatch", Ui.Palettes.Green, UDim2.fromOffset(96, Ui.tap(gui, 28)))
+		hatch.AnchorPoint = Vector2.new(1, 0.5)
+		hatch.Position = UDim2.new(1, -10, 0.5, 0)
+		hatch.TextSize = 16
+		hatch.Visible = false
+		hatch.Activated:Connect(function()
+			action:FireServer("hatch", slot)
+		end)
+		return { root = root, title = title, timer = timer, instant = instant, hatch = hatch, picture = picture }
 	end
 
 	local function refreshEggs()
@@ -397,9 +413,11 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 				entry.title.Text = (if mutated then `{row.mutation} ` else "") .. (if tier then tier.name else row.id)
 				entry.title.TextColor3 = (if row.mutation then MUTATION_COLORS[row.mutation] else nil)
 					or Color3.new(1, 1, 1)
-				entry.timer.Text = `hatching in {left}s`
+				local ready = left <= 0
+				entry.timer.Text = if ready then "Ready to hatch!" else `hatching in {Economy.duration(left)}`
 				entry.picture.Image = (Config.EggIcons :: { [string]: string })[row.id] or ""
-				entry.instant.Visible = tokens > 0 or hatchProducts
+				entry.hatch.Visible = ready
+				entry.instant.Visible = not ready and (tokens > 0 or hatchProducts)
 				entry.instant.Text = if tokens > 0 then `Instant ({tokens})` else "Instant"
 			end
 		end
@@ -410,8 +428,8 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 			end
 		end
 		eggsNote.Text = if count == 0
-			then "No eggs hatching. Steal one from a guardian in the Wilds!"
-			else `{count} hatching`
+			then "No eggs yet. Steal one from a guardian in the Wilds!"
+			else `{count} egg{if count == 1 then "" else "s"}`
 	end
 
 	-- ---------------------------------------------------------------- Pets

@@ -114,7 +114,9 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 		local ready = (item.hatchLeft or 0) <= 0
 		tag(body, {
 			(if mutated then `{item.eggMutation} ` else "") .. (if tier then tier.name else "Egg"),
-			if ready then "READY!" else `hatching {math.ceil(item.hatchLeft or 0)}s`,
+			if ready
+				then "READY!"
+				else `hatching {Economy.duration((item.hatchLeft or 0) / Session.perks(owner).hatch)}`,
 		}, 3.4)
 		if ready then
 			-- a finished egg waits for its owner: E on a keyboard, a tap on a phone, X on a gamepad
@@ -311,7 +313,9 @@ function Plots.updateTimers(player: Player)
 			local tagGui = body and body:FindFirstChild("Tag")
 			local label = tagGui and tagGui:FindFirstChild("L2")
 			if label and label:IsA("TextLabel") then
-				label.Text = `hatching {math.ceil(item.hatchLeft or 0)}s`
+				label.Text = if (item.hatchLeft or 0) <= 0
+					then "READY!"
+					else `hatching {Economy.duration((item.hatchLeft or 0) / Session.perks(player).hatch)}`
 			end
 		end
 	end
