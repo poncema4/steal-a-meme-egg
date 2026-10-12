@@ -11,6 +11,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "brand"))
 from make_thumb_lib import FONT, MONEY, RAINBOW, gradient  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "art" / "ui"))
+from emoji_art import emoji  # noqa: E402
+
 OUT = ROOT / "brand" / "passes"
 SIZE = 512
 SAFE = 44  # nothing is drawn closer than this to an edge
@@ -26,15 +29,15 @@ def chord(centre_y: int, height: int) -> int:
 
 # key: (picture, top line, bottom line, background top/bottom colours, text colours)
 ICONS = {
-    "coins2x": ("Cartoon/cash", "2X", "COINS", ((40, 190, 90), (10, 110, 50)), MONEY),
-    "luck2x": ("Cartoon/potion", "2X", "LUCK", ((150, 80, 255), (70, 20, 150)), RAINBOW),
-    "train2x": ("Cartoon/shoe", "2X", "TRAINING", ((255, 150, 30), (200, 60, 20)), RAINBOW),
-    "fastHatch": ("Cartoon/egg", "2X", "HATCH SPEED", ((255, 90, 170), (170, 20, 100)), RAINBOW),
-    "vip": ("Cartoon/trophy", "VIP", "+25% COINS", ((255, 205, 40), (200, 120, 10)), MONEY),
-    "trapMaster": ("Cartoon/trap", "TRAP", "MASTER", ((90, 110, 140), (30, 40, 70)), RAINBOW),
-    "bossSlow": ("Pets/FinalBossHamster", "SLOW", "BOSSES", ((235, 40, 60), (120, 10, 30)), RAINBOW),
-    "hatch1": ("Cartoon/egg", "HATCH", "NOW!", ((255, 90, 170), (170, 20, 100)), RAINBOW),
-    "hatch5": ("Cartoon/egg", "5X", "HATCH", ((255, 90, 170), (170, 20, 100)), RAINBOW),
+    "coins2x": ("emoji:\U0001F4B5", "2X", "COINS", ((40, 190, 90), (10, 110, 50)), MONEY),
+    "luck2x": ("emoji:\U0001F340", "2X", "LUCK", ((150, 80, 255), (70, 20, 150)), RAINBOW),
+    "train2x": ("emoji:\U0001F45F", "2X", "TRAINING", ((255, 150, 30), (200, 60, 20)), RAINBOW),
+    "fastHatch": ("emoji:\U0001F95A", "2X", "HATCH SPEED", ((255, 90, 170), (170, 20, 100)), RAINBOW),
+    "vip": ("emoji:\U0001F451", "VIP", "+25% COINS", ((255, 205, 40), (200, 120, 10)), MONEY),
+    "trapMaster": ("item:trap", "TRAP", "MASTER", ((90, 110, 140), (30, 40, 70)), RAINBOW),
+    "bossSlow": ("emoji:\U0001F40C", "SLOW", "BOSSES", ((235, 40, 60), (120, 10, 30)), RAINBOW),
+    "hatch1": ("emoji:\U0001F423", "HATCH", "NOW!", ((255, 90, 170), (170, 20, 100)), RAINBOW),
+    "hatch5": ("emoji:\U0001F95A", "5X", "HATCH", ((255, 90, 170), (170, 20, 100)), RAINBOW),
     "limitedGoose": ("Pets/GoldenGoose", "LIMITED", "GOOSE", ((255, 205, 40), (200, 120, 10)), RAINBOW),
     "limitedCat": ("Pets/CosmicKitten", "LIMITED", "CAT", ((90, 80, 255), (30, 20, 140)), RAINBOW),
     "limitedLord": ("Pets/MemeLordPrime", "LIMITED", "LORD", ((235, 40, 60), (120, 10, 30)), RAINBOW),
@@ -63,6 +66,21 @@ def fit_text(img: Image.Image, text: str, centre_y: int, max_height: int, stops,
     img.alpha_composite(layer, ((SIZE - layer.width) // 2, centre_y - layer.height // 2))
 
 
+def picture(art: str) -> Image.Image:
+    """emoji:<char> = Google's Noto emoji art; item:<name> = the Blender-rendered item; else a sticker from art/ui. Square."""
+    if art.startswith("emoji:"):
+        im = emoji(art[6:])
+    elif art.startswith("item:"):
+        im = Image.open(ROOT / "art" / "items" / "icons" / f"{art[5:]}.png").convert("RGBA")
+        im = im.crop(im.getbbox())
+    else:
+        return Image.open(ROOT / "art" / "ui" / f"{art}.png").convert("RGBA")
+    side = int(max(im.size) * 1.12)
+    sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    sq.alpha_composite(im, ((side - im.width) // 2, (side - im.height) // 2))
+    return sq
+
+
 def make(key: str):
     art, top, bottom, (c1, c2), stops = ICONS[key]
     img = gradient((SIZE, SIZE), [c1, c2]).convert("RGBA")
@@ -70,7 +88,7 @@ def make(key: str):
     glow = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
     ImageDraw.Draw(glow).ellipse((SAFE, 120, SIZE - SAFE, 420), fill=(255, 255, 255, 60))
     img.alpha_composite(glow)
-    sticker = Image.open(ROOT / "art" / "ui" / f"{art}.png").convert("RGBA")
+    sticker = picture(art)
     h = 236
     sticker = sticker.resize((h, h), Image.LANCZOS)
     img.alpha_composite(sticker, ((SIZE - h) // 2, (SIZE - h) // 2 + 4))
