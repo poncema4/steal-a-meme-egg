@@ -231,6 +231,36 @@ local function buildTreadmill(model: Model, f: Frame, accent: Color3): (Part, Tr
 		roller.Shape = Enum.PartType.Cylinder
 	end
 	tube("ConsoleBar", 8.1, 0.5, cf(f, 0, 5.7, ahead + length / 2 - 0.6), steel)
+	-- a sleeker body: a dark base skirt under the deck with rounded ends, a ramp to step on at the back, and an arch of tubes
+	-- over the front with ball joints (the painter colours the arch with the tier, like the rest of the frame)
+	local skirt = part("Skirt", Vector3.new(8.6, 0.5, length + 1.2), cf(f, 0, 0.25, ahead), dark, model)
+	skirt.Material = Enum.Material.SmoothPlastic
+	for _, end_ in { -1, 1 } do
+		local cap =
+			part("SkirtEnd", Vector3.new(8.6, 1, 1), cf(f, 0, 0.25, ahead + end_ * (length / 2 + 0.6)), dark, model)
+		cap.Shape = Enum.PartType.Cylinder
+	end
+	local rampAt = at(f, 0, 0.35, ahead - length / 2 - 1.9)
+	local ramp = Instance.new("WedgePart")
+	ramp.Name = "Ramp"
+	ramp.Size = Vector3.new(6.4, 0.7, 2.4)
+	ramp.CFrame = CFrame.lookAt(rampAt, rampAt + f.front)
+	ramp.Color = dark
+	ramp.Material = Enum.Material.DiamondPlate
+	ramp.Anchored = true
+	ramp.Parent = model
+	for _, side in { -1, 1 } do
+		tube("ArchLeg", 7.4, 0.45, cf(f, side * 3.85, 3.7, ahead - length / 2 + 0.8) * UPRIGHT, accent)
+		local joint = part(
+			"ArchJoint",
+			Vector3.new(0.7, 0.7, 0.7),
+			cf(f, side * 3.85, 7.4, ahead - length / 2 + 0.8),
+			steel,
+			model
+		)
+		joint.Shape = Enum.PartType.Ball
+	end
+	tube("ArchTop", 7.7, 0.45, cf(f, 0, 7.4, ahead - length / 2 + 0.8), accent)
 	-- the display faces the runner (back toward the pen): a part's Front face points along its LookVector
 	local screenAt = at(f, 0, 4.4, ahead + length / 2 - 0.2)
 	local screen = part("Console", Vector3.new(5.6, 2.4, 0.4), CFrame.lookAt(screenAt, screenAt - f.front), dark, model)
@@ -288,17 +318,55 @@ local function buildPlot(index: number, parent: Instance): Plot
 	-- small signs on posts, the same in every base (Marco): BUY SLOT and REBIRTH at the pen's front corners, UPGRADE by the
 	-- treadmill. Walk up and hold the key (or tap) to use one.
 	local function smallSign(name: string, text: string, boardColor: Color3, right: number, front: number): Part
-		local post = part(
-			`{name}Post`,
-			Vector3.new(3.4, 0.35, 0.35),
-			cf(f, right, 1.7, front) * CFrame.Angles(0, 0, math.pi / 2),
-			Color3.fromRGB(120, 90, 60),
-			model
-		)
-		post.Shape = Enum.PartType.Cylinder
-		post.CanCollide = false
-		local board = part(name, Vector3.new(4.2, 1.8, 0.3), cf(f, right, 3.9, front), boardColor, model)
+		-- a real signboard: two round posts at the board's SIDES (nothing passes through it), a darker wooden frame round the
+		-- edge, and a little roof on top; the words (or, on a PC, the button) cover both faces of the board
+		local wood = Color3.fromRGB(122, 84, 52)
+		local dark = Color3.fromRGB(86, 58, 36)
+		local W, H = 4.4, 2.0
+		for _, s in { -1, 1 } do
+			local post = part(
+				`{name}Post`,
+				Vector3.new(5.2, 0.42, 0.42),
+				cf(f, right + s * (W / 2 + 0.25), 2.6, front) * CFrame.Angles(0, 0, math.pi / 2),
+				wood,
+				model
+			)
+			post.Shape = Enum.PartType.Cylinder
+			post.Material = Enum.Material.Wood
+			post.CanCollide = false
+			local cap = part(
+				`{name}Cap`,
+				Vector3.new(0.6, 0.6, 0.6),
+				cf(f, right + s * (W / 2 + 0.25), 5.3, front),
+				dark,
+				model
+			)
+			cap.Shape = Enum.PartType.Ball
+			cap.CanCollide = false
+		end
+		local board = part(name, Vector3.new(W, H, 0.3), cf(f, right, 3.9, front), boardColor, model)
 		board.CanCollide = false
+		board.Material = Enum.Material.SmoothPlastic
+		-- the frame: four thin wooden rails round the board's edge, slightly thicker than the board so they read as a frame
+		for _, rail in
+			{
+				{ 0, H / 2 + 0.1, W + 0.2, 0.2 },
+				{ 0, -H / 2 - 0.1, W + 0.2, 0.2 },
+			}
+		do
+			local r = part(
+				`{name}Frame`,
+				Vector3.new(rail[3], rail[4], 0.45),
+				cf(f, right + rail[1], 3.9 + rail[2], front),
+				dark,
+				model
+			)
+			r.Material = Enum.Material.Wood
+			r.CanCollide = false
+		end
+		local roof = part(`{name}Roof`, Vector3.new(W + 1.2, 0.25, 0.9), cf(f, right, 5.1, front), dark, model)
+		roof.Material = Enum.Material.Wood
+		roof.CanCollide = false
 		for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
 			local gui = Instance.new("SurfaceGui")
 			gui.Face = face
