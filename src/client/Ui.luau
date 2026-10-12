@@ -87,6 +87,11 @@ end
 
 -- The design-size number for a button that must stay tappable at the current scale.
 function Ui.tap(gui: ScreenGui, designSize: number): number
+	-- the fingertip minimum is for touch screens only: a mouse can hit a slim button, and forcing it made every small button
+	-- on a PC ~45 px tall (Marco: "the buy robux / owned is bigger than it needs to be")
+	if not Ui.isTouch() then
+		return designSize
+	end
 	local scale = gui:FindFirstChild("Scale") :: UIScale?
 	return UiScale.tap(designSize, if scale then scale.Scale else 1)
 end

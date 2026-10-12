@@ -157,7 +157,7 @@ function Shop.start(player: Player)
 	-- compact cards, four to a row (Marco: the things inside the shop should be smaller). The card's height follows its button's
 	-- real height (taller on a phone), so the blurb always sits above the button, never under it.
 	local COLS, CARD_W, GAP = 4, 124, 10
-	local BUTTON_H = Ui.tap(gui, 24) -- Marco: the green/purple buy buttons inside the shop should be small
+	local BUTTON_H = Ui.tap(gui, 22) -- slim: purple R$ price until bought, then a green OWNED
 	local BLURB_Y, BLURB_H = 94, 42
 	local CARD_H = BLURB_Y + BLURB_H + 6 + BUTTON_H + 6
 	local function section(title: string)
@@ -224,10 +224,10 @@ function Shop.start(player: Player)
 			blurbMax.Parent = blurb
 			blurb.TextYAlignment = Enum.TextYAlignment.Top
 			blurb.Text = item.blurb or ""
-			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(0.72, 0, 0, BUTTON_H))
+			local b = Ui.button(card, `Row_{key}`, "", Ui.Palettes.Purple, UDim2.new(0.62, 0, 0, BUTTON_H))
 			b.AnchorPoint = Vector2.new(0.5, 1)
 			b.Position = UDim2.new(0.5, 0, 1, -6)
-			b.TextSize = 14
+			b.TextSize = 13
 			table.insert(rows, { key = key, kind = kind, button = b, name = item.name, robux = item.robux })
 			b.Activated:Connect(function()
 				buyKey:FireServer(kind, key)

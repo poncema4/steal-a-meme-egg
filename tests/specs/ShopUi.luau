@@ -108,6 +108,14 @@ return function(t)
 		end
 	end
 	t.equal("no blurb runs under its card's button", clipped, 0)
+	-- on a PC the buy buttons are slim (the fingertip minimum is for touch screens only)
+	local luckButton = find(find(gui, "Card_luck2x") :: Instance, "Row_luck2x") :: TextButton
+	t.check("a PC's buy button is slim", luckButton.Size.Y.Offset <= 24, tostring(luckButton.Size.Y.Offset))
+	t.check(
+		"and shows the Robux price while not owned",
+		string.find(luckButton.Text, "R$", 1, true) ~= nil,
+		luckButton.Text
+	)
 	t.check("the limited egg has its own banner", find(gui, "LimitedCard") ~= nil)
 
 	-- sound on the client: the tune starts, and effects are played by name from Config.Sounds
