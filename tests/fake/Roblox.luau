@@ -788,6 +788,38 @@ function Fake.world()
 				table.insert(world.teleports, { placeId = placeId, players = players, options = options })
 			end
 		elseif name == "DataStoreService" then
+			-- ordered stores are shared by name, like on Roblox where every server sees the same board
+			world.ordered = world.ordered or {}
+			s.GetOrderedDataStore = function(_, storeName)
+				world.ordered[storeName] = world.ordered[storeName] or {}
+				local rowsByKey = world.ordered[storeName]
+				return {
+					SetAsync = function(_, key, value)
+						rowsByKey[key] = value
+					end,
+					GetSortedAsync = function(_, ascending, size)
+						local rows = {}
+						for k, v in rowsByKey do
+							table.insert(rows, { key = k, value = v })
+						end
+						table.sort(rows, function(a, b)
+							if ascending then
+								return a.value < b.value
+							end
+							return a.value > b.value
+						end)
+						local page = {}
+						for i = 1, math.min(size, #rows) do
+							page[i] = rows[i]
+						end
+						return {
+							GetCurrentPage = function()
+								return page
+							end,
+						}
+					end,
+				}
+			end
 			s.GetDataStore = function()
 				local store = {}
 				return {
