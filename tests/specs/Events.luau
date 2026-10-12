@@ -29,15 +29,8 @@ return function(t)
 	Events.start(state, "MegaLuck", 0, 10)
 	t.equal("a shorter restart never shortens a running event", #Events.active(state, 20), 1)
 
-	-- the schedule: Lucky Hour at :00, Egg Rain at :10, Coin Rain at :20 of each half hour
-	local id, ends = Events.scheduledAt(1000 * PERIOD + 10, PERIOD, CLAIM)
-	t.check("0:10 into the period is Lucky Hour", id == "LuckyHour" and ends == 1000 * PERIOD + CLAIM)
-	t.equal("a quiet moment has no event", (Events.scheduledAt(1000 * PERIOD + 400, PERIOD, CLAIM)), nil)
-	t.equal("Egg Rain at 10 minutes", (Events.scheduledAt(1000 * PERIOD + 610, PERIOD, CLAIM)), "EggRain")
-	t.equal("Coin Rain at 20 minutes", (Events.scheduledAt(1000 * PERIOD + 1201, PERIOD, CLAIM)), "CoinRain")
-	t.equal("nothing at 25 minutes", (Events.scheduledAt(1000 * PERIOD + 1500, PERIOD, CLAIM)), nil)
-	local nextId, wait = Events.nextAfter(1000 * PERIOD + 400, PERIOD)
-	t.check("the next event after a quiet moment", nextId == "EggRain" and wait == 200)
-	nextId, wait = Events.nextAfter(1000 * PERIOD + 1500, PERIOD)
-	t.check("after the last it wraps to the next period", nextId == "LuckyHour" and wait == 300)
+	-- day and night is the only event (Marco): nothing else is scheduled, and an empty schedule never breaks anything
+	t.equal("no other event is on a schedule", (Events.scheduledAt(1000 * PERIOD + 10, PERIOD, CLAIM)), nil)
+	local nextId = Events.nextAfter(1000 * PERIOD + 400, PERIOD)
+	t.equal("and none is coming up", nextId, "")
 end

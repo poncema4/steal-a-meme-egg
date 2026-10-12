@@ -7,9 +7,9 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
+local DayNight = require(ReplicatedStorage.Shared.Game.DayNight)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
-local Events = require(ReplicatedStorage.Shared.Game.Events)
 local Objective = require(ReplicatedStorage.Shared.Game.Objective)
 local Progression = require(ReplicatedStorage.Shared.Game.Progression)
 local Rebirth = require(ReplicatedStorage.Shared.Game.Rebirth)
@@ -433,30 +433,20 @@ function Hud.start(player: Player, actions: Actions?)
 			end
 		end
 		local now = workspace:GetServerTimeNow()
-		local active = tostring(ReplicatedStorage:GetAttribute("ActiveEvents") or "")
-		local lines = {}
-		for entry in string.gmatch(active, "[^,]+") do
-			local id, ends = string.match(entry, "^(%w+):(%d+%.?%d*)$")
-			local eventDef = id and Events.Defs[id]
-			if eventDef and ends and tonumber(ends) :: number > now then
-				table.insert(lines, `{eventDef.name}\n{clock((tonumber(ends) :: number) - now)} left`)
-			end
-		end
-		banner.Text = "" -- running events are shown by the clock in the corner (also kept in `lines` for it)
-		-- the clock: the event running now, else the next one
-		local nextId, nextAt =
-			string.match(tostring(ReplicatedStorage:GetAttribute("NextEvent") or ""), "^(%w+):(%d+%.?%d*)$")
-		local nextDef = nextId and Events.Defs[nextId]
-		if #lines > 0 then
-			local name, remaining = string.match(lines[1], "^(.-)\n(.*)$")
-			clockName.Text = name or ""
-			clockText.Text = remaining or lines[1]
-		elseif nextDef and nextAt then
-			clockName.Text = nextDef.name
-			clockText.Text = `in {clock((tonumber(nextAt) :: number) - now)}`
+		banner.Text = "" -- the clock in the corner shows day and night
+		-- the clock (bottom right): day and night, the game's one event
+		local phase = tostring(ReplicatedStorage:GetAttribute("Phase") or "Day")
+		local ends = (ReplicatedStorage:GetAttribute("PhaseEnds") :: number?) or now
+		local phaseLeft = math.max(0, ends - now)
+		if phase == "Day" then
+			clockName.Text = "🌙 Night"
+			clockText.Text = `in {clock(phaseLeft)}`
+		elseif phase == "Night" then
+			clockName.Text = "🌙 Night: the Wilds are closed"
+			clockText.Text = `{clock(phaseLeft + DayNight.DAWN)} left`
 		else
-			clockName.Text = ""
-			clockText.Text = ""
+			clockName.Text = "☀️ Day"
+			clockText.Text = `in {clock(phaseLeft)}`
 		end
 	end
 
