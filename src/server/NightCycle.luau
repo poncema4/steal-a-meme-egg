@@ -8,7 +8,6 @@ local RunService = game:GetService("RunService")
 
 local DayNight = require(ReplicatedStorage.Shared.Game.DayNight)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
-local Plots = require(script.Parent.Plots)
 local Session = require(script.Parent.Session)
 local Wilds = require(script.Parent.Wilds)
 local World = require(script.Parent.World)
@@ -74,10 +73,10 @@ function NightCycle.nightfall()
 	for _, player in Players:GetPlayers() do
 		local character = player.Character
 		local root = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
-		local plot = Plots.of(player)
-		if root and plot and root.Position.X > World.SAFE_FRONT then
-			local spawn = plot.spawn :: BasePart
-			character:PivotTo(spawn.CFrame + Vector3.new(0, 4, 0))
+		-- at night everyone out in the Wilds goes to the middle of the Safe Zone (the general spawn)
+		local lobby = workspace:FindFirstChild("LobbySpawn", true) :: BasePart?
+		if root and lobby and root.Position.X > World.SAFE_FRONT then
+			character:PivotTo(lobby.CFrame + Vector3.new(0, 4, 0))
 			notify(player, "🌙 Night fell! You were sent home and the egg went back to its nest.")
 		end
 	end

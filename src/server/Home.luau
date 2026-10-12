@@ -70,7 +70,7 @@ local function refreshLabels(player: Player)
 	if not plot or not state then
 		return
 	end
-	local speed = plot.treadmill:FindFirstChildOfClass("ProximityPrompt")
+	local speed = plot.upgradeSign:FindFirstChildOfClass("ProximityPrompt")
 	if speed then
 		speed.ObjectText = if state.treadmill >= Progression.MAX_TREADMILL
 			then "fully upgraded"
@@ -143,7 +143,7 @@ end
 
 function Home.start(plots: { World.Plot })
 	for _, plot in plots do
-		local speed = addPrompt(plot.treadmill, "Upgrade treadmill", "", 0.4)
+		local speed = addPrompt(plot.upgradeSign, "Upgrade treadmill", "", 0.4)
 		speed.Triggered:Connect(function(who)
 			if Plots.of(who) ~= plot then
 				return

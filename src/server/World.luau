@@ -11,7 +11,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Base = require(ReplicatedStorage.Shared.Game.Base)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
-local Models = require(script.Parent.Models)
 
 local World = {}
 
@@ -23,6 +22,7 @@ export type Plot = {
 	display: { title: TextLabel, level: TextLabel, rate: TextLabel },
 	slotPad: BasePart,
 	rebirthPad: BasePart,
+	upgradeSign: BasePart,
 	sign: TextLabel,
 	index: number,
 	center: Vector3,
@@ -196,25 +196,41 @@ local function buildTreadmill(model: Model, f: Frame, accent: Color3): (Part, Tr
 		ridge.CanCollide = false
 		ridge:SetAttribute("Slot", i)
 	end
+	-- the frame is round tubes, not boxes (Marco: the treadmill looked blocky): a cylinder runs along its X size, so each tube is
+	-- turned to run along the belt (front), stand up (legs) or run across (the bar)
+	local ALONG = CFrame.Angles(0, math.pi / 2, 0)
+	local UPRIGHT = CFrame.Angles(0, 0, math.pi / 2)
+	local function tube(name: string, size: number, thick: number, at_: CFrame, color: Color3): Part
+		local p = part(name, Vector3.new(size, thick, thick), at_, color, model)
+		p.Shape = Enum.PartType.Cylinder
+		p.Material = Enum.Material.Metal
+		return p
+	end
 	for _, side in { -1, 1 } do
-		part("TreadRail", Vector3.new(0.9, 1.1, length + 0.6), cf(f, side * 3.85, 0.55, ahead), accent, model)
+		tube("TreadRail", length + 0.6, 1.1, cf(f, side * 3.85, 0.55, ahead) * ALONG, accent)
 		-- a strip of light along the top of each rail: invisible on a Rusty treadmill, brighter with every tier (see Home)
-		local strip = part("TierGlow", Vector3.new(0.5, 0.12, length), cf(f, side * 3.85, 1.16, ahead), accent, model)
+		local strip = part("TierGlow", Vector3.new(0.4, 0.12, length), cf(f, side * 3.85, 1.13, ahead), accent, model)
 		strip.Transparency = 1
 		strip.CanCollide = false
 		-- the console legs and the handrail along each side
-		part("ConsoleLeg", Vector3.new(0.6, 4.4, 0.6), cf(f, side * 3.85, 3.3, ahead + length / 2 - 0.6), steel, model)
-		part("Handrail", Vector3.new(0.4, 0.4, 9), cf(f, side * 3.85, 3.7, ahead + length / 2 - 5.1), steel, model)
+		tube("ConsoleLeg", 4.4, 0.55, cf(f, side * 3.85, 3.3, ahead + length / 2 - 0.6) * UPRIGHT, steel)
+		tube("Handrail", 9, 0.4, cf(f, side * 3.85, 3.7, ahead + length / 2 - 5.1) * ALONG, steel)
+		-- rounded caps where each handrail ends
+		local knob = part(
+			"HandrailEnd",
+			Vector3.new(0.6, 0.6, 0.6),
+			cf(f, side * 3.85, 3.7, ahead + length / 2 - 9.6),
+			steel,
+			model
+		)
+		knob.Shape = Enum.PartType.Ball
 	end
 	for _, end_ in { -1, 1 } do
 		local roller =
 			part("Roller", Vector3.new(6.6, 1.3, 1.3), cf(f, 0, 0.65, ahead + end_ * (length / 2 + 0.3)), steel, model)
 		roller.Shape = Enum.PartType.Cylinder
 	end
-	part("ConsoleBar", Vector3.new(8.1, 0.5, 0.5), cf(f, 0, 5.7, ahead + length / 2 - 0.6), steel, model)
-	-- a brick speedometer topper on the bar, facing the runner
-	local topperAt = at(f, 0, 5.95, ahead + length / 2 - 0.6)
-	Models.place(model, "Props", "TreadmillTopper", CFrame.lookAt(topperAt, topperAt - f.front), 1)
+	tube("ConsoleBar", 8.1, 0.5, cf(f, 0, 5.7, ahead + length / 2 - 0.6), steel)
 	-- the display faces the runner (back toward the pen): a part's Front face points along its LookVector
 	local screenAt = at(f, 0, 4.4, ahead + length / 2 - 0.2)
 	local screen = part("Console", Vector3.new(5.6, 2.4, 0.4), CFrame.lookAt(screenAt, screenAt - f.front), dark, model)
@@ -258,20 +274,54 @@ local function buildPlot(index: number, parent: Instance): Plot
 	end
 	local spawn = Instance.new("SpawnLocation")
 	spawn.Name = "Spawn"
-	spawn.Size = Vector3.new(7, 1, 7)
-	spawn.CFrame = cf(f, 0, 0.7, 17)
+	-- invisible and paper thin (Marco: no white platform; you respawn in your own base anyway)
+	spawn.Size = Vector3.new(6, 0.2, 6)
+	spawn.CFrame = cf(f, 0, 0.1, 17)
 	spawn.Anchored = true
 	spawn.Neutral = true
 	spawn.Duration = 0
-	spawn.Transparency = 0.5
-	spawn.Color = Color3.fromRGB(255, 255, 255)
+	spawn.Transparency = 1
+	spawn.CanCollide = false
 	spawn.Parent = model
 	-- the treadmill lies in front of the pen, in the plaza; you run toward the plaza on it to train speed
 	local treadmill, display = buildTreadmill(model, f, color)
-	-- the green pad buys another base slot; the purple one rebirths (both inside the pen, at the front corners)
-	local slotPad = part("SlotPad", Vector3.new(5, 0.5, 5), cf(f, -14, 0.45, 16), Color3.fromRGB(60, 200, 90), model)
-	local rebirthPad =
-		part("RebirthPad", Vector3.new(5, 0.5, 5), cf(f, 14, 0.45, 16), Color3.fromRGB(170, 70, 255), model)
+	-- small signs on posts, the same in every base (Marco): BUY SLOT and REBIRTH at the pen's front corners, UPGRADE by the
+	-- treadmill. Walk up and hold the key (or tap) to use one.
+	local function smallSign(name: string, text: string, boardColor: Color3, right: number, front: number): Part
+		local post = part(
+			`{name}Post`,
+			Vector3.new(3.4, 0.35, 0.35),
+			cf(f, right, 1.7, front) * CFrame.Angles(0, 0, math.pi / 2),
+			Color3.fromRGB(120, 90, 60),
+			model
+		)
+		post.Shape = Enum.PartType.Cylinder
+		post.CanCollide = false
+		local board = part(name, Vector3.new(4.2, 1.8, 0.3), cf(f, right, 3.9, front), boardColor, model)
+		board.CanCollide = false
+		for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do
+			local gui = Instance.new("SurfaceGui")
+			gui.Face = face
+			gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
+			gui.PixelsPerStud = 40
+			gui.Parent = board
+			local label = Instance.new("TextLabel")
+			label.Name = "Text"
+			label.Size = UDim2.fromScale(0.92, 0.8)
+			label.Position = UDim2.fromScale(0.04, 0.1)
+			label.BackgroundTransparency = 1
+			label.Font = Enum.Font.FredokaOne
+			label.TextScaled = true
+			label.TextColor3 = Color3.new(1, 1, 1)
+			label.TextStrokeTransparency = 0
+			label.Text = text
+			label.Parent = gui
+		end
+		return board
+	end
+	local slotPad = smallSign("SlotPad", "BUY SLOT", Color3.fromRGB(60, 190, 90), -14, 17.5)
+	local rebirthPad = smallSign("RebirthPad", "REBIRTH", Color3.fromRGB(150, 70, 230), 14, 17.5)
+	local upgradeSign = smallSign("UpgradeSign", "UPGRADE", Color3.fromRGB(250, 170, 40), -6.5, World.PEN / 2 + 5)
 	-- the name board stands behind the pen and faces its front, so you read it from the plaza
 	local sign =
 		part("SignPost", Vector3.new(14, 8, 1), cf(f, 0, 8, -World.PEN / 2 - 2), Color3.fromRGB(35, 35, 45), model)
@@ -297,6 +347,7 @@ local function buildPlot(index: number, parent: Instance): Plot
 		display = display,
 		slotPad = slotPad,
 		rebirthPad = rebirthPad,
+		upgradeSign = upgradeSign,
 		sign = label,
 		index = index,
 		center = f.center,
@@ -340,8 +391,8 @@ local function buildCorridor(map: Instance)
 	-- where a player first appears, before their base is assigned (an unused base has no spawn: it is parked underground)
 	local lobby = Instance.new("SpawnLocation")
 	lobby.Name = "LobbySpawn"
-	lobby.Size = Vector3.new(6, 1, 6)
-	lobby.CFrame = CFrame.new(World.PLAZA.X, 0.55, World.PLAZA.Z)
+	lobby.Size = Vector3.new(6, 0.2, 6)
+	lobby.CFrame = CFrame.new(World.PLAZA.X, 0.15, World.PLAZA.Z)
 	lobby.Anchored = true
 	lobby.CanCollide = false
 	lobby.Neutral = true
