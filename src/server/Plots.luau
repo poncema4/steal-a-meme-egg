@@ -173,6 +173,11 @@ local function drawSlot(owner: Player, plot: World.Plot, n: number)
 			Models.show(body, "Pets", item.id, mutation, plot.front)
 			body.Transparency = 1
 			tag(body, { label, `+{Economy.format(per)}/s` }, 7)
+			-- the pet streams to clients as one piece pivoting on its body (Marco: after a slot was bought, pets wandered out of
+			-- the pen). Every slot is redrawn on a change; a non-atomic model with no PrimaryPart could reach a client part by
+			-- part, so Roam measured its pivot from half a pet and the rest arrived somewhere else
+			model.PrimaryPart = body
+			model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 			-- every client works out the same walk from the shared clock (see client/Roam)
 			model:SetAttribute("RoamSeed", n + 13 * plot.index)
 			model:SetAttribute("RoamRadius", ROAM_RADIUS)

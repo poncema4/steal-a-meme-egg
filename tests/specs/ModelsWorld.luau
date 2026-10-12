@@ -66,6 +66,14 @@ return function(t)
 		"each roaming pet has its own walk",
 		(roamers[1] :: Instance):GetAttribute("RoamSeed") ~= (roamers[2] :: Instance):GetAttribute("RoamSeed")
 	)
+	-- streaming: a pet must reach a client whole and pivot on its body, or Roam walks half of it out of the pen
+	local roamer = roamers[1] :: any
+	t.check("a roaming pet pivots on its body", roamer.PrimaryPart ~= nil and roamer.PrimaryPart.Name == "Body")
+	t.check("a roaming pet streams as one piece", roamer.ModelStreamingMode == Enum.ModelStreamingMode.Atomic)
+	local centre = roamer:GetAttribute("RoamCentre")
+	local radius = roamer:GetAttribute("RoamRadius")
+	local reach = math.sqrt((centre.X - plot.center.X) ^ 2 + (centre.Z - plot.center.Z) ^ 2)
+	t.check("a pet's whole patch is inside the fence", reach + radius < 20 - 3)
 	local picture = one:FindFirstChild("Picture", true)
 	t.check("the portrait card is not used when the model exists", picture == nil)
 	t.check("the pet still has its name tag", one:FindFirstChild("Tag", true) ~= nil)
