@@ -63,6 +63,17 @@ return function(t)
 	t.check("a swing chops the bat forward, not back over the shoulder", bat(ana).Grip.LookVector.Y > 0.5)
 	world.advance(1.5)
 	t.equal("a new player holds the Wooden Bat", bat(ana).ToolTip, "Wooden Bat")
+	-- a real bat shape from smooth round parts, not bricks: a knob, a grip and a rounded barrel, in wood
+	local b0 = bat(ana)
+	t.check(
+		"the bat has a knob, a grip and a rounded barrel",
+		b0:FindFirstChild("Knob") ~= nil and b0:FindFirstChild("Grip") ~= nil and b0:FindFirstChild("Cap") ~= nil
+	)
+	t.equal("the Wooden Bat is made of wood", (b0:FindFirstChild("Cap") :: Part).Material, world.enum.Material.Wood)
+	t.check(
+		"its barrel is thicker than its grip",
+		(b0:FindFirstChild("Barrel7") :: Part).Size.Y > (b0:FindFirstChild("Grip") :: Part).Size.Y
+	)
 
 	-- the Safe Zone is safe
 	local x0 = Zones.List[1].startX

@@ -38,24 +38,24 @@ return table.freeze({
 			name = "Speed Demon",
 			description = "Reached a speed of 100,000.",
 		}),
-		reborn = table.freeze({ id = 0, name = "Reborn", description = "Rebirthed for the first time." }),
+		reborn = table.freeze({ id = 1420399396852850, name = "Reborn", description = "Rebirthed for the first time." }),
 		collector = table.freeze({
-			id = 0,
+			id = 3070658632390701,
 			name = "Meme Collector",
 			description = "Discovered 10 meme characters in the Index.",
 		}),
 		bossEscape = table.freeze({
-			id = 0,
+			id = 1111059166219026,
 			name = "Boss Escape",
 			description = "Brought home an egg from Lava Lands or deeper.",
 		}),
 		deepDiver = table.freeze({
-			id = 0,
+			id = 1934365254932598,
 			name = "Sky High",
 			description = "Brought home an egg from the Sky Kingdom.",
 		}),
 		trapSpringer = table.freeze({
-			id = 0,
+			id = 94641520571964,
 			name = "Gotcha!",
 			description = "Caught a meme boss in one of your traps.",
 		}),
@@ -291,6 +291,19 @@ return table.freeze({
 		Throne = "rbxassetid://136063886269390",
 	}),
 	-- the picture on each shop card (and on its Creator Hub page): art/ui/make_passes.py
+	-- the backpack items' pictures: real 3D renders like Steal an Egg's hotbar (art/items/render_items.py + compose.py). The trap
+	-- shows how many you have left ("x3"), so it has one picture per count.
+	ItemIcons = table.freeze({
+		bat = "rbxassetid://72860451054073",
+		trap = table.freeze({
+			"rbxassetid://72887371170636",
+			"rbxassetid://102113398108718",
+			"rbxassetid://75022657488140",
+			"rbxassetid://123929134723653",
+			"rbxassetid://105735304661373",
+			"rbxassetid://114475299313939",
+		}),
+	}),
 	ShopArt = table.freeze({
 		bossSlow = "rbxassetid://84756472712938",
 		coins2x = "rbxassetid://132674884843989",

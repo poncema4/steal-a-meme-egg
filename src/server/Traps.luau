@@ -55,7 +55,6 @@ local function buildTool(player: Player): Tool
 	local tool = Instance.new("Tool")
 	tool.Name = "Trap"
 	tool.ToolTip = "Bear Trap: click to set one"
-	tool.TextureId = Config.Icons.trap
 	tool.CanBeDropped = false
 	tool.RequiresHandle = false
 	tool.Activated:Connect(function()
@@ -86,8 +85,10 @@ function Traps.syncTool(player: Player)
 	elseif #tools == 0 then
 		buildTool(player).Parent = backpack
 	end
+	local pictures = Config.ItemIcons.trap
 	for _, tool in toolsOf(player) do
 		tool.ToolTip = `Bear Trap: click to set one ({left} left)`
+		tool.TextureId = pictures[math.clamp(left, 1, #pictures)] -- the picture says how many are left: x3, x2, x1
 	end
 end
 

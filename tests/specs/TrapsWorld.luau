@@ -76,6 +76,10 @@ return function(t)
 	t.check("then it moves again (or heads home)", g.state ~= "Chase" or g.x ~= x0)
 
 	t.check("a trap used on a guardian gives the Trap item back", trapItem(ana))
+	local Config = require("../../src/shared/Config")
+	local item = (ana:FindFirstChildOfClass("Backpack") :: Instance):FindFirstChild("Trap") :: Tool
+	local trapsLeft = (ana:GetAttribute("TrapsMax") :: number) - (ana:GetAttribute("TrapsPlaced") :: number)
+	t.equal("its picture shows how many are left", item and item.TextureId, (Config.ItemIcons :: any).trap[trapsLeft])
 
 	-- another player steps on one: held still for 10 seconds, then Ana gets that trap back
 	local ben = world.addPlayer("Ben", 62)
