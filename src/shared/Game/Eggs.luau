@@ -353,10 +353,22 @@ end
 -- 1 in 20 is Gold (x2), 1 in 100 is Rainbow (x5); luck helps a little.
 -- A nest egg's mutation. `depth` is the terrain number (1 = Meadow): deeper terrains grow Gold and Rainbow eggs more often.
 -- The egg keeps it all the way home and its pet is born with it.
-function Eggs.nestMutation(depth: number, rng: () -> number): string
+-- Gold and Rainbow nest eggs are rare (Marco): normal eggs grow most, Gold less, Rainbow least. Each world deeper raises the
+-- chances a little (Gold 3% -> at most 10%, Rainbow 0.5% -> at most 3%). `damp` (0-1) is the nest's own luck: right after it
+-- grew a Gold or Rainbow egg it is lowered (Eggs.dampAfter), so lucky eggs never come one after another.
+Eggs.GOLD_BASE, Eggs.GOLD_STEP, Eggs.GOLD_MAX = 0.03, 0.003, 0.10
+Eggs.RAINBOW_BASE, Eggs.RAINBOW_STEP, Eggs.RAINBOW_MAX = 0.005, 0.001, 0.03
+
+function Eggs.nestChances(depth: number, damp: number?): (number, number)
 	local d = math.max(depth, 1)
-	local rainbow = math.min(0.02 + 0.015 * (d - 1), 0.12)
-	local gold = math.min(0.08 + 0.04 * (d - 1), 0.4)
+	local k = math.clamp(damp or 1, 0, 1)
+	local gold = math.min(Eggs.GOLD_BASE + Eggs.GOLD_STEP * (d - 1), Eggs.GOLD_MAX) * k
+	local rainbow = math.min(Eggs.RAINBOW_BASE + Eggs.RAINBOW_STEP * (d - 1), Eggs.RAINBOW_MAX) * k
+	return gold, rainbow
+end
+
+function Eggs.nestMutation(depth: number, rng: () -> number, damp: number?): string
+	local gold, rainbow = Eggs.nestChances(depth, damp)
 	local r = rng()
 	if r < rainbow then
 		return "Rainbow"
@@ -364,6 +376,16 @@ function Eggs.nestMutation(depth: number, rng: () -> number): string
 		return "Gold"
 	end
 	return "Normal"
+end
+
+-- A nest's luck after it grew an egg: a Gold halves it, a Rainbow quarters it, a normal egg lets it recover a little.
+function Eggs.dampAfter(damp: number, mutation: string): number
+	if mutation == "Rainbow" then
+		return damp * 0.25
+	elseif mutation == "Gold" then
+		return damp * 0.5
+	end
+	return math.min(1, damp * 1.5 + 0.05)
 end
 
 function Eggs.mutation(luck: number, rng: () -> number): string

@@ -26,13 +26,31 @@ return function(t)
 		return gold / n, rainbow / n
 	end
 	local g1, r1 = share(1)
-	t.check("most Meadow eggs are Normal", g1 + r1 < 0.15)
-	t.check("some Meadow eggs are Gold", g1 > 0.05)
-	t.check("Rainbow is rarer than Gold", r1 < g1)
+	-- Marco: Normal most, Gold less, Rainbow least; a little more each world deeper, never easy
+	t.check("almost every Meadow egg is Normal", g1 + r1 < 0.05, tostring(g1 + r1))
+	t.check("a few Meadow eggs are Gold", g1 > 0.02 and g1 < 0.04, tostring(g1))
+	t.check("Rainbow is much rarer than Gold", r1 < g1 / 3, tostring(r1))
 	local g5, r5 = share(5)
-	t.check("deeper terrains grow more Gold", g5 > g1)
-	t.check("and more Rainbow", r5 > r1)
-	t.check("but the odds are capped (never all mutated)", g5 + r5 < 0.6)
+	t.check("deeper terrains grow a little more Gold", g5 > g1)
+	t.check("and a little more Rainbow", r5 > r1)
+	local gDeep, rDeep = share(30)
+	t.check(
+		"even the deepest world stays rare: Gold at most 10%, Rainbow at most 3%",
+		gDeep <= 0.1001 and rDeep <= 0.0301
+	)
+	-- no lucky streaks: right after a Gold or Rainbow egg the nest's chance drops, then recovers with normal eggs
+	local afterRainbow = Eggs.dampAfter(1, "Rainbow")
+	local afterGold = Eggs.dampAfter(1, "Gold")
+	t.check("a Rainbow egg makes the nest's next lucky egg much less likely", afterRainbow <= 0.25)
+	t.check("a Gold one halves it", afterGold <= 0.5)
+	local g, rb = Eggs.nestChances(1, afterRainbow)
+	local gFull, rbFull = Eggs.nestChances(1, 1)
+	t.check("so the chances right after a Rainbow are lower", g < gFull and rb < rbFull)
+	local damp = afterRainbow
+	for _ = 1, 6 do
+		damp = Eggs.dampAfter(damp, "Normal")
+	end
+	t.equal("and recover after a few normal eggs", damp, 1)
 	for _, odd in { 0, -3, 99, 0 / 0 } do
 		local m = Eggs.nestMutation(odd, math.random)
 		t.check(`a strange depth ({odd}) still names a real mutation`, Eggs.Mutations[m] ~= nil)

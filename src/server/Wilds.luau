@@ -32,6 +32,7 @@ export type Dropped = { tier: string, mutation: string?, part: BasePart, holder:
 export type Entry = {
 	id: string,
 	zone: Zones.Zone,
+	luck: number?, -- this nest's own chance of a Gold or Rainbow egg (lowered right after it grows one)
 	nest: Nest.Nest,
 	boss: Boss,
 	guardian: Guardian.Guardian, -- the zone boss's state, shared by every nest of the terrain
@@ -643,8 +644,10 @@ function Wilds.start()
 				entry.thief == nil
 				and entry.dropped == nil
 				and Nest.tick(entry.nest, dt * nestRate(), function()
-					return Zones.eggFor(entry.zone, math.random),
-						Eggs.nestMutation(table.find(Zones.List, entry.zone) or 1, math.random)
+					local mutation =
+						Eggs.nestMutation(table.find(Zones.List, entry.zone) or 1, math.random, entry.luck or 1)
+					entry.luck = Eggs.dampAfter(entry.luck or 1, mutation) -- no lucky streaks
+					return Zones.eggFor(entry.zone, math.random), mutation
 				end)
 			then
 				setEgg(entry, entry.nest.tier, entry.nest.mutation)
