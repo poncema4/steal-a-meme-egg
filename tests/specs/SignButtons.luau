@@ -52,6 +52,15 @@ return function(t)
 	upgrade:FindFirstChild("Press", true).Activated:Fire()
 	world.advance(0.6)
 	t.equal("clicking UPGRADE upgrades the treadmill", session.get(ana).treadmill, level + 1)
+	local everyGui = true
+	for _, g in ana.PlayerGui:GetChildren() do
+		if g.Name == "SignButtons" and g.ResetOnSpawn ~= false then
+			everyGui = false
+		end
+	end
+	t.check("the sign buttons survive a respawn", everyGui)
+	local painted = plot.model:FindFirstChild("UpgradeSign"):FindFirstChildOfClass("SurfaceGui")
+	t.check("on a PC the plain sign words give way to the button", painted and painted.Enabled == false)
 
 	local pw, pana = boot(true)
 	pw.load("src/client/SignButtons").start(pana)
