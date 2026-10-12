@@ -519,6 +519,7 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	tabsRow.FillDirection = Enum.FillDirection.Horizontal
 	tabsRow.Padding = UDim.new(0, 8)
 	tabsRow.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	tabsRow.SortOrder = Enum.SortOrder.LayoutOrder -- Speed, Money, Rebirths (the default sorted them by name)
 	tabsRow.Parent = boardTabs
 	local trophyList = scroller(
 		trophyPanel.body,
