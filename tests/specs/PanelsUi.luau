@@ -52,12 +52,24 @@ return function(t)
 	t.check("and the trophy button, like the reference", trophyButton ~= nil)
 	trophyButton.Activated:Fire()
 	world.advance(1)
-	local trophyRows = find(screen, "Row_Ana")
-	t.check("the trophy button opens the top players, with Ana in it", trophyRows ~= nil)
+	-- the global leaderboards: three boards, the top 10 of every server (written to ordered data stores, read back)
 	t.check(
-		"showing four columns: player, speed, money and rebirths",
-		trophyRows ~= nil and find(trophyRows, "C4") ~= nil
+		"the trophy button opens the leaderboards with three boards",
+		find(screen, "Board_Speed") ~= nil
+			and find(screen, "Board_Money") ~= nil
+			and find(screen, "Board_Rebirths") ~= nil
 	)
+	world.load("src/server/Leaderboards").refresh()
+	world.advance(1.2)
+	local first = find(screen, "Row_1")
+	t.check(
+		"after a refresh Ana is on the global Speed board",
+		first ~= nil and string.find((find(first, "C1") :: TextLabel).Text, "Ana", 1, true) ~= nil
+	)
+	local rebirthTab = find(screen, "Board_Rebirths") :: TextButton
+	rebirthTab.Activated:Fire()
+	world.advance(0.3)
+	t.check("the Rebirths tab shows its own board", find(screen, "Row_1") ~= nil)
 	trophyButton.Activated:Fire()
 	world.advance(0.5)
 	t.check(
@@ -187,20 +199,13 @@ return function(t)
 	t.check("an open panel listens for B", world.actions[name] ~= nil)
 	world.actions[name](name, world.enum.UserInputState.Begin)
 	t.check("B closes it", not eggs.Visible)
-	-- Top Players: the trophy button opens it, and the last column ("Rebirths") is not cut off at the right edge
-	trophyButton.Activated:Fire()
-	world.advance(1.5)
-	local top = find(screen, "TOP PLAYERS") or find(screen, "Panel_TOP PLAYERS")
-	local tableHeader: Frame? = nil
-	for _, d in screen:GetDescendants() do
-		if d.Name == "Header" and d:IsA("Frame") and d:FindFirstChild("C4") then
-			tableHeader = d :: Frame
-		end
-	end
-	local last = tableHeader and tableHeader:FindFirstChild("C4") :: TextLabel?
-	t.check("the trophy button opens Top Players", tableHeader ~= nil, tostring(top))
-	t.check(
-		"its Rebirths column keeps off the right edge",
-		last ~= nil and last.Position.X.Scale + last.Size.X.Scale <= 0.97 and last.Text == "Rebirths"
-	)
+	-- a score from another server reaches this server's board (the stores are shared by every server)
+	local ordered = world.service("DataStoreService"):GetOrderedDataStore("Top_Speed_v1")
+	local TopList = require("../../src/shared/Game/TopList")
+	ordered:SetAsync("999", TopList.encode(1e30))
+	world.load("src/server/Leaderboards").refresh()
+	local board = TopList.unpack(tostring(world.service("ReplicatedStorage"):GetAttribute("Top_Speed")))
+	t.check("a faster player from another server tops the global Speed board", #board >= 2 and board[1].value > 1e29)
+	t.check("the board is at most 10 long", #board <= 10)
+	t.check("huge numbers survive the round trip", math.abs(TopList.decode(TopList.encode(1e30)) / 1e30 - 1) < 1e-6)
 end

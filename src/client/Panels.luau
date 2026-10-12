@@ -2,13 +2,13 @@
 -- The three panels behind the HUD buttons: the Index (every character and which mutations you have seen), Eggs (what is
 -- hatching, with Skip and Instant buttons) and Pets (the characters in your base and what each earns). Everything is read
 -- from attributes the server publishes (Index, BaseItems, Coins...), so the panels never trust the client.
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Config = require(ReplicatedStorage.Shared.Config)
 local BaseView = require(ReplicatedStorage.Shared.Game.BaseView)
 local Collection = require(ReplicatedStorage.Shared.Game.Collection)
 local Economy = require(ReplicatedStorage.Shared.Game.Economy)
+local TopList = require(ReplicatedStorage.Shared.Game.TopList)
 local Eggs = require(ReplicatedStorage.Shared.Game.Eggs)
 local Bats = require(ReplicatedStorage.Shared.Game.Bats)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
@@ -508,42 +508,87 @@ function Panels.start(player: Player): { index: () -> (), eggs: () -> (), pets: 
 	end
 
 	-- ---------------------------------------------------------------- Trophy: who is ahead in this server
-	local trophyPanel = Ui.panel(gui, "TOP PLAYERS", 600, 460)
-	local trophyList = scroller(trophyPanel.body, "Rows", UDim2.fromOffset(0, 0), UDim2.fromScale(1, 1))
+	-- the global leaderboards: the top 10 of everyone who has played, in every server, on three boards (Speed, Money, Rebirths)
+	local trophyPanel = Ui.panel(gui, "LEADERBOARDS", 600, 460)
+	local boardTabs = Instance.new("Frame")
+	boardTabs.Name = "BoardTabs"
+	boardTabs.BackgroundTransparency = 1
+	boardTabs.Size = UDim2.new(1, 0, 0, Ui.tap(gui, 34))
+	boardTabs.Parent = trophyPanel.body
+	local tabsRow = Instance.new("UIListLayout")
+	tabsRow.FillDirection = Enum.FillDirection.Horizontal
+	tabsRow.Padding = UDim.new(0, 8)
+	tabsRow.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	tabsRow.Parent = boardTabs
+	local trophyList = scroller(
+		trophyPanel.body,
+		"Rows",
+		UDim2.fromOffset(0, Ui.tap(gui, 34) + 8),
+		UDim2.new(1, 0, 1, -(Ui.tap(gui, 34) + 8))
+	)
 	local trophyLayout = Instance.new("UIListLayout")
 	trophyLayout.Padding = UDim.new(0, 6)
 	trophyLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	trophyLayout.Parent = trophyList
+	local board = "Speed"
+	local tabButtons: { [string]: TextButton } = {}
+	local refreshTrophy: () -> () = function() end
+	for i, name in TopList.BOARDS do
+		local tab = Ui.button(boardTabs, `Board_{name}`, name, Ui.Palettes.Blue, UDim2.fromOffset(150, Ui.tap(gui, 34)))
+		tab.LayoutOrder = i
+		tab.TextSize = 18
+		tab.Activated:Connect(function()
+			board = name
+			refreshTrophy()
+		end)
+		tabButtons[name] = tab
+	end
 
-	local function refreshTrophy()
+	refreshTrophy = function()
+		for name, tab in tabButtons do
+			Ui.setPalette(tab, if name == board then Ui.Palettes.Gold else Ui.Palettes.Blue)
+		end
 		for _, child in trophyList:GetChildren() do
-			if child:IsA("Frame") then
+			if child:IsA("Frame") or child:IsA("TextLabel") then
 				child:Destroy()
 			end
 		end
-		local people = Players:GetPlayers()
-		table.sort(people, function(a, b)
-			return number(a, "SpeedStat") > number(b, "SpeedStat")
-		end)
-		local function row(name: string, place: number, cells: { string }, color: Color3)
+		local entries = TopList.unpack(tostring(ReplicatedStorage:GetAttribute(`Top_{board}`) or ""))
+		if #entries == 0 then
+			local note = Ui.label(trophyList, "Empty", 18, Color3.fromRGB(200, 205, 225))
+			note.Size = UDim2.new(1, 0, 0, 40)
+			note.Text = "The leaderboard is loading..."
+			return
+		end
+		for rank, entry in entries do
+			local mine = entry.name == player.Name
 			local r = frame(
 				trophyList,
-				name,
+				`Row_{rank}`,
 				UDim2.new(1, -8, 0, Ui.tap(gui, 34)),
-				if place == 0 then Color3.fromRGB(30, 30, 42) else nil
+				if mine then Color3.fromRGB(70, 60, 30) else nil
 			)
-			r.LayoutOrder = place
+			r.LayoutOrder = rank
 			corner(r, 8)
-			Ui.tableCells(r, cells, if place == 0 then 15 else 19, color)
-		end
-		row("Header", 0, { "Player", "Speed", "Money/s", "Rebirths" }, Color3.fromRGB(170, 175, 190))
-		for i, p in people do
-			row(`Row_{p.Name}`, i, {
-				p.DisplayName,
-				Economy.speed(number(p, "SpeedStat")),
-				Economy.format(number(p, "Income")),
-				tostring(number(p, "Rebirths")),
-			}, if p == player then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1))
+			local medal = if rank == 1
+				then "🥇"
+				elseif rank == 2 then "🥈"
+				elseif rank == 3 then "🥉"
+				else `#{rank}`
+			local shown = if board == "Speed"
+				then Economy.speed(entry.value)
+				elseif board == "Money" then `${Economy.format(entry.value)}`
+				else tostring(math.floor(entry.value + 0.5))
+			Ui.tableCells(
+				r,
+				{ `{medal}  {entry.name}`, "", "", shown },
+				18,
+				if mine then Color3.fromRGB(255, 240, 120) else Color3.new(1, 1, 1)
+			)
+			local nameCell = r:FindFirstChild("C1") :: TextLabel?
+			if nameCell then
+				nameCell.Size = UDim2.fromScale(0.62, 1) -- the name may use the empty middle columns
+			end
 		end
 	end
 
