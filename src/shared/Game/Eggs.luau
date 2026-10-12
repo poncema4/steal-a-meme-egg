@@ -279,15 +279,15 @@ Eggs.Characters = {
 	CrownCookie = char("CrownCookie", "Crown Cookie", COMMON, 8e25),
 	RoyalRamen = char("RoyalRamen", "Royal Ramen", RARE, 2.4e26),
 	EmperorEggplant = char("EmperorEggplant", "Emperor Eggplant", EPIC, 8e26),
-	GoldenGoose = char("GoldenGoose", "Golden Goose", "Limited", 1.5e27),
-	PlatinumGoose = char("PlatinumGoose", "Platinum Goose", "Limited", 3e27),
-	MythicGoose = char("MythicGoose", "Mythic Goose", "Limited", 6e27),
-	CosmicKitten = char("CosmicKitten", "Cosmic Kitten", "Limited", 1.8e27),
-	NebulaCat = char("NebulaCat", "Nebula Cat", "Limited", 3.6e27),
-	GalaxyTiger = char("GalaxyTiger", "Galaxy Tiger", "Limited", 7e27),
-	MemeLordJr = char("MemeLordJr", "Meme Lord Jr", "Limited", 2e27),
-	MemeLordPrime = char("MemeLordPrime", "Meme Lord Prime", "Limited", 4e27),
-	MemeLordOmega = char("MemeLordOmega", "Meme Lord Omega", "Limited", 8e27),
+	GoldenGoose = char("GoldenGoose", "Golden Goose", "Limited", 2.5e6),
+	PlatinumGoose = char("PlatinumGoose", "Platinum Goose", "Limited", 5e6),
+	MythicGoose = char("MythicGoose", "Mythic Goose", "Limited", 1e7),
+	CosmicKitten = char("CosmicKitten", "Cosmic Kitten", "Limited", 3e6),
+	NebulaCat = char("NebulaCat", "Nebula Cat", "Limited", 6e6),
+	GalaxyTiger = char("GalaxyTiger", "Galaxy Tiger", "Limited", 1.2e7),
+	MemeLordJr = char("MemeLordJr", "Meme Lord Jr", "Limited", 3.5e6),
+	MemeLordPrime = char("MemeLordPrime", "Meme Lord Prime", "Limited", 7e6),
+	MemeLordOmega = char("MemeLordOmega", "Meme Lord Omega", "Limited", 1.4e7),
 } :: { [string]: Character }
 
 -- a mutated character earns more
@@ -311,6 +311,26 @@ end
 
 -- Picks a character from the egg's pool. `luck` is a multiplier (1 = normal, 2 = Lucky Hour): the n-th rarest entry's
 -- weight is multiplied by luck^(n-1), so more luck shifts the odds toward the rare end. `rng` returns [0, 1).
+-- The real chance (0-100) of each pet in an egg for a player with this much luck: the exact weights Eggs.roll uses, so what the
+-- shop shows is what a hatch does. Returns { {id, percent}, ... } in the egg's own order.
+function Eggs.chances(tierId: string, luck: number): { { id: string, percent: number } }
+	local tier = tierIndex[tierId]
+	if not tier then
+		return {}
+	end
+	local weights, total = {}, 0
+	for i, entry in tier.pool do
+		local w = entry.weight * math.max(luck, 1) ^ (i - 1)
+		weights[i] = w
+		total += w
+	end
+	local out = {}
+	for i, entry in tier.pool do
+		table.insert(out, { id = entry.id, percent = weights[i] / total * 100 })
+	end
+	return out
+end
+
 function Eggs.roll(tierId: string, luck: number, rng: () -> number): string
 	local tier = tierIndex[tierId]
 	assert(tier, `unknown egg tier {tierId}`)

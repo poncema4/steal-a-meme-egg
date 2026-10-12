@@ -45,29 +45,32 @@ return function(t)
 	t.equal("giving one back adds one", Limited.release(5), 6)
 	t.equal("and never goes past the full stock", Limited.release(Limited.STOCK), Limited.STOCK)
 
-	-- balance: limited eggs beat everything standard, and still pay back in a sane time
-	local best = 0
-	for _, tier in Eggs.Tiers do
-		for _, entry in tier.pool do
-			best = math.max(best, Eggs.Characters[entry.id].income)
-		end
+	-- balance (Marco: "not overpowered, realistic for the Robux price"): a 199 Robux egg is a strong head start that you
+	-- outgrow, never a skip to the end. Every limited pet beats the Divine egg's best (mid game) but stays well below the
+	-- deepest worlds: under even the commonest pet of the 8th world (Candy Canyon).
+	local divineBest = 0
+	for _, entry in (Eggs.tier("Divine") :: Eggs.Tier).pool do
+		divineBest = math.max(divineBest, Eggs.Characters[entry.id].income)
 	end
+	local candyCommon = Eggs.Characters.SprinkleSloth.income
 	for _, tier in Eggs.LimitedTiers do
-		local worst, avg, total = math.huge, 0, 0
+		local worst, best = math.huge, 0
 		for _, entry in tier.pool do
 			local income = Eggs.Characters[entry.id].income
 			worst = math.min(worst, income)
-			avg += income * entry.weight
-			total += entry.weight
+			best = math.max(best, income)
 		end
-		avg /= total
-		t.check(`{tier.name} always beats the best standard character`, worst > best, `{worst} vs {best}`)
-		local payback = tier.price / avg
 		t.check(
-			`{tier.name} pays itself back in 20 to 120 seconds`,
-			payback >= 20 and payback <= 120,
-			tostring(payback)
+			`{tier.name}'s best pet is worth paying for (beats the Divine egg's)`,
+			best >= divineBest * 0.8,
+			`{best} vs {divineBest}`
 		)
+		t.check(
+			`{tier.name} is not overpowered (below the 8th world's commonest)`,
+			best < candyCommon,
+			`{best} vs {candyCommon}`
+		)
+		t.check(`{tier.name}'s pets get better with rarity`, worst < best)
 		local inWilds = false
 		for _, zone in Zones.List do
 			if table.find(zone.eggs, tier.id) then

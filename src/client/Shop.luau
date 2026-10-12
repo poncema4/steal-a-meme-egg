@@ -288,10 +288,6 @@ function Shop.start(player: Player)
 					b:Destroy()
 				end
 				table.clear(petButtons)
-				local total = 0
-				for _, entry in tier.pool do
-					total += entry.weight
-				end
 				for i, entry in tier.pool do
 					local c = Eggs.character(entry.id)
 					local b = Instance.new("ImageButton")
@@ -303,13 +299,24 @@ function Shop.start(player: Player)
 					b.ScaleType = Enum.ScaleType.Fit
 					b.Parent = petRow
 					round(b, 10)
-					local stats = if c
-						then `{c.name}: {c.rarity}, {math.floor(entry.weight / total * 100 + 0.5)}% chance, +{Economy.format(
-							c.income
-						)}/s`
-						else entry.id
+					local eggTierId = tier.id
+					-- the real chance, worked out like a hatch rolls it, with this player's luck right now (passes, events)
 					local function show()
-						petStats.Text = stats
+						if not c then
+							petStats.Text = entry.id
+							return
+						end
+						local luck = (player:GetAttribute("Luck") :: number?) or 1
+						local percent = 0
+						for _, chance in Eggs.chances(eggTierId, luck) do
+							if chance.id == entry.id then
+								percent = chance.percent
+							end
+						end
+						local shown = if percent < 10
+							then string.format("%.1f", percent)
+							else tostring(math.floor(percent + 0.5))
+						petStats.Text = `{c.name}: {shown}% chance, +{Economy.format(c.income)}/s`
 					end
 					b.MouseEnter:Connect(show)
 					b.Activated:Connect(show) -- a tap on a phone, a press on a gamepad
