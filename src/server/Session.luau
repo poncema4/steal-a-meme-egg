@@ -130,6 +130,8 @@ local function publish(state: State)
 	income *= passIncome * Rebirth.multiplier(state.rebirths)
 	state.player:SetAttribute("Coins", math.floor(state.coins))
 	state.player:SetAttribute("Income", Base.income(state.base, income))
+	-- the hatch luck right now (passes and events), so the shop can show the real chance of each pet
+	state.player:SetAttribute("Luck", select(1, multipliers()) * select(1, Store.multipliers(catalog, state.purchases)))
 	state.player:SetAttribute("Slots", state.base.size)
 	state.player:SetAttribute("TrapsMax", Store.perks(catalog, state.purchases).trapMax)
 	Collection.record(state.collection, state.base)

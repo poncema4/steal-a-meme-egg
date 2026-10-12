@@ -55,6 +55,39 @@ return function(t)
 	end
 	t.check("every egg pays itself back in 20 to 400 seconds on average", payback)
 
+	-- the chances the shop shows are exactly the roll's odds, luck included
+	local baseOdds = Eggs.chances("GooseGold", 1)
+	t.check(
+		"base chances are the weights (60/30/10)",
+		math.abs(baseOdds[1].percent - 60) < 1e-9 and math.abs(baseOdds[3].percent - 10) < 1e-9
+	)
+	local luckyOdds = Eggs.chances("GooseGold", 2)
+	t.check(
+		"2x luck moves odds toward the rare pets",
+		luckyOdds[3].percent > baseOdds[3].percent and luckyOdds[1].percent < baseOdds[1].percent
+	)
+	local sum = 0
+	for _, c in luckyOdds do
+		sum += c.percent
+	end
+	t.check("they add up to 100%", math.abs(sum - 100) < 1e-9)
+	local mythicHits, rolls = 0, 20000
+	local seed = 12345
+	local function rng()
+		seed = (seed * 1103515245 + 12345) % 2147483648
+		return seed / 2147483648
+	end
+	for _ = 1, rolls do
+		if Eggs.roll("GooseGold", 2, rng) == "MythicGoose" then
+			mythicHits += 1
+		end
+	end
+	t.check(
+		"and real rolls land on them (Mythic within 1.5% of the shown chance)",
+		math.abs(mythicHits / rolls * 100 - luckyOdds[3].percent) < 1.5,
+		tostring(mythicHits / rolls * 100)
+	)
+
 	-- the roll follows the weights
 	t.equal(
 		"rng at 0 gives the commonest",
