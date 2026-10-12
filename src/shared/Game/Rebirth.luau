@@ -6,7 +6,7 @@ local Rebirth = {}
 Rebirth.MAX = 20
 Rebirth.BASE_COST = 2000000
 Rebirth.COST_GROWTH = 5
-Rebirth.BONUS_PER = 0.5 -- +50% income per rebirth
+Rebirth.BONUS_PER = 0.25 -- +25% income per rebirth: 1.25x, 1.5x ... 6x after all 20 (Marco: reasonable, not overpowered)
 
 -- Coins needed for the next rebirth when you have done `done` already.
 function Rebirth.cost(done: number): number
