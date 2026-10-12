@@ -90,6 +90,7 @@ function SignButtons.start(player: Player)
 				gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
 				gui.PixelsPerStud = 40
 				gui.AlwaysOnTop = false
+				gui.ResetOnSpawn = false -- a PlayerGui child is wiped on respawn unless told otherwise; the signs must stay
 				gui.Parent = player.PlayerGui
 				local back = Instance.new("Frame")
 				back.Size = UDim2.fromScale(1, 1)
@@ -141,6 +142,17 @@ function SignButtons.start(player: Player)
 			-- on a PC the hold prompts give way to the buttons; a phone or gamepad keeps them
 			if plot then
 				local hide = SignButtons.clicks()
+				-- the sign's own painted words are replaced by the button version here, so the two never overlap
+				for _, sign in SIGNS do
+					local board = plot:FindFirstChild(sign.part)
+					if board then
+						for _, painted in board:GetChildren() do
+							if painted:IsA("SurfaceGui") then
+								painted.Enabled = not hide
+							end
+						end
+					end
+				end
 				for _, d in plot:GetDescendants() do
 					if
 						d:IsA("ProximityPrompt")
