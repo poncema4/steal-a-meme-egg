@@ -62,7 +62,11 @@ function Hud.start(player: Player, actions: Actions?)
 
 	-- left column: Shop, Index, Slow Mode
 	local tapHeight = Ui.tap(gui, 52)
-	local left = box(gui, "Left", UDim2.fromOffset(190, 200), UDim2.new(0, 14, 0.34, 0), Vector2.new(0, 0))
+	-- both side columns start on the same line (Marco: Shop and Index sat higher than the egg/paw/trophy buttons): the top of
+	-- the right column, which is centred on the screen's middle
+	local side = Ui.tap(gui, 64)
+	local columnTop = -(side * 3 + 20) / 2
+	local left = box(gui, "Left", UDim2.fromOffset(190, 200), UDim2.new(0, 14, 0.5, columnTop), Vector2.new(0, 0))
 	local list = Instance.new("UIListLayout")
 	list.Padding = UDim.new(0, 10)
 	list.SortOrder = Enum.SortOrder.LayoutOrder
@@ -139,9 +143,8 @@ function Hud.start(player: Player, actions: Actions?)
 	end)
 
 	-- right column: eggs, pets, trophy
-	local side = Ui.tap(gui, 64)
 	local right =
-		box(gui, "Right", UDim2.fromOffset(side, side * 3 + 20), UDim2.new(1, -14, 0.5, 0), Vector2.new(1, 0.5))
+		box(gui, "Right", UDim2.fromOffset(side, side * 3 + 20), UDim2.new(1, -14, 0.5, columnTop), Vector2.new(1, 0))
 	local rightList = Instance.new("UIListLayout")
 	rightList.Padding = UDim.new(0, 10)
 	rightList.SortOrder = Enum.SortOrder.LayoutOrder

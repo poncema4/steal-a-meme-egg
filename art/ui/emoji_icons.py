@@ -19,7 +19,7 @@ ICONS = {
     "clock": ("⏰", "color"),
     "potion": ("\U0001F9EA", "color"),
     "cart": ("\U0001F6D2", "white"),
-    "book": ("\U0001F4D8", "whiteEdges"),  # a closed book, like the reference (the open one read as a blob)
+    "book": ("\U0001F4D9", "color"),  # a glossy orange book: detail, and it stands out on the blue Index button  # a closed book, like the reference (the open one read as a blob)
 }
 
 
