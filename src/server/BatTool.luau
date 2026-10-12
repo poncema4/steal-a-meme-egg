@@ -9,7 +9,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Bats = require(ReplicatedStorage.Shared.Game.Bats)
 local Zones = require(ReplicatedStorage.Shared.Game.Zones)
 local Config = require(ReplicatedStorage.Shared.Config)
-local Models = require(script.Parent.Models)
 local Session = require(script.Parent.Session)
 local Traps = require(script.Parent.Traps)
 local Wilds = require(script.Parent.Wilds)
@@ -104,12 +103,36 @@ function BatTool.swing(player: Player): number
 	return hits
 end
 
+-- The material that fits each bat's name.
+function BatTool.material(name: string): Enum.Material
+	local key = string.gsub(name, " Bat$", "")
+	local map: { [string]: Enum.Material } = {
+		Wooden = Enum.Material.Wood,
+		Foam = Enum.Material.SmoothPlastic,
+		Rubber = Enum.Material.SmoothPlastic,
+		Stone = Enum.Material.Slate,
+		Iron = Enum.Material.Metal,
+		Silver = Enum.Material.Metal,
+		Golden = Enum.Material.Foil,
+		Ruby = Enum.Material.Glass,
+		Emerald = Enum.Material.Glass,
+		Frost = Enum.Material.Ice,
+		Lava = Enum.Material.Neon,
+		Neon = Enum.Material.Neon,
+		Ghost = Enum.Material.Glass,
+		Cloud = Enum.Material.SmoothPlastic,
+		Galaxy = Enum.Material.Neon,
+		Divine = Enum.Material.Neon,
+	}
+	return map[key] or Enum.Material.Wood
+end
+
 local function build(player: Player, tier: number): Tool
 	local bat = Bats.get(tier)
 	local tool = Instance.new("Tool")
 	tool.Name = "Bat"
 	tool.ToolTip = bat.name
-	tool.TextureId = Config.Icons.bat
+	tool.TextureId = Config.ItemIcons.bat
 	tool.CanBeDropped = false
 	tool.RequiresHandle = true
 	tool.Grip = GRIP_READY
@@ -120,20 +143,65 @@ local function build(player: Player, tier: number): Tool
 	handle.CanCollide = false
 	handle.Massless = true
 	handle.Parent = tool
-	local look = Instance.new("Part") -- the plain look when the brick model is missing
-	look.Name = "PlainBat"
-	look.Size = Vector3.new(0.6, 3.4, 0.6)
-	look.Color = Color3.fromRGB(bat.head[1], bat.head[2], bat.head[3])
-	look.CanCollide = false
-	look.Massless = true
-	look.Parent = tool
-	local weld = Instance.new("WeldConstraint")
-	weld.Part0 = handle
-	weld.Part1 = look
-	weld.Parent = look
-	if Models.attach(handle, "Bats", `Bat{(string.gsub(bat.name, " Bat$", ""))}`, nil, 0.8) then
-		look:Destroy()
+	-- the bat itself: smooth round parts (not bricks), turned like a real bat: a knob, a taped grip, then a taper into a thick
+	-- rounded barrel. Each bat keeps its colours and gets a material to match (wood, stone, metal, gold, ice, neon...).
+	local look = BatTool.material(bat.name)
+	local headColor = Color3.fromRGB(bat.head[1], bat.head[2], bat.head[3])
+	local handleColor = Color3.fromRGB(bat.handle[1], bat.handle[2], bat.handle[3])
+	local function piece(
+		name: string,
+		shape: Enum.PartType,
+		size: Vector3,
+		y: number,
+		color: Color3,
+		material: Enum.Material
+	)
+		local p = Instance.new("Part")
+		p.Name = name
+		p.Shape = shape
+		p.Size = size
+		p.Color = color
+		p.Material = material
+		p.CanCollide = false
+		p.CanQuery = false
+		p.Massless = true
+		p.CastShadow = false
+		-- a Roblox cylinder runs along its X size: turn it to run along the handle (Y)
+		p.CFrame = handle.CFrame * CFrame.new(0, y, 0) * CFrame.Angles(0, 0, math.pi / 2)
+		local weld = Instance.new("WeldConstraint")
+		weld.Part0 = handle
+		weld.Part1 = p
+		weld.Parent = p
+		p.Parent = tool
+		return p
 	end
+	local LENGTH = 3.6
+	local bottom = -LENGTH / 2
+	-- (start, end) along the bat as a share of its length, and the diameter there
+	local PROFILE = {
+		{ 0.00, 0.05, 0.34 }, -- the knob
+		{ 0.05, 0.30, 0.22 }, -- the grip
+		{ 0.30, 0.45, 0.26 },
+		{ 0.45, 0.58, 0.32 },
+		{ 0.58, 0.70, 0.40 },
+		{ 0.70, 0.82, 0.48 },
+		{ 0.82, 0.94, 0.54 }, -- the barrel
+	}
+	for i, seg in PROFILE do
+		local len = (seg[2] - seg[1]) * LENGTH
+		local mid = bottom + (seg[1] + seg[2]) / 2 * LENGTH
+		local grip = i <= 2
+		piece(
+			if i == 1 then "Knob" elseif grip then "Grip" else `Barrel{i}`,
+			Enum.PartType.Cylinder,
+			Vector3.new(len + 0.02, seg[3], seg[3]),
+			mid,
+			if grip then handleColor else headColor,
+			if grip then Enum.Material.Fabric else look
+		)
+	end
+	-- the rounded end of the barrel
+	piece("Cap", Enum.PartType.Ball, Vector3.new(0.54, 0.54, 0.54), bottom + 0.94 * LENGTH, headColor, look)
 	tool.Activated:Connect(function()
 		local ready = BatTool.swing(player)
 		-- the swing: the bat tips forward and comes back
