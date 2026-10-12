@@ -62,7 +62,7 @@ local function publish()
 	end
 	ReplicatedStorage:SetAttribute("ActiveEvents", table.concat(parts, ","))
 	local nextId, wait = Events.nextAfter(Session.now(), Config.Events.PeriodSeconds)
-	ReplicatedStorage:SetAttribute("NextEvent", `{nextId}:{Session.now() + wait}`)
+	ReplicatedStorage:SetAttribute("NextEvent", if nextId ~= "" then `{nextId}:{Session.now() + wait}` else "")
 end
 
 -- Applies an action on THIS server.

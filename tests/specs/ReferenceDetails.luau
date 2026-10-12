@@ -86,7 +86,6 @@ return function(t)
 	local rs = world.service("ReplicatedStorage")
 	world.advance(1)
 	-- the server publishes what is next ("Id:time"); the clock names it and counts down
-	local nextId = string.match(tostring(rs:GetAttribute("NextEvent")), "^(%w+):")
 	local clockText = find(clock, "ClockText") :: TextLabel
 	local text = clockText.Text
 	-- Marco saw "4m / 12s / left" stacked on three lines: the countdown box is one line tall and never wraps
@@ -94,14 +93,13 @@ return function(t)
 		"the countdown is one line (no wrapping)",
 		clockText.Size.Y.Scale == 0 and clockText.Size.Y.Offset <= 40 and not clockText.TextWrapped
 	)
-	local Events = require("../../src/shared/Game/Events")
-	t.check("the server publishes the next event", nextId ~= nil and Events.Defs[nextId] ~= nil, tostring(nextId))
-	local running = tostring(rs:GetAttribute("ActiveEvents")) ~= ""
+	-- the clock counts down to night (the game's one event)
+	t.check("the server publishes the phase", rs:GetAttribute("Phase") ~= nil, tostring(rs:GetAttribute("Phase")))
 	t.check(
-		"the clock shows an event that is on, or counts down to the next one",
-		if running
-			then text ~= ""
-			else string.match(text, "^in %d+m %d+s$") ~= nil or string.match(text, "^in %d+s$") ~= nil,
+		"the clock counts down to the next phase",
+		string.match(text, "^in %d+m %d+s$") ~= nil
+			or string.match(text, "^in %d+s$") ~= nil
+			or string.find(text, "left", 1, true) ~= nil,
 		text
 	)
 	t.check(

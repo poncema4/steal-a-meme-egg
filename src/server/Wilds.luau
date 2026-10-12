@@ -607,6 +607,19 @@ function Wilds.drop(player: Player)
 	end
 end
 
+-- Night falls: every egg being carried, and every egg lying on the ground, goes back to its nest (the carrier is sent home by
+-- NightCycle, not flung).
+function Wilds.nightfall()
+	for _, entry in entries do
+		if entry.thief then
+			recover(entry, nil, false)
+		end
+		if entry.dropped then
+			returnDropped(entry)
+		end
+	end
+end
+
 function Wilds.start()
 	local sinceGate = 0
 	RunService.Heartbeat:Connect(function(dt: number)

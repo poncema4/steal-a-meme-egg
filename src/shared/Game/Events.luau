@@ -19,11 +19,9 @@ Events.Defs = {
 } :: { [string]: Def }
 
 -- the schedule inside one period: which event starts at which offset (seconds)
-Events.Schedule = {
-	{ offset = 0, id = "LuckyHour" },
-	{ offset = 600, id = "EggRain" },
-	{ offset = 1200, id = "CoinRain" },
-} :: { { offset: number, id: string } }
+-- Marco: day and night (Shared/Game/DayNight) is the only event now, so nothing else is on a schedule. An admin can still start
+-- one of the old events by hand (/event).
+Events.Schedule = {} :: { { offset: number, id: string } }
 
 function Events.new(): State
 	return { ends = {} }
@@ -97,6 +95,9 @@ function Events.nextAfter(unix: number, period: number): (string, number)
 		end
 	end
 	local first = Events.Schedule[1]
+	if not first then
+		return "", math.huge -- nothing is scheduled
+	end
 	return first.id, period - into + first.offset
 end
 

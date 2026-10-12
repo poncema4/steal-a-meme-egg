@@ -80,6 +80,14 @@ function Session.now(): number
 	return clock()
 end
 
+-- How much faster every egg hatches right now (night: 2x). Set by NightCycle; 1 until then.
+local hatchBoost: () -> number = function()
+	return 1
+end
+function Session.setHatchBoost(fn: () -> number)
+	hatchBoost = fn
+end
+
 function Session.get(player: Player): State?
 	return states[player]
 end
@@ -162,7 +170,10 @@ local function publish(state: State)
 			end
 		end
 	end
-	state.player:SetAttribute("BaseItems", BaseView.encode(state.base, Store.perks(catalog, state.purchases).hatch))
+	state.player:SetAttribute(
+		"BaseItems",
+		BaseView.encode(state.base, Store.perks(catalog, state.purchases).hatch * hatchBoost())
+	)
 	local level, left = Progression.levelFor(state.speedXp)
 	state.player:SetAttribute("MemePoints", state.mp)
 	state.player:SetAttribute("SpeedLevel", level)
@@ -829,7 +840,7 @@ function Session.start(onJoin: (Player) -> (), onLeave: (Player) -> ())
 					readyBefore += 1
 				end
 			end
-			Base.tick(state.base, step * Store.perks(catalog, state.purchases).hatch, function(tier)
+			Base.tick(state.base, step * Store.perks(catalog, state.purchases).hatch * hatchBoost(), function(tier)
 				return Eggs.roll(tier, myLuck, rng)
 			end, function()
 				return Eggs.mutation(myLuck, rng)
