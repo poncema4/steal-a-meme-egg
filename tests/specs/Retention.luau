@@ -109,7 +109,7 @@ return function(t)
 	t.equal("the scoreboard shows the rebirth", (board:FindFirstChild("Rebirths") :: IntValue).Value, 1)
 	state.base.slots[1] = { kind = "char", id = "BonkBean", mutation = "Normal" }
 	session.changed(late)
-	t.equal("income is boosted by 50%", late:GetAttribute("Income"), income * Rebirth.multiplier(1))
+	t.equal("income is boosted by the first rebirth (25%)", late:GetAttribute("Income"), income * Rebirth.multiplier(1))
 	t.equal("the next rebirth costs more", late:GetAttribute("RebirthCost"), Rebirth.cost(1))
 
 	-- a rebirth, a treadmill upgrade and the Index survive leaving and coming back

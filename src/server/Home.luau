@@ -70,6 +70,18 @@ local function refreshLabels(player: Player)
 	if not plot or not state then
 		return
 	end
+	-- the next costs, for the buttons on the signs (client/SignButtons)
+	player:SetAttribute(
+		"UpgradeCost",
+		if state.treadmill >= Progression.MAX_TREADMILL then -1 else Progression.treadmillCost(state.treadmill)
+	)
+	player:SetAttribute(
+		"SlotCost",
+		if state.base.size >= Config.Economy.MaxSlots
+			then -1
+			else Economy.slotCost(state.base.size, Config.Economy.StartSlots, Config.Economy.SlotCostBase)
+	)
+	player:SetAttribute("NextRebirthBonus", Rebirth.multiplier(state.rebirths + 1))
 	local speed = plot.upgradeSign:FindFirstChildOfClass("ProximityPrompt")
 	if speed then
 		speed.ObjectText = if state.treadmill >= Progression.MAX_TREADMILL
@@ -141,37 +153,45 @@ function Home.leave(player: Player)
 	end
 end
 
+-- A sign was used: its button (PC) or its hold prompt (phone, gamepad). Only ever acts on the player's own base.
+function Home.signAction(player: Player, kind: string)
+	if kind == "upgrade" then
+		local ok, message = Session.upgradeTreadmill(player)
+		notify(player, message)
+		if ok then
+			sfx(player, "coin")
+		end
+	elseif kind == "rebirth" then
+		local ok, message = Session.rebirth(player)
+		notify(player, message)
+		if ok then
+			sfx(player, "limited")
+		end
+	elseif kind == "slot" then
+		local _, message = Session.buySlot(player)
+		notify(player, message)
+	end
+end
+
 function Home.start(plots: { World.Plot })
 	for _, plot in plots do
 		local speed = addPrompt(plot.upgradeSign, "Upgrade treadmill", "", 0.4)
 		speed.Triggered:Connect(function(who)
-			if Plots.of(who) ~= plot then
-				return
-			end
-			local ok, message = Session.upgradeTreadmill(who)
-			notify(who, message)
-			if ok then
-				sfx(who, "coin")
+			if Plots.of(who) == plot then
+				Home.signAction(who, "upgrade")
 			end
 		end)
 		local reborn = addPrompt(plot.rebirthPad, "Rebirth", "", 1.2)
 		reborn.Triggered:Connect(function(who)
-			if Plots.of(who) ~= plot then
-				return
-			end
-			local ok, message = Session.rebirth(who)
-			notify(who, message)
-			if ok then
-				sfx(who, "limited")
+			if Plots.of(who) == plot then
+				Home.signAction(who, "rebirth")
 			end
 		end)
 		local slot = addPrompt(plot.slotPad, "Buy slot", "", 0.3)
 		slot.Triggered:Connect(function(who)
-			if Plots.of(who) ~= plot then
-				return
+			if Plots.of(who) == plot then
+				Home.signAction(who, "slot")
 			end
-			local _, message = Session.buySlot(who)
-			notify(who, message)
 		end)
 	end
 	Session.onChanged(refreshLabels)

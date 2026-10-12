@@ -110,6 +110,22 @@ baseRemote.OnServerEvent:Connect(function(player: Player, kind: any, slot: any)
 		Session.hatchSlot(player, slot) -- only hatches if that egg's timer is done
 	end
 end)
+-- the buttons on the base signs (UPGRADE, REBIRTH, BUY SLOT): the server acts only on the player's own base
+local signRemote = Instance.new("RemoteEvent")
+signRemote.Name = "SignAction"
+signRemote.Parent = remotes
+local lastSign: { [Player]: number } = {}
+signRemote.OnServerEvent:Connect(function(player: Player, kind: any)
+	if kind ~= "upgrade" and kind ~= "rebirth" and kind ~= "slot" then
+		return
+	end
+	local now = os.clock()
+	if now - (lastSign[player] or -1) < 0.25 then
+		return -- no spamming
+	end
+	lastSign[player] = now
+	Home.signAction(player, kind)
+end)
 leaveRemote.OnServerEvent:Connect(function(player: Player)
 	Home.leave(player)
 end)
