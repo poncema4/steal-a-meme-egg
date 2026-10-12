@@ -24,7 +24,15 @@ return function(t)
 	t.check("a swing reaches someone in front", Bats.reaches(wooden, 0, 0, 1, 0, 5, 0))
 	t.check("but not someone behind", not Bats.reaches(wooden, 0, 0, 1, 0, -5, 0))
 	t.check("nor someone too far", not Bats.reaches(wooden, 0, 0, 1, 0, 30, 0))
-	t.check("nor someone far to the side", not Bats.reaches(wooden, 0, 0, 1, 0, 0.5, 6))
+	t.check("nor someone behind your shoulder", not Bats.reaches(wooden, 0, 0, 1, 0, -0.5, 6))
+	t.check(
+		"someone off to the front side is reached (a wide, forgiving swing)",
+		Bats.reaches(wooden, 0, 0, 1, 0, 2, 6)
+	)
+	for _, b in Bats.List do
+		assert(b.cooldown >= 1 and b.cooldown <= 2, b.name)
+	end
+	t.check("every bat rests 1 to 2 seconds between swings (no spamming)", true)
 
 	local world = Fake.world()
 	local V3 = world.Vector3
@@ -108,6 +116,16 @@ return function(t)
 	world.advance(3)
 	world.root(ben).Position = V3.new(x0 + 40, 3, 0)
 	t.equal("someone behind is missed", batTool.swing(ana), 0)
+
+	-- a runner: the server sees him a little further on than the swinger did; the hit still lands (no impossible hits)
+	world.advance(3)
+	local benRoot = world.root(ben)
+	benRoot.Position = V3.new(x0 + 60 + 12, 3, 0) -- 12 studs ahead: past the reach right now...
+	benRoot.AssemblyLinearVelocity = V3.new(40, 0, 0) -- ...but running away at 40 studs/s, so 0.2 s ago he was at 4 studs
+	t.equal("a fleeing runner the swinger saw in reach is hit", batTool.swing(ana), 1)
+	benRoot.AssemblyLinearVelocity = V3.new(0, 0, 0)
+	world.advance(0.3)
+	t.equal("and a swing straight after is refused (1.2 s rest)", batTool.swing(ana), 0)
 
 	-- finishing a world's Index gives a better bat and coins
 	local meadow = Collection.worldCharacters("Meadow")

@@ -43,14 +43,20 @@ for tier, look in LOOKS do
 		name = `{look.name} Bat`,
 		knock = 38 + 5 * k,
 		stun = math.min(0.6 + 0.05 * k, 1.35),
-		range = 7 + 0.25 * k,
-		cooldown = math.max(0.9 - 0.03 * k, 0.45),
+		-- a forgiving reach (Marco: it must not be impossible to hit someone running with an egg) and a 1.2 s rest between
+		-- swings so nobody can spam it; better bats reach a little further
+		range = 10 + 0.25 * k,
+		cooldown = 1.2,
 		head = look.head,
 		handle = look.handle,
 	})
 end
 
 Bats.MAX_TIER = #Bats.List - 1 -- tiers run from 0 (the starting bat) to this
+
+-- How far back to look for a runner: the swinger saw them where they were a moment ago (network delay), so a hit also counts
+-- there. 0.2 s covers a normal connection.
+Bats.LAG = 0.2
 
 -- The bat tier for this many completed worlds.
 function Bats.tierFor(completed: number): number
@@ -88,7 +94,7 @@ function Bats.reaches(
 		return false
 	end
 	local dot = (dx * facingX + dz * facingZ) / (distance * flat)
-	return dot > 0.25
+	return dot > 0 -- anywhere in front of you (a half circle)
 end
 
 return Bats
