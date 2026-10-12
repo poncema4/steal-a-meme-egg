@@ -160,7 +160,7 @@ local function publish(state: State)
 			end
 		end
 	end
-	state.player:SetAttribute("BaseItems", BaseView.encode(state.base))
+	state.player:SetAttribute("BaseItems", BaseView.encode(state.base, Store.perks(catalog, state.purchases).hatch))
 	local level, left = Progression.levelFor(state.speedXp)
 	state.player:SetAttribute("MemePoints", state.mp)
 	state.player:SetAttribute("SpeedLevel", level)

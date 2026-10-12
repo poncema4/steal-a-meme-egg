@@ -102,6 +102,8 @@ baseRemote.OnServerEvent:Connect(function(player: Player, kind: any, slot: any)
 	-- hatching can only be sped up with Robux (an Instant hatch, or a hatch token bought with them): never with coins
 	if kind == "instant" then
 		PurchaseService.instantHatch(player, slot)
+	elseif kind == "hatch" then
+		Session.hatchSlot(player, slot) -- only hatches if that egg's timer is done
 	end
 end)
 leaveRemote.OnServerEvent:Connect(function(player: Player)

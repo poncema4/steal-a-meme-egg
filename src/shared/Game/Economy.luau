@@ -45,4 +45,15 @@ function Economy.speed(n: number): string
 	return Economy.format(n)
 end
 
+-- A countdown the way a player reads it: 45 -> "45s", 185 -> "3m 05s", 3725 -> "1h 02m 05s".
+function Economy.duration(seconds: number): string
+	local s = math.max(0, math.ceil(seconds))
+	if s < 60 then
+		return `{s}s`
+	elseif s < 3600 then
+		return string.format("%dm %02ds", s // 60, s % 60)
+	end
+	return string.format("%dh %02dm %02ds", s // 3600, (s % 3600) // 60, s % 60)
+end
+
 return Economy

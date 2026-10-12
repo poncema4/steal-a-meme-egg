@@ -9,14 +9,17 @@ local BaseView = {}
 
 export type Row = { slot: number, kind: string, id: string, mutation: string?, secondsLeft: number? }
 
-function BaseView.encode(base: Base.Base): string
+-- `rate` is how fast this player's eggs hatch (2 with the Hatch Speed pass): the timer shows REAL seconds left, so it ticks
+-- down one second at a time whatever the speed.
+function BaseView.encode(base: Base.Base, rate: number?): string
+	local speed = if rate and rate > 0 then rate else 1
 	local rows = {}
 	for slot = 1, base.size do
 		local item = base.slots[slot]
 		if item and item.kind == "egg" and item.tier then
 			table.insert(
 				rows,
-				`{slot},e,{item.tier},{math.max(0, math.ceil(item.hatchLeft or 0))},{item.eggMutation or "Normal"}`
+				`{slot},e,{item.tier},{math.max(0, math.ceil((item.hatchLeft or 0) / speed))},{item.eggMutation or "Normal"}`
 			)
 		elseif item and item.kind == "char" and item.id then
 			table.insert(rows, `{slot},c,{item.id},{item.mutation or "Normal"}`)
