@@ -8,8 +8,16 @@ local World = require(script.Parent.World)
 
 local TreadmillPaint = {}
 
-local FRAME_PARTS =
-	{ TreadRail = true, ConsoleLeg = true, Handrail = true, HandrailEnd = true, ConsoleBar = true, Roller = true }
+local FRAME_PARTS = {
+	TreadRail = true,
+	ConsoleLeg = true,
+	Handrail = true,
+	HandrailEnd = true,
+	ConsoleBar = true,
+	Roller = true,
+	ArchLeg = true,
+	ArchTop = true,
+}
 
 local function rgb(c: { number }): Color3
 	return Color3.fromRGB(c[1], c[2], c[3])
