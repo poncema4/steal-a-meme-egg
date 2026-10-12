@@ -24,12 +24,15 @@ local function add(model: Instance)
 		return
 	end
 	local centre = model:GetAttribute("RoamCentre")
+	if typeof(centre) ~= "Vector3" then
+		return -- no pen to walk in: leave it where the server stood it rather than walking it to the world origin
+	end
 	pets[model] = {
 		height = nil,
 		yaw = 0,
 		radius = (model:GetAttribute("RoamRadius") :: number?) or 3,
 		seed = (model:GetAttribute("RoamSeed") :: number?) or 1,
-		centre = if typeof(centre) == "Vector3" then centre else Vector3.zero,
+		centre = centre,
 	}
 end
 
@@ -53,7 +56,8 @@ function Roam.start()
 			local ok, problem = pcall(function()
 				if not model.Parent then
 					pets[model] = nil
-				elseif model:IsDescendantOf(workspace) then
+				elseif model:IsDescendantOf(workspace) and model:FindFirstChild("Visual") then
+					-- (only once the whole pet is here: the pivot and height are measured from it)
 					local pivot = model:GetPivot()
 					if not pet.height then
 						-- the first time we see it in the world: its height and the way it faces are where the server put it
