@@ -200,7 +200,7 @@ return table.freeze({
 	-- HUD icons from Google's Noto Color Emoji art (Apache 2.0; art/ui/emoji_icons.py): glossy like Steal an Egg, the Shop cart and
 	-- Index book as white silhouettes with a black outline like the reference. One Image id each.
 	Icons = table.freeze({
-		book = "rbxassetid://97952116811228",
+		book = "rbxassetid://125052059858999",
 		cart = "rbxassetid://138284838244499",
 		cash = "rbxassetid://86253579644854",
 		clock = "rbxassetid://127413837879622",
@@ -306,18 +306,18 @@ return table.freeze({
 		}),
 	}),
 	ShopArt = table.freeze({
-		bossSlow = "rbxassetid://84756472712938",
-		coins2x = "rbxassetid://132674884843989",
-		fastHatch = "rbxassetid://102787296177824",
-		hatch1 = "rbxassetid://130847694442489",
-		hatch5 = "rbxassetid://87793078736493",
+		bossSlow = "rbxassetid://111495045127191",
+		coins2x = "rbxassetid://116919912058386",
+		fastHatch = "rbxassetid://115967896923526",
+		hatch1 = "rbxassetid://94671855518233",
+		hatch5 = "rbxassetid://98372703581186",
 		limitedCat = "rbxassetid://87129330236782",
 		limitedGoose = "rbxassetid://106312171531319",
 		limitedLord = "rbxassetid://99730474500273",
-		luck2x = "rbxassetid://82336471303566",
-		train2x = "rbxassetid://75868109748157",
-		trapMaster = "rbxassetid://77309875624031",
-		vip = "rbxassetid://134476897212303",
+		luck2x = "rbxassetid://134451917492489",
+		train2x = "rbxassetid://134104925771407",
+		trapMaster = "rbxassetid://99134877734418",
+		vip = "rbxassetid://86543904286016",
 	}),
 	Save = table.freeze({
 		StoreName = "StealAMemeEgg_v1",

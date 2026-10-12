@@ -26,6 +26,7 @@ def square(path: pathlib.Path) -> Image.Image:
 
 square(src / "bat.png").save(OUT / "bat.png")
 trap = square(src / "trap.png")
+trap.save(OUT / "trap.png")  # plain, for the Trap Master pass art
 for n in range(1, 7):
     im = trap.copy()
     d = ImageDraw.Draw(im)

@@ -19,7 +19,7 @@ ICONS = {
     "clock": ("⏰", "color"),
     "potion": ("\U0001F9EA", "color"),
     "cart": ("\U0001F6D2", "white"),
-    "book": ("\U0001F4D6", "white"),
+    "book": ("\U0001F4D8", "whiteEdges"),  # a closed book, like the reference (the open one read as a blob)
 }
 
 
@@ -63,15 +63,22 @@ def make(name: str, ch: str, style: str):
     ring = outline(hard, 9).filter(ImageFilter.GaussianBlur(1))
     black = Image.new("RGBA", (256, 256), (16, 14, 22, 255))
     canvas.paste(black, (0, 0), ring)
-    if style == "white":
-        # white like the reference's cart and book, but the artwork's own dark lines stay as black detail inside it
+    if style in ("white", "whiteEdges"):
+        # white like the reference's cart and book; the artwork's detail stays as black lines inside it: its dark lines (cart)
+        # or, for a dark-covered book, only its edges (spine, pages)
         placed = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
         placed.alpha_composite(art, at)
         gray = placed.convert("L")
-        detail = gray.point(lambda v: 255 if v < 120 else 0)
+        if style == "white":
+            detail = gray.point(lambda v: 255 if v < 120 else 0)
+            inner = alpha
+        else:
+            soft = gray.filter(ImageFilter.GaussianBlur(1.2))
+            detail = soft.filter(ImageFilter.FIND_EDGES).point(lambda v: 255 if v > 40 else 0).filter(ImageFilter.MaxFilter(3))
+            inner = alpha.filter(ImageFilter.MinFilter(13))
         white = Image.new("RGBA", (256, 256), (255, 255, 255, 255))
         canvas.paste(white, (0, 0), alpha.filter(ImageFilter.GaussianBlur(0.6)))
-        canvas.paste(black, (0, 0), Image.composite(detail, Image.new("L", (256, 256), 0), alpha))
+        canvas.paste(black, (0, 0), Image.composite(detail, Image.new("L", (256, 256), 0), inner))
     else:
         canvas.alpha_composite(art, at)
     OUT.mkdir(parents=True, exist_ok=True)
