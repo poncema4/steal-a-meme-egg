@@ -85,14 +85,26 @@ function BatTool.swing(player: Player): number
 				theirs
 				and not safe(theirs)
 				and math.abs(theirs.Position.Y - root.Position.Y) < 8
-				and Bats.reaches(
-					bat,
-					root.Position.X,
-					root.Position.Z,
-					look.X,
-					look.Z,
-					theirs.Position.X,
-					theirs.Position.Z
+				and (
+					Bats.reaches(
+						bat,
+						root.Position.X,
+						root.Position.Z,
+						look.X,
+						look.Z,
+						theirs.Position.X,
+						theirs.Position.Z
+					)
+					-- where the swinger SAW them: a moment back along their run
+					or Bats.reaches(
+						bat,
+						root.Position.X,
+						root.Position.Z,
+						look.X,
+						look.Z,
+						theirs.Position.X - theirs.AssemblyLinearVelocity.X * Bats.LAG,
+						theirs.Position.Z - theirs.AssemblyLinearVelocity.Z * Bats.LAG
+					)
 				)
 			then
 				hit(player, other, bat, root, theirs)
