@@ -102,7 +102,18 @@ return function(t)
 		"a terrain without a boss model keeps the plain look",
 		(wilds:FindFirstChild("Boss_Dune") :: Instance):FindFirstChild("Visual") == nil
 	)
-	t.check("every treadmill wears its topper", plot.model:FindFirstChild("TreadmillTopper") ~= nil)
+	-- the treadmill (Marco): no speedometer on top, round tubes instead of boxes, and small signs instead of floor pads
+	t.check("the treadmill has no speedometer any more", plot.model:FindFirstChild("TreadmillTopper") == nil)
+	local rail = plot.model:FindFirstChild("TreadRail") :: Part
+	t.check("its rails are round tubes", rail ~= nil and rail.Shape == world.enum.PartType.Cylinder)
+	t.check("a small UPGRADE sign stands by it", plot.model:FindFirstChild("UpgradeSign") ~= nil)
+	t.check(
+		"REBIRTH and BUY SLOT are small signs",
+		(plot.model:FindFirstChild("RebirthPad") :: Part).Size.Y > 1
+			and (plot.model:FindFirstChild("SlotPad") :: Part).Size.Y > 1
+	)
+	local spawnPart = plot.model:FindFirstChild("Spawn") :: Part
+	t.check("the base spawn is invisible and thin", spawnPart.Transparency == 1 and spawnPart.Size.Y <= 0.3)
 
 	-- a hatch pops with confetti over its pedestal, which then goes away
 	base.slots[4] = { kind = "egg", tier = "Soggy", hatchLeft = 0 }
