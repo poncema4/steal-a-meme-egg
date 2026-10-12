@@ -200,7 +200,7 @@ return table.freeze({
 	-- HUD icons from Google's Noto Color Emoji art (Apache 2.0; art/ui/emoji_icons.py): glossy like Steal an Egg, the Shop cart and
 	-- Index book as white silhouettes with a black outline like the reference. One Image id each.
 	Icons = table.freeze({
-		book = "rbxassetid://125052059858999",
+		book = "rbxassetid://79610636388638",
 		cart = "rbxassetid://138284838244499",
 		cash = "rbxassetid://86253579644854",
 		clock = "rbxassetid://127413837879622",
